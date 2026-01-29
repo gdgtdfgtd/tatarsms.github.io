@@ -1,53 +1,45 @@
-// 🗄️ База данных в localStorage
-const DB_KEYS = {
-    USERS: 'tatar_sms_users',
-    MESSAGES: 'tatar_sms_messages',
-    CURRENT_USER: 'tatar_sms_current_user'
-};
-
-// 🚫 Запрещенные слова для авто-модерации
-const BAD_WORDS = ['спам', 'реклама', 'оскорбление', 'мат', 'хулиган'];
-
-class TatarSMS {
+class DragonMessenger {
     constructor() {
+        this.users = JSON.parse(localStorage.getItem('dm_users')) || {};
+        this.messages = JSON.parse(localStorage.getItem('dm_messages')) || {};
+        this.friends = JSON.parse(localStorage.getItem('dm_friends')) || {};
+        this.groups = JSON.parse(localStorage.getItem('dm_groups')) || {};
+        this.currentUser = localStorage.getItem('dm_current_user') || '';
+        this.currentChat = null;
+        this.currentServer = 'friends';
+        
         this.init();
-        this.bindEvents();
-        this.loadMessages();
     }
 
     init() {
-        // Инициализация базы данных
-        if (!localStorage.getItem(DB_KEYS.USERS)) {
-            const defaultUsers = {
-                'admin': { password: 'admin', isAdmin: true },
-                'user': { password: '123', isAdmin: false }
-            };
-            localStorage.setItem(DB_KEYS.USERS, JSON.stringify(defaultUsers));
-        }
-        if (!localStorage.getItem(DB_KEYS.MESSAGES)) {
-            localStorage.setItem(DB_KEYS.MESSAGES, JSON.stringify([]));
-        }
+        this.bindEvents();
+        this.checkAuth();
+        this.setupDragonAnimation();
+    }
 
-        // Проверка авторизации
-        const currentUser = localStorage.getItem(DB_KEYS.CURRENT_USER);
-        if (currentUser) {
-            this.showChatScreen(currentUser);
+    setupDragonAnimation() {
+        // Анимация дракона при hover
+        const dragon = document.getElementById('animated-dragon');
+        if (dragon) {
+            dragon.addEventListener('mouseenter', () => {
+                dragon.style.animation = 'dragonBreath 1s infinite';
+            });
+            dragon.addEventListener('mouseleave', () => {
+                dragon.style.animation = 'dragonBreath 3s infinite';
+            });
         }
     }
 
     bindEvents() {
-        // Навигация между формами
-        document.getElementById('show-register').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.toggleAuthForms();
+        // Табы авторизации
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.dataset.tab;
+                this.switchAuthTab(tabName);
+            });
         });
 
-        document.getElementById('show-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.toggleAuthForms();
-        });
-
-        // Формы авторизации
+        // Формы
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             this.login();
@@ -58,26 +50,59 @@ class TatarSMS {
             this.register();
         });
 
-        // Чат
-        document.getElementById('send-btn').addEventListener('click', () => this.sendMessage());
+        // Навигация серверов
+        document.querySelectorAll('.server-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const server = e.currentTarget.dataset.server;
+                this.switchServer(server);
+            });
+        });
+
+        // Отправка сообщений
+        document.getElementById('send-btn').addEventListener('click', () => {
+            this.sendMessage();
+        });
+
         document.getElementById('message-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.sendMessage();
         });
 
-        // Выход
-        document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+        // Эмодзи
+        document.getElementById('emoji-btn').addEventListener('click', () => {
+            this.toggleEmojiPanel();
+        });
+
+        // Загрузка изображений
+        document.getElementById('image-btn').addEventListener('click', () => {
+            document.getElementById('image-input').click();
+        });
+
+        document.getElementById('image-input').addEventListener('change', (e) => {
+            this.handleImageUpload(e);
+        });
+
+        // Настройки
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            this.showSettings();
+        });
+
+        // Добавление друга
+        document.getElementById('add-friend-btn').addEventListener('click', () => {
+            this.showAddFriendModal();
+        });
     }
 
-    toggleAuthForms() {
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
+    switchAuthTab(tabName) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
         
-        loginForm.classList.toggle('hidden');
-        registerForm.classList.toggle('hidden');
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        document.getElementById(`${tabName}-form`).classList.add('active');
     }
 
     register() {
         const username = document.getElementById('reg-username').value.trim();
+        const nickname = document.getElementById('reg-nickname').value.trim();
         const password = document.getElementById('reg-password').value;
         const confirm = document.getElementById('reg-confirm').value;
 
@@ -86,188 +111,281 @@ class TatarSMS {
             return;
         }
 
-        const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS));
-        
-        if (users[username]) {
-            alert('Это имя уже используется!');
+        if (this.users[username]) {
+            alert('Это имя пользователя уже занято!');
             return;
         }
 
-        // Регистрация нового пользователя
-        users[username] = { password, isAdmin: username === 'admin' };
-        localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users));
+        // Создание пользователя с ID
+        const userId = this.generateId();
+        this.users[username] = {
+            id: userId,
+            password: btoa(password), // Простое кодирование (в реальном приложении нужно хэшировать)
+            nickname: nickname,
+            status: 'online',
+            avatar: this.generateAvatar(),
+            friends: [],
+            groups: [],
+            joined: new Date().toISOString()
+        };
 
-        alert('Регистрация успешна!');
-        this.toggleAuthForms();
-        
-        // Очистка полей
-        document.getElementById('reg-username').value = '';
-        document.getElementById('reg-password').value = '';
-        document.getElementById('reg-confirm').value = '';
+        this.saveUsers();
+        alert('Аккаунт создан! Теперь войдите.');
+        this.switchAuthTab('login');
     }
 
     login() {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
 
-        const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS));
-        
-        if (!users[username] || users[username].password !== password) {
-            alert('Неверный логин или пароль!');
+        const user = this.users[username];
+        if (!user || atob(user.password) !== password) {
+            alert('Неверное имя пользователя или пароль!');
             return;
         }
 
-        this.showChatScreen(username);
+        this.currentUser = username;
+        localStorage.setItem('dm_current_user', username);
+        this.showMainScreen();
     }
 
-    showChatScreen(username) {
-        localStorage.setItem(DB_KEYS.CURRENT_USER, username);
-        
-        document.getElementById('auth-screen').classList.remove('active');
-        document.getElementById('chat-screen').classList.add('active');
-        
-        document.getElementById('current-user').textContent = username;
-        
-        // Показать панель модерации для админа
-        if (username === 'admin') {
-            document.getElementById('mod-panel').style.display = 'block';
-            this.loadModPanel();
+    checkAuth() {
+        if (this.currentUser) {
+            this.showMainScreen();
         }
+    }
+
+    showMainScreen() {
+        document.getElementById('auth-screen').classList.remove('active');
+        document.getElementById('main-screen').classList.add('active');
         
-        this.loadMessages();
+        // Обновление информации пользователя
+        const user = this.users[this.currentUser];
+        document.getElementById('current-user-nickname').textContent = user.nickname;
+        
+        this.loadFriends();
+        this.loadGroups();
+    }
+
+    switchServer(server) {
+        this.currentServer = server;
+        
+        // Обновление UI
+        document.querySelectorAll('.server-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-server="${server}"]`).classList.add('active');
+        
+        document.getElementById('current-server').textContent = 
+            server === 'friends' ? 'Друзья' : 
+            server === 'groups' ? 'Группы' : 'Поиск';
+
+        // Показать соответствующую панель
+        document.querySelectorAll('.channels-list').forEach(list => {
+            list.classList.add('hidden');
+        });
+        document.getElementById(`${server}-list`).classList.remove('hidden');
+    }
+
+    generateId() {
+        return Math.random().toString(36).substr(2, 9);
+    }
+
+    generateAvatar() {
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    loadFriends() {
+        const user = this.users[this.currentUser];
+        const friendsList = document.getElementById('friends-list');
+        friendsList.innerHTML = '';
+
+        user.friends.forEach(friendUsername => {
+            const friend = this.users[friendUsername];
+            if (friend) {
+                const friendElement = document.createElement('div');
+                friendElement.className = 'friend-item';
+                friendElement.innerHTML = `
+                    <div class="friend-avatar" style="background: ${friend.avatar}"></div>
+                    <div class="friend-info">
+                        <span class="friend-name">${friend.nickname}</span>
+                        <span class="friend-status">${friend.status}</span>
+                    </div>
+                `;
+                friendElement.addEventListener('click', () => {
+                    this.openChat(friendUsername, 'private');
+                });
+                friendsList.appendChild(friendElement);
+            }
+        });
+    }
+
+    loadGroups() {
+        // Загрузка групп пользователя
     }
 
     sendMessage() {
         const input = document.getElementById('message-input');
         const text = input.value.trim();
-        const username = localStorage.getItem(DB_KEYS.CURRENT_USER);
-
-        if (!text) return;
-
-        // Проверка на запрещенные слова
-        const containsBadWord = BAD_WORDS.some(word => 
-            text.toLowerCase().includes(word.toLowerCase())
-        );
+        
+        if (!text || !this.currentChat) return;
 
         const message = {
-            id: Date.now(),
-            username: username,
-            text: text,
-            timestamp: new Date().toLocaleString('ru-RU'),
-            isDeleted: false,
-            needsModeration: containsBadWord
+            id: this.generateId(),
+            type: this.currentChat.type,
+            from: this.currentUser,
+            to: this.currentChat.target,
+            content: text,
+            timestamp: new Date().toISOString(),
+            read: false
         };
 
-        const messages = JSON.parse(localStorage.getItem(DB_KEYS.MESSAGES));
-        messages.push(message);
-        localStorage.setItem(DB_KEYS.MESSAGES, JSON.stringify(messages));
+        // Сохранение сообщения
+        if (!this.messages[this.currentChat.target]) {
+            this.messages[this.currentChat.target] = [];
+        }
+        this.messages[this.currentChat.target].push(message);
+        this.saveMessages();
 
+        // Отображение сообщения
+        this.displayMessage(message);
         input.value = '';
-        this.loadMessages();
+    }
+
+    displayMessage(message) {
+        const container = document.getElementById('messages-container');
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
         
-        if (username === 'admin') {
-            this.loadModPanel();
-        }
-    }
-
-    loadMessages() {
-        const messagesContainer = document.getElementById('messages-container');
-        const currentUser = localStorage.getItem(DB_KEYS.CURRENT_USER);
-        const messages = JSON.parse(localStorage.getItem(DB_KEYS.MESSAGES));
+        const user = this.users[message.from];
+        messageElement.innerHTML = `
+            <div class="message-avatar" style="background: ${user.avatar}"></div>
+            <div class="message-content">
+                <span class="message-author">${user.nickname}</span>
+                <span class="message-text">${this.parseEmojis(message.content)}</span>
+                <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
+            </div>
+        `;
         
-        messagesContainer.innerHTML = '';
-
-        // Приветственное сообщение если нет сообщений
-        if (messages.length === 0) {
-            messagesContainer.innerHTML = `
-                <div class="message other">
-                    <div class="message-header">Система • ${new Date().toLocaleString('ru-RU')}</div>
-                    <div class="message-text">Добро пожаловать в Tatar SMS! Начните общение.</div>
-                </div>
-            `;
-            return;
-        }
-
-        messages.filter(msg => !msg.isDeleted).forEach(msg => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${msg.username === currentUser ? 'own' : 'other'}`;
-            
-            messageDiv.innerHTML = `
-                <div class="message-header">
-                    ${msg.username} • ${msg.timestamp}
-                    ${msg.needsModeration ? ' <i class="fas fa-exclamation-triangle" style="color: orange;" title="Требует модерации"></i>' : ''}
-                </div>
-                <div class="message-text">${this.escapeHtml(msg.text)}</div>
-            `;
-
-            messagesContainer.appendChild(messageDiv);
-        });
-
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        container.appendChild(messageElement);
+        container.scrollTop = container.scrollHeight;
     }
 
-    loadModPanel() {
-        const modContainer = document.getElementById('mod-messages');
-        const messages = JSON.parse(localStorage.getItem(DB_KEYS.MESSAGES));
+    parseEmojis(text) {
+        const emojiMap = {
+            ':)': '😊',
+            ':(': '😢',
+            ':D': '😃',
+            ';)': '😉',
+            ':P': '😛',
+            '<3': '❤️'
+        };
         
-        modContainer.innerHTML = '';
-
-        const problematicMessages = messages.filter(msg => 
-            (msg.needsModeration || msg.isDeleted) && !msg.isDeleted
-        );
-
-        if (problematicMessages.length === 0) {
-            modContainer.innerHTML = '<p>Нет сообщений для модерации</p>';
-            return;
-        }
-
-        problematicMessages.forEach(msg => {
-            const modMsg = document.createElement('div');
-            modMsg.className = 'mod-message';
-            
-            modMsg.innerHTML = `
-                <div>
-                    <strong>${msg.username}</strong>: ${this.escapeHtml(msg.text)}
-                    <br><small>${msg.timestamp}</small>
-                    ${msg.needsModeration ? '<span style="color: orange;">• Требует модерации</span>' : ''}
-                </div>
-                <button class="delete-btn" onclick="tatarSMS.deleteMessage(${msg.id})">
-                    <i class="fas fa-trash"></i> Удалить
-                </button>
-            `;
-
-            modContainer.appendChild(modMsg);
-        });
+        return text.replace(/:\)|:\(|:D|;\)|:P|<3/g, match => emojiMap[match] || match);
     }
 
-    deleteMessage(messageId) {
-        const messages = JSON.parse(localStorage.getItem(DB_KEYS.MESSAGES));
-        const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    toggleEmojiPanel() {
+        const panel = document.getElementById('emoji-panel');
+        panel.classList.toggle('hidden');
+    }
+
+    handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.sendImageMessage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    sendImageMessage(imageData) {
+        if (!this.currentChat) return;
+
+        const message = {
+            id: this.generateId(),
+            type: 'image',
+            from: this.currentUser,
+            to: this.currentChat.target,
+            content: imageData,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+
+        if (!this.messages[this.currentChat.target]) {
+            this.messages[this.currentChat.target] = [];
+        }
+        this.messages[this.currentChat.target].push(message);
+        this.saveMessages();
+        this.displayImageMessage(message);
+    }
+
+    displayImageMessage(message) {
+        const container = document.getElementById('messages-container');
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
         
-        if (messageIndex !== -1) {
-            messages[messageIndex].isDeleted = true;
-            localStorage.setItem(DB_KEYS.MESSAGES, JSON.stringify(messages));
-            
-            this.loadMessages();
-            this.loadModPanel();
-            alert('Сообщение удалено!');
-        }
+        const user = this.users[message.from];
+        messageElement.innerHTML = `
+            <div class="message-avatar" style="background: ${user.avatar}"></div>
+            <div class="message-content">
+                <span class="message-author">${user.nickname}</span>
+                <img src="${message.content}" class="message-image" style="max-width: 300px; border-radius: 8px;">
+                <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
+            </div>
+        `;
+        
+        container.appendChild(messageElement);
+        container.scrollTop = container.scrollHeight;
     }
 
-    logout() {
-        localStorage.removeItem(DB_KEYS.CURRENT_USER);
-        location.reload();
+    showSettings() {
+        const modal = document.getElementById('settings-modal');
+        const user = this.users[this.currentUser];
+        
+        document.getElementById('change-nickname').value = user.nickname;
+        document.getElementById('change-status').value = user.status;
+        
+        modal.classList.remove('hidden');
     }
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    showAddFriendModal() {
+        document.getElementById('add-friend-modal').classList.remove('hidden');
+    }
+
+    // Сохранение данных
+    saveUsers() {
+        localStorage.setItem('dm_users', JSON.stringify(this.users));
+    }
+
+    saveMessages() {
+        localStorage.setItem('dm_messages', JSON.stringify(this.messages));
+    }
+
+    saveFriends() {
+        localStorage.setItem('dm_friends', JSON.stringify(this.friends));
+    }
+
+    saveGroups() {
+        localStorage.setItem('dm_groups', JSON.stringify(this.groups));
     }
 }
 
-// 🚀 Запуск приложения
-const tatarSMS = new TatarSMS();
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    window.messenger = new DragonMessenger();
+});
 
-// Глобальные функции для HTML
-window.tatarSMS = tatarSMS;
+// Глобальные функции для модальных окон
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+};
+
+window.sendFriendRequest = function() {
+    const username = document.getElementById('friend-username').value;
+    // Логика отправки заявки в друзья
+    alert(`Заявка отправлена пользователю ${username}`);
+    window.closeModal('add-friend-modal');
+};
