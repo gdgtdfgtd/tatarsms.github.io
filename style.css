@@ -1,10 +1,13 @@
-/* 🌈 Основные стили */
 :root {
-    --primary-color: #00695c;
-    --secondary-color: #ffd700;
-    --accent-color: #d32f2f;
-    --bg-light: #f5f5f5;
-    --text-dark: #333;
+    --discord-blurple: #5865f2;
+    --discord-green: #57f287;
+    --discord-yellow: #fee75c;
+    --discord-red: #ed4245;
+    --bg-primary: #36393f;
+    --bg-secondary: #2f3136;
+    --bg-tertiary: #202225;
+    --text-normal: #dcddde;
+    --text-muted: #72767d;
 }
 
 * {
@@ -14,249 +17,409 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #00695c, #004d40);
-    min-height: 100vh;
-    color: #333;
+    font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-normal);
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* 📱 Контейнеры экранов */
 .screen {
     display: none;
-    min-height: 100vh;
+    height: 100vh;
 }
 
 .screen.active {
-    display: block;
+    display: flex;
 }
 
 /* 🔐 Авторизация */
+#auth-screen {
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dragon-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dragon {
+    position: relative;
+    width: 120px;
+    height: 100px;
+    margin: 0 auto 1rem;
+}
+
+.dragon-head {
+    width: 40px;
+    height: 30px;
+    background: #ff6b6b;
+    border-radius: 50% 50% 40% 40%;
+    position: absolute;
+    top: 0;
+    left: 40px;
+    animation: dragonBreath 3s infinite;
+}
+
+.dragon-eye {
+    width: 8px;
+    height: 8px;
+    background: #ffd93d;
+    border-radius: 50%;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    animation: blink 4s infinite;
+}
+
+.dragon-horn {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 10px solid #ff9a76;
+    position: absolute;
+    top: -8px;
+    left: 15px;
+}
+
+.dragon-body {
+    width: 80px;
+    height: 40px;
+    background: #ff6b6b;
+    border-radius: 20px;
+    position: absolute;
+    top: 25px;
+    left: 20px;
+}
+
+.dragon-wing {
+    width: 30px;
+    height: 40px;
+    background: #ff9a76;
+    border-radius: 50%;
+    position: absolute;
+    top: -10px;
+    right: -15px;
+    animation: flap 2s infinite;
+}
+
+.dragon-tail {
+    width: 40px;
+    height: 10px;
+    background: #ff6b6b;
+    border-radius: 5px;
+    position: absolute;
+    top: 35px;
+    left: -30px;
+    animation: tailMove 1.5s infinite;
+}
+
+@keyframes dragonBreath {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes blink {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0; }
+}
+
+@keyframes flap {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+@keyframes tailMove {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+}
+
 .auth-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 30px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    text-align: center;
-}
-
-.logo {
-    margin-bottom: 30px;
-}
-
-.logo i {
-    font-size: 4rem;
-    color: var(--primary-color);
-    margin-bottom: 15px;
-}
-
-.logo h1 {
-    color: var(--primary-color);
-    font-size: 2.5rem;
-    margin-bottom: 5px;
-}
-
-.logo p {
-    color: #666;
-    font-size: 1.1rem;
-}
-
-/* 📝 Формы */
-form {
-    text-align: left;
-}
-
-form h2 {
-    margin-bottom: 20px;
-    color: var(--primary-color);
-    text-align: center;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #ddd;
+    background: var(--bg-secondary);
+    padding: 2rem;
     border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
+    width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-input:focus {
-    border-color: var(--primary-color);
-    outline: none;
+.tabs {
+    display: flex;
+    margin-bottom: 1rem;
 }
 
-button {
+.tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.tab.active {
+    color: var(--text-normal);
+    border-bottom-color: var(--discord-blurple);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form input {
     width: 100%;
-    padding: 12px;
-    background: var(--primary-color);
+    padding: 10px;
+    margin: 5px 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: 3px;
+    color: var(--text-normal);
+}
+
+.btn-primary {
+    background: var(--discord-blurple);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+    padding: 10px;
+    border-radius: 3px;
     cursor: pointer;
-    transition: background 0.3s;
+    width: 100%;
     margin-top: 10px;
 }
 
-button:hover {
-    background: #004d40;
+/* 💬 Главный интерфейс */
+#main-screen {
+    display: none;
 }
 
-/* 💬 Чат интерфейс */
-header {
-    background: white;
-    padding: 15px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+#main-screen.active {
+    display: grid;
+    grid-template-columns: 72px 240px 1fr 240px;
+    grid-template-rows: 1fr;
+    height: 100vh;
 }
 
-.header-content {
-    max-width: 800px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-}
-
-.header-content h1 {
-    color: var(--primary-color);
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-#logout-btn {
-    width: auto;
-    padding: 8px 15px;
-    background: var(--accent-color);
-}
-
-/* 📨 Сообщения */
-.chat-container {
-    max-width: 800px;
-    margin: 20px auto;
-    height: calc(100vh - 150px);
+.sidebar {
+    background: var(--bg-tertiary);
     display: flex;
     flex-direction: column;
 }
 
-.messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    background: white;
-    border-radius: 15px;
-    margin-bottom: 15px;
+.server-header {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-.message {
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 12px;
-    max-width: 70%;
-    animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.message.own {
-    background: var(--primary-color);
-    color: white;
-    margin-left: auto;
-}
-
-.message.other {
-    background: #e0e0e0;
-    color: #333;
-}
-
-.message-header {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    margin-bottom: 5px;
-}
-
-.message.deleted {
-    background: #ffebee;
-    color: #666;
-    font-style: italic;
-}
-
-/* ⌨️ Ввод сообщения */
-.message-input {
-    display: flex;
-    gap: 10px;
-    padding: 0 20px;
-}
-
-#message-input {
-    flex: 1;
-    padding: 15px;
-    border: 2px solid #ddd;
-    border-radius: 25px;
-}
-
-#send-btn {
-    width: 50px;
-    height: 50px;
+.dragon-mini {
+    width: 40px;
+    height: 40px;
+    background: var(--discord-blurple);
     border-radius: 50%;
-    padding: 0;
+    margin: 0 auto;
+    position: relative;
+    cursor: pointer;
+    transition: border-radius 0.3s;
 }
 
-/* 👮‍♂️ Панель модерации */
-#mod-panel {
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    margin: 20px auto;
-    max-width: 800px;
-    display: none;
+.dragon-mini:hover {
+    border-radius: 30%;
 }
 
-.mod-message {
+.dragon-mini-head {
+    width: 20px;
+    height: 15px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    position: absolute;
+    top: 8px;
+    left: 10px;
+}
+
+.servers-list {
+    flex: 1;
+    padding: 8px;
+}
+
+.server-item {
+    width: 48px;
+    height: 48px;
+    background: var(--bg-secondary);
+    border-radius: 50%;
+    margin: 8px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-radius 0.3s, background 0.3s;
+}
+
+.server-item:hover, .server-item.active {
+    border-radius: 30%;
+    background: var(--discord-blurple);
+}
+
+.user-panel {
+    background: var(--bg-secondary);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--discord-green);
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-status {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Каналы */
+.channels-panel {
+    background: var(--bg-secondary);
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.channels-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
 }
 
-.delete-btn {
-    background: var(--accent-color);
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-/* 📱 Адаптивность */
-@media (max-width: 768px) {
-    .auth-container {
-        margin: 20px;
-        padding: 20px;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .message {
-        max-width: 85%;
-    }
+.channels-list {
+    padding: 8px;
 }
 
 .hidden {
     display: none !important;
+}
+
+/* Чат */
+.chat-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.messages-container {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.message {
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 8px;
+    animation: messageSlide 0.3s ease-out;
+}
+
+@keyframes messageSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-input-container {
+    padding: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+}
+
+.input-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.message-input-wrapper {
+    flex: 1;
+    display: flex;
+    margin-left: 8px;
+}
+
+#message-input {
+    flex: 1;
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: var(--text-normal);
+}
+
+/* Модальные окна */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90vw;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    #main-screen.active {
+        grid-template-columns: 72px 1fr;
+    }
+    .channels-panel, .members-panel {
+        display: none;
+    }
+}
+
+/* Анимации */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
