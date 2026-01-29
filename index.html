@@ -1,252 +1,135 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Messenger</title>
-    <link rel="stylesheet" href="style.css">
+    <title>tatarsms | P2P Messenger</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PeerJS CDN -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 🔐 Авторизация -->
-    <div id="auth-screen" class="screen active">
-        <div class="dragon-logo">
-            <div class="dragon-container">
-                <div class="dragon-body"></div>
-                <div class="dragon-head">
-                    <div class="dragon-eye"></div>
-                    <div class="dragon-horn"></div>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="server-list">
+                <div class="server-icon active" title="Direct Messages"><i class="fas fa-comment-dots"></i></div>
+                <div class="server-icon action" onclick="ui.toggleModal('group-modal')"><i class="fas fa-plus"></i></div>
+            </div>
+            <div class="contact-panel">
+                <div class="profile-summary" onclick="ui.toggleModal('settings-modal')">
+                    <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=tatar" alt="avatar">
+                    <div class="info">
+                        <span id="my-nickname">Loading...</span>
+                        <span id="my-status" class="status-text">Online</span>
+                    </div>
+                    <i class="fas fa-cog"></i>
                 </div>
-                <div class="dragon-wing"></div>
-                <div class="dragon-tail"></div>
-                <div class="dragon-fire"></div>
+                <div class="search-bar">
+                    <input type="text" id="peer-search" placeholder="Find or start a chat...">
+                </div>
+                <nav class="friends-list" id="friends-list">
+                    <!-- Friends injected here -->
+                </nav>
             </div>
-            <h1>Dragon Messenger</h1>
-            <p>Мессенджер с огненным драконом</p>
-        </div>
-        
-        <div class="auth-container">
-            <div class="tabs">
-                <button class="tab active" data-tab="login">Вход</button>
-                <button class="tab" data-tab="register">Регистрация</button>
-            </div>
-            
-            <form id="login-form" class="auth-form active">
-                <input type="text" id="login-username" placeholder="Имя пользователя" required>
-                <input type="password" id="login-password" placeholder="Пароль" required>
-                <button type="submit" class="btn-primary">Войти</button>
-            </form>
+        </aside>
 
-            <form id="register-form" class="auth-form">
-                <input type="text" id="reg-username" placeholder="Придумайте логин" required>
-                <input type="text" id="reg-nickname" placeholder="Ваш никнейм" required>
-                <input type="password" id="reg-password" placeholder="Пароль" required>
-                <input type="password" id="reg-confirm" placeholder="Повторите пароль" required>
-                <button type="submit" class="btn-primary">Создать аккаунт</button>
-            </form>
+        <!-- Main Chat Area -->
+        <main class="chat-area" id="chat-welcome">
+            <div class="welcome-screen">
+                <i class="fas fa-comments"></i>
+                <h1>Welcome to tatarsms</h1>
+                <p>Select a friend to start chatting via P2P.</p>
+            </div>
+        </main>
+
+        <main class="chat-area hidden" id="chat-main">
+            <header class="chat-header">
+                <div class="user-info">
+                    <span class="user-name" id="active-chat-name">Nickname</span>
+                    <span id="active-chat-badge"></span>
+                </div>
+                <div class="chat-actions">
+                    <button onclick="calls.initiate(false)"><i class="fas fa-phone"></i></button>
+                    <button onclick="calls.initiate(true)"><i class="fas fa-video"></i></button>
+                </div>
+            </header>
+            <div class="messages" id="message-container"></div>
+            <div class="input-container">
+                <div class="attachment-btn" onclick="ui.toggleStickerPicker()"><i class="far fa-sticky-note"></i></div>
+                <input type="text" id="message-input" placeholder="Message #nickname...">
+                <div class="sticker-picker hidden" id="sticker-picker">
+                    <div class="sticker-tabs">
+                        <button onclick="ui.showStickers('default')">Default</button>
+                        <button onclick="ui.showStickers('custom')">Custom</button>
+                    </div>
+                    <div class="sticker-grid" id="sticker-grid"></div>
+                    <div class="add-sticker">
+                        <input type="text" id="sticker-url" placeholder="Paste Image URL">
+                        <button onclick="stickers.add()">Add</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay hidden" id="modal-overlay">
+        <!-- Settings Modal -->
+        <div class="modal hidden" id="settings-modal">
+            <h2>User Settings</h2>
+            <div class="setting-item">
+                <label>Avatar URL</label>
+                <input type="text" id="set-avatar" placeholder="https://...">
+            </div>
+            <div class="setting-item">
+                <label>Nickname (Requires Restart)</label>
+                <input type="text" id="set-nickname">
+            </div>
+            <div class="verification-box">
+                <p>Status: <span id="verif-status">Not Verified</span> <span id="verif-badge-ui"></span></p>
+                <button class="btn-verify" onclick="ui.showVerificationInfo()">Get Verified</button>
+            </div>
+            <div id="admin-panel" class="hidden">
+                <hr>
+                <h3>Admin Panel</h3>
+                <input type="text" id="admin-target-peer" placeholder="Target Peer ID">
+                <button onclick="admin.verifyUser()">Verify Peer</button>
+            </div>
+            <button class="btn-close" onclick="ui.closeModals()">Save & Close</button>
+        </div>
+
+        <!-- Incoming Call Modal -->
+        <div class="modal hidden" id="call-modal">
+            <div class="call-ui">
+                <div class="pulse-container">
+                    <img id="call-avatar" src="" class="pulsating-avatar">
+                </div>
+                <h2 id="call-name">Incoming Call...</h2>
+                <div class="video-preview">
+                    <video id="remote-video" autoplay playsinline></video>
+                    <video id="local-video" autoplay muted playsinline></video>
+                </div>
+                <div class="call-controls">
+                    <button class="btn-accept" id="btn-accept"><i class="fas fa-phone"></i> Accept</button>
+                    <button class="btn-decline" id="btn-decline"><i class="fas fa-phone-slash"></i> Decline</button>
+                    <button class="btn-hangup hidden" id="btn-hangup"><i class="fas fa-phone-slash"></i> End</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 💬 Главный интерфейс -->
-    <div id="main-screen" class="screen">
-        <!-- Левая панель -->
-        <div class="sidebar">
-            <div class="server-header">
-                <div class="dragon-mini">
-                    <div class="dragon-mini-head"></div>
-                </div>
-                <span>Dragon Messenger</span>
-            </div>
-            
-            <div class="servers-list">
-                <div class="server-item active" data-server="friends">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="server-item" data-server="groups">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <div class="server-item" data-server="discover">
-                    <i class="fas fa-compass"></i>
-                </div>
-            </div>
-
-            <div class="user-panel">
-                <div class="user-avatar"></div>
-                <div class="user-info">
-                    <span id="current-user-nickname">User</span>
-                    <span class="user-status">Online</span>
-                </div>
-                <div class="user-controls">
-                    <button id="settings-btn"><i class="fas fa-cog"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Панель каналов -->
-        <div class="channels-panel">
-            <div class="channels-header">
-                <span id="current-server">Друзья</span>
-                <button id="add-friend-btn"><i class="fas fa-user-plus"></i></button>
-            </div>
-            
-            <div class="channels-list" id="friends-list">
-                <!-- Список друзей -->
-                <div class="friend-item">
-                    <div class="friend-avatar" style="background: #ff6b6b"></div>
-                    <div class="friend-info">
-                        <span class="friend-name">Администратор</span>
-                        <span class="friend-status">online</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="channels-list hidden" id="groups-list">
-                <!-- Список групп -->
-                <div class="group-item">
-                    <div class="group-avatar" style="background: #4ecdc4">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="group-info">
-                        <span class="group-name">Общий чат</span>
-                        <span class="group-members">1 участник</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="channels-list hidden" id="discover-list">
-                <!-- Поиск людей -->
-                <div class="search-box">
-                    <input type="text" id="search-users" placeholder="Найти людей...">
-                    <button id="search-btn"><i class="fas fa-search"></i></button>
-                </div>
-                <div id="search-results">
-                    <!-- Результаты поиска -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Область чата -->
-        <div class="chat-area">
-            <div class="chat-header">
-                <div class="chat-info">
-                    <span id="chat-title">Выберите чат</span>
-                    <span class="chat-status" id="chat-status"></span>
-                </div>
-                <div class="chat-actions">
-                    <button id="chat-settings"><i class="fas fa-cog"></i></button>
-                </div>
-            </div>
-
-            <div class="messages-container" id="messages-container">
-                <!-- Сообщения -->
-                <div class="message">
-                    <div class="message-avatar" style="background: #ff6b6b"></div>
-                    <div class="message-content">
-                        <span class="message-author">Администратор</span>
-                        <span class="message-time">12:00</span>
-                        <div class="message-text">Добро пожаловать в Dragon Messenger! 🐉</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="message-input-container">
-                <div class="input-actions">
-                    <button id="emoji-btn"><i class="fas fa-smile"></i></button>
-                    <button id="image-btn"><i class="fas fa-image"></i></button>
-                    <input type="file" id="image-input" accept="image/*" style="display: none;">
-                </div>
-                <div class="message-input-wrapper">
-                    <input type="text" id="message-input" placeholder="Написать сообщение...">
-                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-
-            <!-- Панель эмодзи -->
-            <div class="emoji-panel hidden" id="emoji-panel">
-                <div class="emoji-category">
-                    <span>Смайлики</span>
-                    <div class="emoji-grid">
-                        <span class="emoji">😀</span><span class="emoji">😂</span><span class="emoji">😍</span>
-                        <span class="emoji">🤔</span><span class="emoji">😎</span><span class="emoji">🥳</span>
-                        <span class="emoji">❤️</span><span class="emoji">🔥</span><span class="emoji">👍</span>
-                        <span class="emoji">🎉</span><span class="emoji">✨</span><span class="emoji">🐉</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Панель участников -->
-        <div class="members-panel">
-            <div class="members-header">
-                <span>Участники</span>
-                <span class="members-count">1</span>
-            </div>
-            <div class="members-list" id="members-list">
-                <!-- Список участников -->
-                <div class="member-item">
-                    <div class="member-avatar" style="background: #ff6b6b"></div>
-                    <div class="member-info">
-                        <span class="member-name">Администратор</span>
-                        <span class="member-status">online</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальные окна -->
-        <div id="modals">
-            <!-- Настройки -->
-            <div class="modal hidden" id="settings-modal">
-                <div class="modal-content">
-                    <h2>Настройки профиля</h2>
-                    <div class="setting-item">
-                        <label>Ваш никнейм:</label>
-                        <input type="text" id="change-nickname" placeholder="Введите новый никнейм">
-                    </div>
-                    <div class="setting-item">
-                        <label>Статус:</label>
-                        <select id="change-status">
-                            <option value="online">Online</option>
-                            <option value="idle">Не активен</option>
-                            <option value="dnd">Не беспокоить</option>
-                        </select>
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn-primary" id="save-settings">Сохранить</button>
-                        <button class="btn-secondary" onclick="closeModal('settings-modal')">Отмена</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Добавление друга -->
-            <div class="modal hidden" id="add-friend-modal">
-                <div class="modal-content">
-                    <h2>Добавить друга</h2>
-                    <div class="setting-item">
-                        <label>Имя пользователя:</label>
-                        <input type="text" id="friend-username" placeholder="username#id">
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn-primary" id="send-friend-request">Отправить заявку</button>
-                        <button class="btn-secondary" onclick="closeModal('add-friend-modal')">Отмена</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Создание группы -->
-            <div class="modal hidden" id="create-group-modal">
-                <div class="modal-content">
-                    <h2>Создать группу</h2>
-                    <div class="setting-item">
-                        <label>Название группы:</label>
-                        <input type="text" id="group-name" placeholder="Введите название группы">
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn-primary" id="create-group">Создать</button>
-                        <button class="btn-secondary" onclick="closeModal('create-group-modal')">Отмена</button>
-                    </div>
-                </div>
-            </div>
+    <!-- Login Modal -->
+    <div id="auth-overlay" class="modal-overlay">
+        <div class="modal">
+            <h2>Join tatarsms</h2>
+            <p>Enter your unique nickname to start.</p>
+            <input type="text" id="login-id" placeholder="Your Unique Nickname">
+            <input type="password" id="admin-pass" placeholder="Admin Password (Optional)">
+            <button class="btn-verify" onclick="auth.login()">Connect</button>
         </div>
     </div>
 
