@@ -1,274 +1,277 @@
-// --- CONFIG & STATE ---
 const ADMIN_ID = "tatar_506";
 const ADMIN_PASS = "spinogrz666";
 
 let state = {
-    me: { id: '', role: 'user', avatar: '', verified: false },
-    activeTab: 'dm', // 'dm' или 'groups'
-    chats: JSON.parse(localStorage.getItem('tatarsms_chats') || '[]'),
-    groups: JSON.parse(localStorage.getItem('tatarsms_groups') || '[]'),
-    history: JSON.parse(localStorage.getItem('tatarsms_history') || '{}'),
-    stickers: JSON.parse(localStorage.getItem('tatarsms_stickers') || []),
+    me: { id: '', avatar: '', verified: false, isAdmin: false },
+    friends: JSON.parse(localStorage.getItem('tat_friends') || '[]'),
+    groups: JSON.parse(localStorage.getItem('tat_groups') || '[]'),
+    history: JSON.parse(localStorage.getItem('tat_history') || '{}'),
+    stickers: JSON.parse(localStorage.getItem('tat_stickers') || []),
+    activeChat: null,
     peer: null,
     currentCall: null,
-    localStream: null,
-    activeChatId: null
+    localStream: null
 };
 
-// --- AUTHENTICATION ---
+// --- AUTH LOGIC ---
 const auth = {
-    setRole(role) {
-        state.me.role = role;
-        document.getElementById('tab-user').classList.toggle('active', role === 'user');
-        document.getElementById('tab-admin').classList.toggle('active', role === 'admin');
-        document.getElementById('admin-pass-group').classList.toggle('hidden', role === 'user');
+    isAdminMode: false,
+    toggleAdmin() {
+        this.isAdminMode = !this.isAdminMode;
+        document.getElementById('admin-pass-block').classList.toggle('hidden');
     },
+    async finish() {
+        const id = document.getElementById('reg-id').value.trim();
+        const pass = document.getElementById('reg-admin-pass').value.trim();
+        const avatar = document.getElementById('reg-avatar-preview').src;
 
-    handleLogin() {
-        const id = document.getElementById('login-id').value.trim();
-        const pass = document.getElementById('login-pass').value.trim();
-
-        if (!id) return alert("Введите никнейм!");
-
-        if (state.me.role === 'admin') {
-            if (id !== ADMIN_ID || pass !== ADMIN_PASS) return alert("Неверные данные админа!");
+        if (!id) return alert("Введите ID");
+        if (this.isAdminMode) {
+            if (id !== ADMIN_ID || pass !== ADMIN_PASS) return alert("Ошибка админа");
+            state.me.isAdmin = true;
             state.me.verified = true;
         }
 
         state.me.id = id;
-        state.me.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+        state.me.avatar = avatar;
         
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        
         this.initPeer();
-        ui.initApp();
     },
-
     initPeer() {
         state.peer = new Peer(state.me.id);
-
-        state.peer.on('open', (id) => {
-            console.log('Connected as:', id);
-            document.getElementById('my-name').innerText = id;
-            document.getElementById('my-avatar').src = state.me.avatar;
+        state.peer.on('open', () => {
+            document.getElementById('my-name-display').innerText = state.me.id;
+            document.getElementById('my-avatar-img').src = state.me.avatar;
+            ui.renderFriends();
+            ui.renderGroups();
         });
-
         state.peer.on('connection', (conn) => {
-            conn.on('data', (data) => handleIncomingData(data, conn.peer));
+            conn.on('data', (data) => {
+                if (data.type === 'msg') {
+                    chat.receive(conn.peer, data.text);
+                } else if (data.type === 'verif') {
+                    state.me.verified = true;
+                    ui.saveSettings();
+                }
+            });
         });
-
-        state.peer.on('call', (call) => {
-            calls.answerUI(call);
-        });
+        state.peer.on('call', (call) => calls.answerUI(call));
     }
 };
 
-// --- MESSAGING LOGIC ---
-function handleIncomingData(data, senderId) {
-    if (data.type === 'msg') {
-        saveMessage(senderId, data.text, 'received');
-        if (state.activeChatId === senderId) ui.renderMessages();
-        ui.renderChatList();
-    } else if (data.type === 'verif_signal') {
-        state.me.verified = true;
-        ui.initApp();
-    }
-}
-
-function saveMessage(chatId, text, type) {
-    if (!state.history[chatId]) state.history[chatId] = [];
-    state.history[chatId].push({ text, type, time: Date.now() });
-    localStorage.setItem('tatarsms_history', JSON.stringify(state.history));
-    
-    if (!state.chats.includes(chatId)) {
-        state.chats.push(chatId);
-        localStorage.setItem('tatarsms_chats', JSON.stringify(state.chats));
-    }
-}
-
+// --- CHAT LOGIC ---
 const chat = {
     send() {
         const input = document.getElementById('msg-input');
         const text = input.value.trim();
-        if (!text || !state.activeChatId) return;
+        if (!text || !state.activeChat) return;
 
-        const conn = state.peer.connect(state.activeChatId);
+        const conn = state.peer.connect(state.activeChat);
         conn.on('open', () => {
             conn.send({ type: 'msg', text: text });
-            saveMessage(state.activeChatId, text, 'sent');
+            this.saveHistory(state.activeChat, text, 'sent');
             ui.renderMessages();
             input.value = '';
         });
     },
-
+    receive(senderId, text) {
+        this.saveHistory(senderId, text, 'received');
+        if (!state.friends.includes(senderId)) {
+            state.friends.push(senderId);
+            localStorage.setItem('tat_friends', JSON.stringify(state.friends));
+            ui.renderFriends();
+        }
+        if (state.activeChat === senderId) ui.renderMessages();
+    },
+    saveHistory(id, text, type) {
+        if (!state.history[id]) state.history[id] = [];
+        state.history[id].push({ text, type, time: Date.now() });
+        localStorage.setItem('tat_history', JSON.stringify(state.history));
+    },
     createGroup() {
-        const name = document.getElementById('group-name-input').value.trim();
+        const name = document.getElementById('group-name-input').value;
+        const av = document.getElementById('group-avatar-preview').src;
         if (!name) return;
-        const groupId = 'group_' + Math.random().toString(36).substr(2, 9);
-        state.groups.push({ id: groupId, name: name });
-        localStorage.setItem('tatarsms_groups', JSON.stringify(state.groups));
+        const gId = 'grp_' + Date.now();
+        state.groups.push({ id: gId, name, avatar: av });
+        localStorage.setItem('tat_groups', JSON.stringify(state.groups));
+        ui.renderGroups();
         ui.closeModals();
-        ui.switchTab('groups');
     }
 };
 
 // --- UI CONTROLLER ---
 const ui = {
-    initApp() {
-        if (state.me.verified) {
-            document.getElementById('verif-label').innerHTML = 'Верифицирован <i class="fas fa-check-circle" style="color:#00a8fc"></i>';
-            if (state.me.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
-        }
-        this.renderChatList();
-        this.renderStickers('default');
-    },
-
     switchTab(tab) {
-        state.activeTab = tab;
-        document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        this.renderChatList();
+        state.activeChat = null;
+        document.getElementById('chat-active').classList.add('hidden');
+        document.getElementById('chat-empty').classList.remove('hidden');
     },
-
-    renderChatList() {
-        const container = document.getElementById('chat-list');
-        container.innerHTML = '';
-        const items = state.activeTab === 'dm' ? state.chats : state.groups;
-
-        items.forEach(item => {
-            const id = typeof item === 'string' ? item : item.id;
-            const name = typeof item === 'string' ? item : item.name;
+    renderFriends() {
+        const list = document.getElementById('contact-list');
+        list.innerHTML = '';
+        state.friends.forEach(f => {
             const div = document.createElement('div');
-            div.className = `sidebar-header ${state.activeChatId === id ? 'active' : ''}`;
-            div.onclick = () => this.openChat(id, name);
-            div.innerHTML = `
-                <div class="my-info">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${id}" style="width:35px; border-radius:50%">
-                    <span>${name}</span>
-                </div>
-            `;
-            container.appendChild(div);
+            div.className = 'contact-item';
+            div.onclick = () => this.selectChat(f, f);
+            div.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${f}"> <span>${f}</span>`;
+            list.appendChild(div);
         });
     },
-
-    openChat(id, name) {
-        state.activeChatId = id;
-        document.getElementById('empty-state').classList.add('hidden');
-        document.getElementById('active-chat').classList.remove('hidden');
-        document.getElementById('target-name').innerText = name;
+    renderGroups() {
+        const rail = document.getElementById('group-icons');
+        rail.innerHTML = '';
+        state.groups.forEach(g => {
+            const div = document.createElement('div');
+            div.className = 'nav-icon';
+            div.onclick = () => this.selectChat(g.id, g.name);
+            div.innerHTML = `<img src="${g.avatar}" style="width:100%;height:100%;border-radius:50%">`;
+            rail.appendChild(div);
+        });
+    },
+    selectChat(id, name) {
+        state.activeChat = id;
+        document.getElementById('chat-empty').classList.add('hidden');
+        document.getElementById('chat-active').classList.remove('hidden');
+        document.getElementById('active-name').innerText = name;
         this.renderMessages();
     },
-
     renderMessages() {
-        const container = document.getElementById('messages-view');
-        container.innerHTML = '';
-        const msgs = state.history[state.activeChatId] || [];
+        const view = document.getElementById('messages-view');
+        view.innerHTML = '';
+        const msgs = state.history[state.activeChat] || [];
         msgs.forEach(m => {
             const div = document.createElement('div');
             div.className = `msg-bubble ${m.type}`;
             div.innerHTML = m.text;
-            container.appendChild(div);
+            view.appendChild(div);
         });
-        container.scrollTop = container.scrollHeight;
+        view.scrollTop = view.scrollHeight;
     },
-
-    openModal(id) {
-        document.getElementById('modal-overlay').classList.remove('hidden');
-        document.getElementById(id).classList.remove('hidden');
+    toggleEmoji() {
+        const p = document.getElementById('emoji-picker');
+        p.classList.toggle('hidden');
+        const grid = document.getElementById('emoji-grid');
+        grid.innerHTML = '';
+        ['😀','😂','😍','🔥','🙌','✨','🚀','🎉','❤️','👍'].forEach(e => {
+            const span = document.createElement('span');
+            span.innerText = e;
+            span.onclick = () => {
+                document.getElementById('msg-input').value += e;
+                p.classList.add('hidden');
+            };
+            grid.appendChild(span);
+        });
     },
-
-    closeModals() {
-        document.getElementById('modal-overlay').classList.add('hidden');
-        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-    },
-
     toggleStickers() {
-        document.getElementById('sticker-box').classList.toggle('hidden');
+        document.getElementById('sticker-picker').classList.toggle('hidden');
+        this.renderStickers('default');
     },
-
     renderStickers(type) {
         const grid = document.getElementById('sticker-grid');
         grid.innerHTML = '';
-        const list = ['https://fonts.gstatic.com/s/e/notoemoji/latest/1f600/512.gif', 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/512.gif', 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.gif'];
+        const list = type === 'default' ? ['https://fonts.gstatic.com/s/e/notoemoji/latest/1f600/512.gif'] : state.stickers;
         list.forEach(url => {
             const img = document.createElement('img');
             img.src = url;
             img.onclick = () => {
-                const html = `<img src="${url}" style="width:80px">`;
-                chat.send(html); // Немного упростим для примера
-                this.toggleStickers();
+                chat.send(`<img src="${url}" style="width:100px">`);
+                document.getElementById('sticker-picker').classList.add('hidden');
             };
             grid.appendChild(img);
         });
     },
-
-    verifyInfo() {
-        alert("Для получения синей галочки отправьте видео с лицом и фразой 'tatarsms verify' на daniil.kokorin6858569@gmail.com");
+    openModal(id) {
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        document.getElementById(id).classList.remove('hidden');
+        if (id === 'settings-modal') {
+            document.getElementById('set-avatar-preview').src = state.me.avatar;
+            document.getElementById('verif-status').innerText = state.me.verified ? "Верифицирован ✅" : "Нет";
+            if (state.me.isAdmin) document.getElementById('admin-panel').classList.remove('hidden');
+        }
+    },
+    closeModals() {
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+    },
+    saveSettings() {
+        state.me.avatar = document.getElementById('set-avatar-preview').src;
+        document.getElementById('my-avatar-img').src = state.me.avatar;
+        this.closeModals();
     }
 };
 
 // --- CALLS ---
 const calls = {
     async init(video) {
-        try {
-            state.localStream = await navigator.mediaDevices.getUserMedia({ video, audio: true });
-            document.getElementById('local-video').srcObject = state.localStream;
-            ui.openModal('call-modal');
-            
-            const call = state.peer.call(state.activeChatId, state.localStream);
-            this.handleCall(call);
-        } catch (e) { alert("Ошибка доступа к камере/микрофону"); }
+        const stream = await navigator.mediaDevices.getUserMedia({ video, audio: true });
+        state.localStream = stream;
+        document.getElementById('local-video').srcObject = stream;
+        ui.openModal('call-modal');
+        const call = state.peer.call(state.activeChat, stream);
+        this.handleCall(call);
     },
-
     answerUI(call) {
         ui.openModal('call-modal');
-        document.getElementById('call-user-name').innerText = "Входящий от " + call.peer;
+        document.getElementById('call-user-title').innerText = "Вызов от " + call.peer;
         document.getElementById('btn-accept').onclick = async () => {
-            state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('local-video').srcObject = state.localStream;
-            call.answer(state.localStream);
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            state.localStream = stream;
+            document.getElementById('local-video').srcObject = stream;
+            call.answer(stream);
             this.handleCall(call);
+            document.getElementById('btn-accept').classList.add('hidden');
         };
     },
-
     handleCall(call) {
         state.currentCall = call;
-        call.on('stream', (remoteStream) => {
-            document.getElementById('remote-video').srcObject = remoteStream;
-        });
-        document.getElementById('btn-decline').onclick = () => {
-            call.close();
-            ui.closeModals();
-        };
+        call.on('stream', s => document.getElementById('remote-video').srcObject = s);
     }
 };
 
-// --- ADMIN ---
-const admin = {
-    giveBadge() {
-        const target = document.getElementById('verify-target-id').value.trim();
-        if (!target) return;
-        const conn = state.peer.connect(target);
-        conn.on('open', () => {
-            conn.send({ type: 'verif_signal' });
-            alert("Галочка выдана!");
-        });
-    }
-};
+// --- HELPERS ---
+function handleFile(input, previewId) {
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = rs => document.getElementById(previewId).src = rs.target.result;
+        reader.readAsDataURL(file);
+    };
+}
+handleFile(document.getElementById('reg-avatar-input'), 'reg-avatar-preview');
+handleFile(document.getElementById('set-avatar-input'), 'set-avatar-preview');
+handleFile(document.getElementById('group-avatar-input'), 'group-avatar-preview');
 
-// --- GLOBAL SEARCH ---
-document.getElementById('global-search').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        const id = e.target.value.trim();
-        if (id && id !== state.me.id) {
-            ui.openChat(id, id);
-            e.target.value = '';
+const stickers = {
+    add() {
+        const url = document.getElementById('sticker-url-input').value;
+        if(url) {
+            state.stickers.push(url);
+            localStorage.setItem('tat_stickers', JSON.stringify(state.stickers));
+            ui.renderStickers('custom');
         }
     }
-});
+};
 
-// Отправка по Enter
-document.getElementById('msg-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') chat.send();
-});
+const admin = {
+    verify() {
+        const tid = document.getElementById('admin-target-id').value;
+        const conn = state.peer.connect(tid);
+        conn.on('open', () => conn.send({ type: 'verif' }));
+        alert("Верификация отправлена!");
+    }
+};
+
+document.getElementById('peer-search').onkeypress = e => {
+    if (e.key === 'Enter') {
+        const id = e.target.value.trim();
+        if (id && !state.friends.includes(id)) {
+            state.friends.push(id);
+            localStorage.setItem('tat_friends', JSON.stringify(state.friends));
+            ui.renderFriends();
+            ui.selectChat(id, id);
+        }
+    }
+};
