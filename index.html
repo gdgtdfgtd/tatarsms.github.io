@@ -11,17 +11,18 @@
     <!-- 🔐 Авторизация -->
     <div id="auth-screen" class="screen active">
         <div class="dragon-logo">
-            <div class="dragon" id="animated-dragon">
+            <div class="dragon-container">
+                <div class="dragon-body"></div>
                 <div class="dragon-head">
                     <div class="dragon-eye"></div>
                     <div class="dragon-horn"></div>
                 </div>
-                <div class="dragon-body">
-                    <div class="dragon-wing"></div>
-                    <div class="dragon-tail"></div>
-                </div>
+                <div class="dragon-wing"></div>
+                <div class="dragon-tail"></div>
+                <div class="dragon-fire"></div>
             </div>
             <h1>Dragon Messenger</h1>
+            <p>Мессенджер с огненным драконом</p>
         </div>
         
         <div class="auth-container">
@@ -51,7 +52,7 @@
         <!-- Левая панель -->
         <div class="sidebar">
             <div class="server-header">
-                <div class="dragon-mini" id="mini-dragon">
+                <div class="dragon-mini">
                     <div class="dragon-mini-head"></div>
                 </div>
                 <span>Dragon Messenger</span>
@@ -90,10 +91,26 @@
             
             <div class="channels-list" id="friends-list">
                 <!-- Список друзей -->
+                <div class="friend-item">
+                    <div class="friend-avatar" style="background: #ff6b6b"></div>
+                    <div class="friend-info">
+                        <span class="friend-name">Администратор</span>
+                        <span class="friend-status">online</span>
+                    </div>
+                </div>
             </div>
             
             <div class="channels-list hidden" id="groups-list">
                 <!-- Список групп -->
+                <div class="group-item">
+                    <div class="group-avatar" style="background: #4ecdc4">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="group-info">
+                        <span class="group-name">Общий чат</span>
+                        <span class="group-members">1 участник</span>
+                    </div>
+                </div>
             </div>
             
             <div class="channels-list hidden" id="discover-list">
@@ -102,7 +119,9 @@
                     <input type="text" id="search-users" placeholder="Найти людей...">
                     <button id="search-btn"><i class="fas fa-search"></i></button>
                 </div>
-                <div id="search-results"></div>
+                <div id="search-results">
+                    <!-- Результаты поиска -->
+                </div>
             </div>
         </div>
 
@@ -120,6 +139,14 @@
 
             <div class="messages-container" id="messages-container">
                 <!-- Сообщения -->
+                <div class="message">
+                    <div class="message-avatar" style="background: #ff6b6b"></div>
+                    <div class="message-content">
+                        <span class="message-author">Администратор</span>
+                        <span class="message-time">12:00</span>
+                        <div class="message-text">Добро пожаловать в Dragon Messenger! 🐉</div>
+                    </div>
+                </div>
             </div>
 
             <div class="message-input-container">
@@ -142,6 +169,7 @@
                         <span class="emoji">😀</span><span class="emoji">😂</span><span class="emoji">😍</span>
                         <span class="emoji">🤔</span><span class="emoji">😎</span><span class="emoji">🥳</span>
                         <span class="emoji">❤️</span><span class="emoji">🔥</span><span class="emoji">👍</span>
+                        <span class="emoji">🎉</span><span class="emoji">✨</span><span class="emoji">🐉</span>
                     </div>
                 </div>
             </div>
@@ -151,10 +179,17 @@
         <div class="members-panel">
             <div class="members-header">
                 <span>Участники</span>
-                <span class="members-count">0</span>
+                <span class="members-count">1</span>
             </div>
             <div class="members-list" id="members-list">
                 <!-- Список участников -->
+                <div class="member-item">
+                    <div class="member-avatar" style="background: #ff6b6b"></div>
+                    <div class="member-info">
+                        <span class="member-name">Администратор</span>
+                        <span class="member-status">online</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -163,10 +198,10 @@
             <!-- Настройки -->
             <div class="modal hidden" id="settings-modal">
                 <div class="modal-content">
-                    <h2>Настройки</h2>
+                    <h2>Настройки профиля</h2>
                     <div class="setting-item">
-                        <label>Никнейм:</label>
-                        <input type="text" id="change-nickname">
+                        <label>Ваш никнейм:</label>
+                        <input type="text" id="change-nickname" placeholder="Введите новый никнейм">
                     </div>
                     <div class="setting-item">
                         <label>Статус:</label>
@@ -176,7 +211,10 @@
                             <option value="dnd">Не беспокоить</option>
                         </select>
                     </div>
-                    <button class="btn-primary" id="save-settings">Сохранить</button>
+                    <div class="modal-actions">
+                        <button class="btn-primary" id="save-settings">Сохранить</button>
+                        <button class="btn-secondary" onclick="closeModal('settings-modal')">Отмена</button>
+                    </div>
                 </div>
             </div>
 
@@ -184,8 +222,29 @@
             <div class="modal hidden" id="add-friend-modal">
                 <div class="modal-content">
                     <h2>Добавить друга</h2>
-                    <input type="text" id="friend-username" placeholder="Имя пользователя#ID">
-                    <button class="btn-primary" id="send-friend-request">Отправить заявку</button>
+                    <div class="setting-item">
+                        <label>Имя пользователя:</label>
+                        <input type="text" id="friend-username" placeholder="username#id">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-primary" id="send-friend-request">Отправить заявку</button>
+                        <button class="btn-secondary" onclick="closeModal('add-friend-modal')">Отмена</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Создание группы -->
+            <div class="modal hidden" id="create-group-modal">
+                <div class="modal-content">
+                    <h2>Создать группу</h2>
+                    <div class="setting-item">
+                        <label>Название группы:</label>
+                        <input type="text" id="group-name" placeholder="Введите название группы">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-primary" id="create-group">Создать</button>
+                        <button class="btn-secondary" onclick="closeModal('create-group-modal')">Отмена</button>
+                    </div>
                 </div>
             </div>
         </div>
