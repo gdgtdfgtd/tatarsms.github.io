@@ -1,75 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tatarsms | P2P Messenger</title>
-    <!-- Fonts & Icons -->
+    
+    <!-- Внешние ресурсы (CDN) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- PeerJS CDN -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* --- DISCORD DARK THEME STYLE --- */
+        :root {
+            --bg-main: #36393f;
+            --bg-sidebar: #2f3136;
+            --bg-servers: #202225;
+            --accent: #5865f2;
+            --text-main: #dcddde;
+            --text-muted: #8e9297;
+            --success: #3ba55d;
+            --danger: #ed4245;
+            --glass: rgba(32, 34, 37, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-main); color: var(--text-main); overflow: hidden; height: 100vh; }
+
+        #app { display: flex; height: 100vh; }
+
+        /* Sidebar */
+        .sidebar { display: flex; width: 312px; height: 100%; }
+        .server-list { width: 72px; background: var(--bg-servers); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; }
+        .server-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--text-main); }
+        .server-icon:hover, .server-icon.active { border-radius: 16px; background: var(--accent); color: white; }
+
+        .contact-panel { flex: 1; background: var(--bg-sidebar); display: flex; flex-direction: column; }
+        .profile-summary { padding: 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.2); }
+        .profile-summary img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--success); }
+        .profile-summary .info { flex: 1; font-size: 0.9rem; overflow: hidden; }
+        .profile-summary .info span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .status-text { font-size: 0.7rem; color: var(--text-muted); }
+
+        .search-bar { padding: 10px; }
+        .search-bar input { width: 100%; background: var(--bg-servers); border: none; padding: 8px 12px; border-radius: 4px; color: white; outline: none; }
+
+        .friends-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .friend-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; margin-bottom: 2px; }
+        .friend-item:hover { background: rgba(255,255,255,0.05); }
+        .friend-item.active { background: rgba(79, 84, 92, 0.4); color: white; }
+        .badge-verified { color: #00a8fc; margin-left: 5px; font-size: 0.8rem; }
+
+        /* Chat Area */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-main); }
+        .chat-header { height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.2); z-index: 10; }
+        .chat-actions button { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; margin-left: 15px; transition: 0.2s; }
+        .chat-actions button:hover { color: var(--text-main); transform: scale(1.1); }
+
+        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .message { animation: fadeIn 0.3s ease; display: flex; flex-direction: column; max-width: 70%; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message.sent { align-self: flex-end; align-items: flex-end; }
+        .msg-content { background: var(--bg-sidebar); padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; line-height: 1.4; color: var(--text-main); }
+        .sent .msg-content { background: var(--accent); color: white; }
+        .msg-meta { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
+
+        .input-container { padding: 20px; position: relative; }
+        .input-wrapper { background: #40444b; border-radius: 8px; display: flex; align-items: center; padding: 0 15px; }
+        #message-input { flex: 1; background: none; border: none; padding: 12px 0; color: white; outline: none; }
+        .input-btns { display: flex; gap: 15px; color: var(--text-muted); }
+        .input-btns i { cursor: pointer; transition: 0.2s; }
+        .input-btns i:hover { color: white; }
+
+        /* Modals & Glassmorphism */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: 0.3s; }
+        .modal { background: var(--bg-main); width: 440px; padding: 25px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); position: relative; }
+        .modal h2 { margin-bottom: 20px; font-weight: 600; }
+        .setting-item { margin-bottom: 20px; }
+        .setting-item label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 8px; }
+        .setting-item input { width: 100%; background: var(--bg-servers); border: none; padding: 10px; color: white; border-radius: 3px; outline: none; }
+
+        /* Call System UI */
+        .call-modal-content { text-align: center; }
+        .pulsate { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; border: 3px solid var(--accent); animation: pulse-border 1.5s infinite; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(88, 101, 242, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(88, 101, 242, 0); } 100% { box-shadow: 0 0 0 0 rgba(88, 101, 242, 0); } }
+        .video-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 20px 0; background: #000; border-radius: 8px; overflow: hidden; position: relative; min-height: 250px; }
+        #remote-video { width: 100%; height: 100%; object-fit: cover; }
+        #local-video { width: 100px; height: 70px; position: absolute; bottom: 10px; right: 10px; border-radius: 4px; border: 2px solid var(--accent); object-fit: cover; }
+        .call-btns { display: flex; gap: 10px; justify-content: center; }
+        .btn { border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-primary { background: var(--accent); }
+
+        /* Stickers */
+        .sticker-picker { position: absolute; bottom: 80px; right: 20px; width: 280px; background: var(--bg-sidebar); border-radius: 8px; border: 1px solid var(--bg-servers); padding: 10px; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; }
+        .sticker-grid img { width: 100%; cursor: pointer; border-radius: 4px; }
+        .sticker-grid img:hover { background: rgba(255,255,255,0.1); }
+
+        .hidden { display: none !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-servers); }
+        ::-webkit-scrollbar-thumb { background: #18191c; border-radius: 10px; }
+    </style>
 </head>
 <body>
+
     <div id="app">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="server-list">
-                <div class="server-icon active" title="Direct Messages"><i class="fas fa-comment-dots"></i></div>
-                <div class="server-icon action" onclick="ui.toggleModal('group-modal')"><i class="fas fa-plus"></i></div>
+                <div class="server-icon active"><i class="fas fa-comment"></i></div>
+                <div class="server-icon" onclick="alert('Community features coming soon!')"><i class="fas fa-compass"></i></div>
             </div>
             <div class="contact-panel">
-                <div class="profile-summary" onclick="ui.toggleModal('settings-modal')">
-                    <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=tatar" alt="avatar">
+                <div class="profile-summary" onclick="ui.openModal('settings-modal')">
+                    <img id="my-avatar-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=tatar" alt="me">
                     <div class="info">
-                        <span id="my-nickname">Loading...</span>
-                        <span id="my-status" class="status-text">Online</span>
+                        <span id="my-nickname-display">Loading...</span>
+                        <span class="status-text">Online</span>
                     </div>
-                    <i class="fas fa-cog"></i>
+                    <i class="fas fa-cog" style="color: var(--text-muted)"></i>
                 </div>
                 <div class="search-bar">
-                    <input type="text" id="peer-search" placeholder="Find or start a chat...">
+                    <input type="text" id="peer-search" placeholder="Find by nickname...">
                 </div>
-                <nav class="friends-list" id="friends-list">
-                    <!-- Friends injected here -->
-                </nav>
+                <div class="friends-list" id="friends-list">
+                    <!-- Friends List -->
+                </div>
             </div>
         </aside>
 
         <!-- Main Chat Area -->
-        <main class="chat-area" id="chat-welcome">
-            <div class="welcome-screen">
-                <i class="fas fa-comments"></i>
-                <h1>Welcome to tatarsms</h1>
-                <p>Select a friend to start chatting via P2P.</p>
+        <main class="chat-area" id="welcome-screen">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted)">
+                <i class="fas fa-comments" style="font-size: 5rem; margin-bottom: 20px; opacity: 0.1"></i>
+                <h2>No Active Chat</h2>
+                <p>Search for a nickname to start a P2P session.</p>
             </div>
         </main>
 
-        <main class="chat-area hidden" id="chat-main">
+        <main class="chat-area hidden" id="chat-window">
             <header class="chat-header">
-                <div class="user-info">
-                    <span class="user-name" id="active-chat-name">Nickname</span>
-                    <span id="active-chat-badge"></span>
+                <div>
+                    <strong id="chat-user-name">Nickname</strong>
+                    <span id="chat-user-badge"></span>
                 </div>
                 <div class="chat-actions">
-                    <button onclick="calls.initiate(false)"><i class="fas fa-phone"></i></button>
-                    <button onclick="calls.initiate(true)"><i class="fas fa-video"></i></button>
+                    <button onclick="calls.start(false)"><i class="fas fa-phone"></i></button>
+                    <button onclick="calls.start(true)"><i class="fas fa-video"></i></button>
                 </div>
             </header>
             <div class="messages" id="message-container"></div>
             <div class="input-container">
-                <div class="attachment-btn" onclick="ui.toggleStickerPicker()"><i class="far fa-sticky-note"></i></div>
-                <input type="text" id="message-input" placeholder="Message #nickname...">
-                <div class="sticker-picker hidden" id="sticker-picker">
-                    <div class="sticker-tabs">
-                        <button onclick="ui.showStickers('default')">Default</button>
-                        <button onclick="ui.showStickers('custom')">Custom</button>
+                <div class="input-wrapper">
+                    <input type="text" id="message-input" placeholder="Message...">
+                    <div class="input-btns">
+                        <i class="far fa-sticky-note" onclick="ui.toggleStickers()"></i>
+                        <i class="fas fa-paper-plane" onclick="sendMessage()"></i>
                     </div>
+                </div>
+                <!-- Sticker Picker -->
+                <div id="sticker-picker" class="sticker-picker hidden">
                     <div class="sticker-grid" id="sticker-grid"></div>
-                    <div class="add-sticker">
-                        <input type="text" id="sticker-url" placeholder="Paste Image URL">
-                        <button onclick="stickers.add()">Add</button>
+                    <div style="margin-top:10px; display:flex; gap:5px">
+                        <input type="text" id="custom-sticker-url" placeholder="Image URL" style="flex:1; background:var(--bg-main); border:none; color:white; font-size:10px; padding:5px">
+                        <button onclick="stickers.add()" class="btn btn-primary" style="padding:5px 10px; font-size:10px">Add</button>
                     </div>
                 </div>
             </div>
@@ -78,61 +176,335 @@
 
     <!-- Modals -->
     <div class="modal-overlay hidden" id="modal-overlay">
-        <!-- Settings Modal -->
+        <!-- Settings -->
         <div class="modal hidden" id="settings-modal">
             <h2>User Settings</h2>
             <div class="setting-item">
-                <label>Avatar URL</label>
-                <input type="text" id="set-avatar" placeholder="https://...">
+                <label>Avatar Image URL</label>
+                <input type="text" id="settings-avatar" placeholder="https://...">
             </div>
             <div class="setting-item">
-                <label>Nickname (Requires Restart)</label>
-                <input type="text" id="set-nickname">
+                <label>Profile Status</label>
+                <div id="status-display" style="color:var(--text-muted); font-size:0.9rem">Not Verified</div>
+                <button class="btn btn-primary" style="margin-top:10px" onclick="ui.showVerifyAlert()">Get Verified</button>
             </div>
-            <div class="verification-box">
-                <p>Status: <span id="verif-status">Not Verified</span> <span id="verif-badge-ui"></span></p>
-                <button class="btn-verify" onclick="ui.showVerificationInfo()">Get Verified</button>
+            <div id="admin-zone" class="hidden" style="border-top:1px solid #444; padding-top:15px">
+                <label style="color:var(--accent)">Admin: Verify User ID</label>
+                <input type="text" id="admin-verify-id" placeholder="Enter Nickname" style="width:100%; background:#202225; color:white; border:none; padding:10px; margin:10px 0">
+                <button class="btn btn-success" onclick="admin.verify()">Grant Verification</button>
             </div>
-            <div id="admin-panel" class="hidden">
-                <hr>
-                <h3>Admin Panel</h3>
-                <input type="text" id="admin-target-peer" placeholder="Target Peer ID">
-                <button onclick="admin.verifyUser()">Verify Peer</button>
+            <div style="text-align:right; margin-top:20px">
+                <button class="btn btn-primary" onclick="ui.closeModals()">Save & Close</button>
             </div>
-            <button class="btn-close" onclick="ui.closeModals()">Save & Close</button>
         </div>
 
-        <!-- Incoming Call Modal -->
+        <!-- Call Modal -->
         <div class="modal hidden" id="call-modal">
-            <div class="call-ui">
-                <div class="pulse-container">
-                    <img id="call-avatar" src="" class="pulsating-avatar">
+            <div class="call-modal-content">
+                <div id="call-init-ui">
+                    <div class="pulsate"></div>
+                    <h2 id="call-status">Calling...</h2>
+                    <div class="call-btns">
+                        <button id="answer-btn" class="btn btn-success hidden">Answer</button>
+                        <button id="hangup-btn" class="btn btn-danger">Decline</button>
+                    </div>
                 </div>
-                <h2 id="call-name">Incoming Call...</h2>
-                <div class="video-preview">
-                    <video id="remote-video" autoplay playsinline></video>
-                    <video id="local-video" autoplay muted playsinline></video>
-                </div>
-                <div class="call-controls">
-                    <button class="btn-accept" id="btn-accept"><i class="fas fa-phone"></i> Accept</button>
-                    <button class="btn-decline" id="btn-decline"><i class="fas fa-phone-slash"></i> Decline</button>
-                    <button class="btn-hangup hidden" id="btn-hangup"><i class="fas fa-phone-slash"></i> End</button>
+                <div id="video-area" class="hidden">
+                    <div class="video-grid">
+                        <video id="remote-video" autoplay playsinline></video>
+                        <video id="local-video" autoplay muted playsinline></video>
+                    </div>
+                    <button class="btn btn-danger" onclick="calls.end()">End Call</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div id="auth-overlay" class="modal-overlay">
+    <!-- Auth Overlay -->
+    <div class="modal-overlay" id="auth-overlay">
         <div class="modal">
-            <h2>Join tatarsms</h2>
-            <p>Enter your unique nickname to start.</p>
-            <input type="text" id="login-id" placeholder="Your Unique Nickname">
-            <input type="password" id="admin-pass" placeholder="Admin Password (Optional)">
-            <button class="btn-verify" onclick="auth.login()">Connect</button>
+            <h2 style="text-align:center">tatarsms</h2>
+            <div class="setting-item">
+                <label>Choose a Nickname (Your ID)</label>
+                <input type="text" id="login-nick" placeholder="e.g. tatar_king">
+            </div>
+            <div class="setting-item">
+                <label>Admin Password (Optional)</label>
+                <input type="password" id="login-pass">
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="auth.login()">Connect to Network</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // --- DATA & STATE ---
+        const ADMIN_ID = "tatar_506";
+        const ADMIN_PASS = "spinogrz666";
+
+        let state = {
+            me: { id: '', avatar: '', isVerified: false, isAdmin: false },
+            friends: JSON.parse(localStorage.getItem('tatars_friends') || '[]'),
+            history: JSON.parse(localStorage.getItem('tatars_history') || '{}'),
+            stickers: JSON.parse(localStorage.getItem('tatars_stickers') || []),
+            activePeer: null,
+            peer: null,
+            localStream: null,
+            currentCall: null
+        };
+
+        // --- AUTH ---
+        const auth = {
+            login() {
+                const id = document.getElementById('login-nick').value.trim();
+                const pass = document.getElementById('login-pass').value.trim();
+                if (!id) return alert("Nickname required");
+
+                state.me.id = id;
+                state.me.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+                if (id === ADMIN_ID && pass === ADMIN_PASS) {
+                    state.me.isAdmin = true;
+                    state.me.isVerified = true;
+                }
+
+                document.getElementById('auth-overlay').classList.add('hidden');
+                initPeer();
+                ui.initProfile();
+            }
+        };
+
+        // --- PEER ENGINE ---
+        function initPeer() {
+            state.peer = new Peer(state.me.id);
+
+            state.peer.on('open', (id) => {
+                document.getElementById('my-nickname-display').innerText = id;
+                ui.renderFriends();
+            });
+
+            state.peer.on('connection', (conn) => {
+                conn.on('data', (data) => handleIncomingData(data, conn.peer));
+            });
+
+            state.peer.on('call', (call) => {
+                state.currentCall = call;
+                ui.showIncomingCall(call.peer);
+            });
+        }
+
+        function handleIncomingData(data, senderId) {
+            if (data.type === 'chat') {
+                saveMsg(senderId, data.content, 'received');
+                if (state.activePeer === senderId) ui.renderMessages();
+                ui.renderFriends();
+            } else if (data.type === 'request') {
+                if (!state.friends.find(f => f.id === senderId)) {
+                    state.friends.push({ id: senderId, verified: false });
+                    saveFriends();
+                    ui.renderFriends();
+                }
+            } else if (data.type === 'verify_badge') {
+                const friend = state.friends.find(f => f.id === senderId);
+                if (friend) { friend.verified = true; saveFriends(); ui.renderFriends(); }
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const val = input.value.trim();
+            if (!val || !state.activePeer) return;
+
+            const conn = state.peer.connect(state.activePeer);
+            conn.on('open', () => {
+                conn.send({ type: 'chat', content: val });
+                saveMsg(state.activePeer, val, 'sent');
+                ui.renderMessages();
+                input.value = '';
+            });
+        }
+
+        // --- CALLS ---
+        const calls = {
+            async start(video) {
+                try {
+                    state.localStream = await navigator.mediaDevices.getUserMedia({ video, audio: true });
+                    document.getElementById('local-video').srcObject = state.localStream;
+                    
+                    ui.openModal('call-modal');
+                    document.getElementById('call-init-ui').classList.remove('hidden');
+                    document.getElementById('video-area').classList.add('hidden');
+
+                    const call = state.peer.call(state.activePeer, state.localStream);
+                    this.setupCallHandlers(call);
+                } catch (e) { alert("Camera/Mic access denied"); }
+            },
+            setupCallHandlers(call) {
+                state.currentCall = call;
+                call.on('stream', (remoteStream) => {
+                    document.getElementById('remote-video').srcObject = remoteStream;
+                    document.getElementById('call-init-ui').classList.add('hidden');
+                    document.getElementById('video-area').classList.remove('hidden');
+                });
+                call.on('close', () => this.end());
+            },
+            end() {
+                if (state.currentCall) state.currentCall.close();
+                if (state.localStream) state.localStream.getTracks().forEach(t => t.stop());
+                ui.closeModals();
+            }
+        };
+
+        // --- UI ---
+        const ui = {
+            renderFriends() {
+                const list = document.getElementById('friends-list');
+                list.innerHTML = '';
+                state.friends.forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = `friend-item ${state.activePeer === f.id ? 'active' : ''}`;
+                    div.onclick = () => this.selectChat(f.id);
+                    div.innerHTML = `
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${f.id}" style="width:32px; border-radius:50%">
+                        <div style="flex:1">
+                            <strong>${f.id}</strong> ${f.verified ? '<i class="fas fa-check-circle badge-verified"></i>' : ''}
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            },
+            selectChat(id) {
+                state.activePeer = id;
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('chat-window').classList.remove('hidden');
+                document.getElementById('chat-user-name').innerText = id;
+                this.renderFriends();
+                this.renderMessages();
+            },
+            renderMessages() {
+                const container = document.getElementById('message-container');
+                container.innerHTML = '';
+                const msgs = state.history[state.activePeer] || [];
+                msgs.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `message ${m.type}`;
+                    div.innerHTML = `
+                        <span class="msg-meta">${m.type === 'sent' ? 'You' : state.activePeer}</span>
+                        <div class="msg-content">${m.content}</div>
+                    `;
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            },
+            openModal(id) {
+                document.getElementById('modal-overlay').classList.remove('hidden');
+                document.getElementById(id).classList.remove('hidden');
+            },
+            closeModals() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+                const newAv = document.getElementById('settings-avatar').value;
+                if(newAv) document.getElementById('my-avatar-img').src = newAv;
+            },
+            showVerifyAlert() {
+                alert("To receive a blue checkmark, send a video request to daniil.kokorin6858569@gmail.com. Admin will manually verify you.");
+            },
+            showIncomingCall(peerId) {
+                this.openModal('call-modal');
+                document.getElementById('call-status').innerText = `Call from ${peerId}`;
+                document.getElementById('answer-btn').classList.remove('hidden');
+                document.getElementById('answer-btn').onclick = async () => {
+                    state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    document.getElementById('local-video').srcObject = state.localStream;
+                    state.currentCall.answer(state.localStream);
+                    calls.setupCallHandlers(state.currentCall);
+                };
+                document.getElementById('hangup-btn').onclick = () => calls.end();
+            },
+            initProfile() {
+                if (state.me.isAdmin) document.getElementById('admin-zone').classList.remove('hidden');
+                document.getElementById('status-display').innerHTML = state.me.isVerified ? 'Verified <i class="fas fa-check-circle badge-verified"></i>' : 'Standard Account';
+                this.renderStickers();
+            },
+            toggleStickers() { document.getElementById('sticker-picker').classList.toggle('hidden'); },
+            renderStickers() {
+                const grid = document.getElementById('sticker-grid');
+                grid.innerHTML = '';
+                const defaults = [
+                    'https://fonts.gstatic.com/s/e/notoemoji/latest/1f600/512.gif',
+                    'https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/512.gif',
+                    'https://fonts.gstatic.com/s/e/notoemoji/latest/1f60d/512.gif'
+                ];
+                [...defaults, ...state.stickers].forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.onclick = () => {
+                        const html = `<img src="${url}" style="width:100px; display:block">`;
+                        const conn = state.peer.connect(state.activePeer);
+                        conn.on('open', () => {
+                            conn.send({ type: 'chat', content: html });
+                            saveMsg(state.activePeer, html, 'sent');
+                            ui.renderMessages();
+                        });
+                        ui.toggleStickers();
+                    };
+                    grid.appendChild(img);
+                });
+            }
+        };
+
+        // --- HELPERS ---
+        function saveMsg(pid, content, type) {
+            if (!state.history[pid]) state.history[pid] = [];
+            state.history[pid].push({ content, type, time: Date.now() });
+            localStorage.setItem('tatars_history', JSON.stringify(state.history));
+        }
+        function saveFriends() { localStorage.setItem('tatars_friends', JSON.stringify(state.friends)); }
+
+        // --- LISTENERS ---
+        document.getElementById('peer-search').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const target = e.target.value.trim();
+                if (target === state.me.id) return;
+                const conn = state.peer.connect(target);
+                conn.on('open', () => {
+                    conn.send({ type: 'request' });
+                    if (!state.friends.find(f => f.id === target)) {
+                        state.friends.push({ id: target, verified: false });
+                        saveFriends();
+                    }
+                    ui.selectChat(target);
+                    e.target.value = '';
+                });
+            }
+        });
+
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        const stickers = {
+            add() {
+                const url = document.getElementById('custom-sticker-url').value;
+                if (url) {
+                    state.stickers.push(url);
+                    localStorage.setItem('tatars_stickers', JSON.stringify(state.stickers));
+                    ui.renderStickers();
+                    document.getElementById('custom-sticker-url').value = '';
+                }
+            }
+        };
+
+        const admin = {
+            verify() {
+                const tid = document.getElementById('admin-verify-id').value.trim();
+                if (tid) {
+                    const conn = state.peer.connect(tid);
+                    conn.on('open', () => {
+                        conn.send({ type: 'verify_badge' });
+                        alert("Badge granted to " + tid);
+                    });
+                }
+            }
+        }
+    </script>
 </body>
 </html>
