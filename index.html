@@ -4,432 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tatarsms | P2P Ecosystem</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-
-    <style>
-        :root {
-            --bg-darker: #202225;
-            --bg-sidebar: #2f3136;
-            --bg-main: #36393f;
-            --accent: #5865f2;
-            --accent-hover: #4752c4;
-            --text-white: #ffffff;
-            --text-muted: #b9bbbe;
-            --danger: #ed4245;
-            --success: #3ba55d;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg-darker); color: var(--text-white); overflow: hidden; height: 100vh; }
-
-        /* --- AUTH SCREEN --- */
-        #auth-screen {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle at center, #2f3136 0%, #202225 100%);
-            display: flex; align-items: center; justify-content: center; z-index: 9999;
-        }
-        .auth-card {
-            background: var(--bg-main); width: 400px; padding: 40px; border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5); text-align: center;
-        }
-        .auth-card h1 { font-size: 28px; margin-bottom: 20px; color: var(--accent); }
-        .input-group { text-align: left; margin-bottom: 15px; }
-        .input-group label { display: block; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-        .input-group input { width: 100%; background: var(--bg-darker); border: 1px solid transparent; padding: 12px; color: white; border-radius: 4px; outline: none; }
-        .input-group input:focus { border-color: var(--accent); }
-        .btn-login { width: 100%; background: var(--accent); color: white; border: none; padding: 14px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-login:hover { background: var(--accent-hover); }
-
-        /* --- APP LAYOUT --- */
-        #app { display: flex; height: 100vh; }
-        .hidden { display: none !important; }
-
-        /* LEFT NAVIGATION (SERVERS) */
-        .nav-rail { width: 72px; background: var(--bg-darker); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 10px; }
-        .nav-item { width: 48px; height: 48px; background: var(--bg-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
-        .nav-item img { width: 100%; height: 100%; object-fit: cover; }
-        .nav-item:hover, .nav-item.active { border-radius: 15px; background: var(--accent); color: white; }
-        .nav-divider { width: 32px; height: 2px; background: var(--bg-sidebar); border-radius: 1px; }
-
-        /* SIDEBAR (FRIENDS/GROUPS) */
-        .sidebar { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; font-weight: 700; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 2px; font-size: 14px; color: var(--text-muted); }
-        .item-row:hover, .item-row.active { background: rgba(255,255,255,0.05); color: white; }
-        .item-row img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
-
-        /* MAIN CHAT AREA */
-        .chat-area { flex: 1; background: var(--bg-main); display: flex; flex-direction: column; }
-        .chat-header { height: 50px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 70%; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .msg-content { padding: 10px; border-radius: 8px; background: var(--bg-sidebar); position: relative; }
-        .msg.sent { align-self: flex-end; }
-        .msg.sent .msg-content { background: var(--accent); }
-        .msg-author { font-size: 11px; margin-bottom: 4px; color: var(--text-muted); display: block; }
-        
-        .input-bar { padding: 20px; }
-        .input-wrap { background: #40444b; border-radius: 8px; display: flex; align-items: center; padding: 0 15px; }
-        #msg-input { flex: 1; background: none; border: none; padding: 12px; color: white; outline: none; }
-
-        /* MODALS */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal { background: var(--bg-main); padding: 30px; border-radius: 8px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .blue-tick { color: #00a8fc; margin-left: 5px; }
-
-        /* CALLS */
-        .video-box { background: #000; border-radius: 8px; overflow: hidden; position: relative; height: 200px; margin: 15px 0; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        #local-video { width: 80px; height: 60px; position: absolute; bottom: 10px; right: 10px; border: 2px solid white; border-radius: 4px; }
-    </style>
 </head>
 <body>
 
-    <!-- ОКНО ВХОДА -->
-    <div id="auth-screen">
+    <!-- ЭКРАН РЕГИСТРАЦИИ -->
+    <div id="auth-screen" class="auth-overlay">
         <div class="auth-card">
-            <h1>tatarsms</h1>
-            <div class="input-group">
-                <label>Ваш ID (Никнейм)</label>
-                <input type="text" id="login-id" placeholder="tatar_king">
+            <div class="auth-header">
+                <h1>tatarsms</h1>
+                <p>Создайте свой профиль</p>
             </div>
-            <div class="input-group" id="pass-group" style="display:none;">
-                <label>Пароль Админа</label>
-                <input type="password" id="login-pass">
+            <div class="reg-body">
+                <div class="avatar-upload-section">
+                    <label for="reg-avatar-input" class="avatar-label">
+                        <img id="reg-avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=tatar" alt="">
+                        <div class="upload-badge"><i class="fas fa-camera"></i></div>
+                    </label>
+                    <input type="file" id="reg-avatar-input" accept="image/*" hidden>
+                </div>
+                <div class="input-group">
+                    <label>Никнейм (Ваш ID)</label>
+                    <input type="text" id="reg-id" placeholder="Напр: tatar_king">
+                </div>
+                <div id="admin-pass-block" class="input-group hidden">
+                    <label>Пароль Администратора</label>
+                    <input type="password" id="reg-admin-pass">
+                </div>
+                <button class="btn-primary" onclick="auth.finish()">Начать общение</button>
+                <p class="admin-link" onclick="auth.toggleAdmin()">Я администратор</p>
             </div>
-            <button class="btn-login" onclick="login()">Войти</button>
-            <p id="admin-toggle" onclick="toggleAdmin()" style="margin-top:15px; font-size:12px; cursor:pointer; color:var(--text-muted)">Я администратор</p>
         </div>
     </div>
 
     <div id="app" class="hidden">
-        <!-- Навигация (Серверы/Группы) -->
+        <!-- Левая панель (Серверы/Группы) -->
         <nav class="nav-rail">
-            <div class="nav-item active" onclick="switchMode('dm')"><i class="fas fa-user"></i></div>
-            <div id="group-nav-list"></div>
+            <div class="nav-icon active" onclick="ui.switchTab('dm')"><i class="fas fa-comment"></i></div>
+            <div id="group-icons"></div>
             <div class="nav-divider"></div>
-            <div class="nav-item" onclick="openModal('create-group')"><i class="fas fa-plus"></i></div>
+            <div class="nav-icon plus" onclick="ui.openModal('create-group-modal')"><i class="fas fa-plus"></i></div>
         </nav>
 
-        <!-- Список друзей -->
+        <!-- Боковая панель (Контакты) -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <span id="sidebar-title">Друзья</span>
-                <i class="fas fa-cog" onclick="openModal('settings')" style="cursor:pointer"></i>
+            <div class="sidebar-header" onclick="ui.openModal('settings-modal')">
+                <div class="profile-block">
+                    <img id="my-avatar-img" src="" alt="">
+                    <div class="info">
+                        <span id="my-name-display">...</span>
+                        <small>В сети</small>
+                    </div>
+                </div>
+                <i class="fas fa-cog"></i>
             </div>
-            <div style="padding:10px;">
-                <input type="text" id="add-friend" placeholder="Добавить ID..." style="width:100%; background:var(--bg-darker); border:none; padding:8px; border-radius:4px; color:white; font-size:12px;">
+            <div class="search-bar">
+                <input type="text" id="peer-search" placeholder="Поиск ника...">
             </div>
-            <div class="sidebar-list" id="contact-list"></div>
+            <div class="contact-list" id="contact-list"></div>
         </aside>
 
         <!-- Чат -->
-        <main class="chat-area">
-            <header class="chat-header">
-                <div>
-                    <strong id="chat-target-name">Выберите чат</strong>
-                    <span id="chat-badge"></span>
-                </div>
-                <div>
-                    <i class="fas fa-phone" onclick="call(false)" style="margin-right:15px; cursor:pointer"></i>
-                    <i class="fas fa-video" onclick="call(true)" style="cursor:pointer"></i>
-                </div>
-            </header>
-            <div class="messages" id="messages"></div>
-            <div class="input-bar">
-                <div class="input-wrap">
-                    <input type="text" id="msg-input" placeholder="Написать сообщение...">
-                    <i class="fas fa-paper-plane" onclick="sendMsg()" style="cursor:pointer; color:var(--text-muted)"></i>
+        <main class="chat-main">
+            <div id="chat-empty" class="chat-empty">
+                <i class="fas fa-dove"></i>
+                <p>Выберите чат для начала общения</p>
+            </div>
+            
+            <div id="chat-active" class="chat-active hidden">
+                <header class="chat-top">
+                    <div class="target-info">
+                        <h3 id="active-name">...</h3>
+                        <span id="active-badge"></span>
+                    </div>
+                    <div class="chat-actions">
+                        <button onclick="calls.init(false)"><i class="fas fa-phone"></i></button>
+                        <button onclick="calls.init(true)"><i class="fas fa-video"></i></button>
+                    </div>
+                </header>
+                <div class="messages-view" id="messages-view"></div>
+                
+                <div class="input-container">
+                    <div class="input-toolbar">
+                        <button onclick="ui.toggleEmoji()"><i class="far fa-smile"></i></button>
+                        <button onclick="ui.toggleStickers()"><i class="far fa-sticky-note"></i></button>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="msg-input" placeholder="Введите сообщение...">
+                        <button onclick="chat.send()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+
+                    <!-- Emoji Picker -->
+                    <div id="emoji-picker" class="picker hidden">
+                        <div class="picker-grid" id="emoji-grid"></div>
+                    </div>
+                    <!-- Sticker Picker -->
+                    <div id="sticker-picker" class="picker hidden">
+                        <div class="picker-tabs">
+                            <span onclick="ui.renderStickers('default')">Default</span>
+                            <span onclick="ui.renderStickers('custom')">Custom</span>
+                        </div>
+                        <div class="picker-grid" id="sticker-grid"></div>
+                        <div class="add-sticker">
+                            <input type="text" id="sticker-url-input" placeholder="URL картинки">
+                            <button onclick="stickers.add()">Add</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- МОДАЛКИ -->
-    <div id="modal-overlay" class="overlay hidden">
+    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <div id="modal-overlay" class="modal-overlay hidden">
         <!-- Настройки -->
-        <div id="modal-settings" class="modal hidden">
-            <h2>Настройки профиля</h2>
-            <div class="input-group" style="margin-top:15px;">
-                <label>URL вашей аватарки</label>
-                <input type="text" id="set-my-avatar" placeholder="https://...">
+        <div id="settings-modal" class="modal hidden">
+            <h2>Настройки</h2>
+            <div class="avatar-upload-section">
+                <label for="set-avatar-input" class="avatar-label">
+                    <img id="set-avatar-preview" src="" alt="">
+                </label>
+                <input type="file" id="set-avatar-input" accept="image/*" hidden>
             </div>
-            <p style="font-size:13px; margin-bottom:15px;">Статус: <span id="my-verif-status">Обычный</span></p>
-            <button class="btn-login" style="background:var(--success)" onclick="saveProfile()">Сохранить</button>
-            
-            <div id="admin-tools" class="hidden" style="margin-top:20px; border-top:1px solid #444; padding-top:15px;">
-                <label style="color:var(--accent); font-size:10px; font-weight:700;">АДМИН: Выдать верификацию</label>
-                <input type="text" id="admin-target" placeholder="ID пользователя" style="width:100%; background:var(--bg-darker); border:none; padding:10px; color:white; margin:10px 0;">
-                <button class="btn-login" onclick="adminVerify()">Подтвердить пользователя</button>
+            <p>Статус: <span id="verif-status">Обычный</span></p>
+            <div id="admin-panel" class="admin-panel hidden">
+                <hr>
+                <h4>Админ-панель</h4>
+                <input type="text" id="admin-target-id" placeholder="ID пользователя">
+                <button class="btn-primary" onclick="admin.verify()">Верифицировать</button>
             </div>
-            <button class="btn-login" style="background:#555; margin-top:10px;" onclick="closeModals()">Закрыть</button>
+            <button class="btn-primary" onclick="ui.saveSettings()">Сохранить</button>
+            <button class="btn-text" onclick="ui.closeModals()">Закрыть</button>
         </div>
 
         <!-- Создание группы -->
-        <div id="modal-create-group" class="modal hidden">
-            <h2>Создать группу</h2>
-            <div class="input-group" style="margin-top:15px;">
-                <label>Название группы</label>
-                <input type="text" id="group-name" placeholder="Моя банда">
+        <div id="create-group-modal" class="modal hidden">
+            <h2>Создать канал</h2>
+            <div class="avatar-upload-section">
+                <label for="group-avatar-input" class="avatar-label">
+                    <img id="group-avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=group" alt="">
+                </label>
+                <input type="file" id="group-avatar-input" accept="image/*" hidden>
             </div>
             <div class="input-group">
-                <label>URL аватарки группы</label>
-                <input type="text" id="group-avatar" placeholder="https://...">
+                <label>Название группы</label>
+                <input type="text" id="group-name-input">
             </div>
-            <button class="btn-login" onclick="createGroup()">Создать</button>
-            <button class="btn-login" style="background:#555; margin-top:10px;" onclick="closeModals()">Отмена</button>
+            <button class="btn-primary" onclick="chat.createGroup()">Создать</button>
+            <button class="btn-text" onclick="ui.closeModals()">Отмена</button>
         </div>
 
         <!-- Звонок -->
-        <div id="modal-call" class="modal hidden">
-            <h2 id="call-label">Звонок...</h2>
-            <div class="video-box">
-                <video id="remote-video" autoplay playsinline></video>
-                <video id="local-video" autoplay muted playsinline></video>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button id="btn-answer" class="btn-login" style="background:var(--success)">Ответить</button>
-                <button class="btn-login" style="background:var(--danger)" onclick="endCall()">Сбросить</button>
+        <div id="call-modal" class="modal hidden call-modal">
+            <div class="call-ui">
+                <div class="caller-pulse"></div>
+                <h3 id="call-user-title">Звонок...</h3>
+                <div class="video-container">
+                    <video id="remote-video" autoplay playsinline></video>
+                    <video id="local-video" autoplay muted playsinline></video>
+                </div>
+                <div class="call-btns">
+                    <button class="btn-accept" id="btn-accept"><i class="fas fa-phone"></i></button>
+                    <button class="btn-decline" id="btn-decline"><i class="fas fa-phone-slash"></i></button>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const ADMIN_ID = "tatar_506";
-        const ADMIN_PASS = "spinogrz666";
-
-        let state = {
-            id: '',
-            avatar: localStorage.getItem('tat_my_avatar') || '',
-            verified: false,
-            isAdmin: false,
-            peer: null,
-            friends: JSON.parse(localStorage.getItem('tat_friends') || '[]'),
-            groups: JSON.parse(localStorage.getItem('tat_groups') || '[]'),
-            history: JSON.parse(localStorage.getItem('tat_history') || '{}'),
-            activeChat: null,
-            currentCall: null
-        };
-
-        function toggleAdmin() {
-            const group = document.getElementById('pass-group');
-            group.style.display = group.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function login() {
-            const id = document.getElementById('login-id').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-
-            if (!id) return alert("Введите ID");
-
-            if (id === ADMIN_ID) {
-                if (pass === ADMIN_PASS) {
-                    state.isAdmin = true;
-                    state.verified = true;
-                } else {
-                    return alert("Неверный пароль администратора!");
-                }
-            }
-
-            state.id = id;
-            initPeer();
-        }
-
-        function initPeer() {
-            state.peer = new Peer(state.id);
-
-            state.peer.on('open', () => {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('set-my-avatar').value = state.avatar;
-                renderFriends();
-                renderGroups();
-            });
-
-            state.peer.on('connection', (conn) => {
-                conn.on('data', (data) => {
-                    if (data.type === 'msg') {
-                        receiveMsg(conn.peer, data.text);
-                    } else if (data.type === 'verify') {
-                        state.verified = true;
-                        renderFriends();
-                    }
-                });
-            });
-
-            state.peer.on('call', (call) => {
-                state.currentCall = call;
-                openModal('call');
-                document.getElementById('call-label').innerText = "Входящий вызов от " + call.peer;
-                document.getElementById('btn-answer').onclick = async () => {
-                    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                    document.getElementById('local-video').srcObject = stream;
-                    call.answer(stream);
-                    call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                    document.getElementById('btn-answer').classList.add('hidden');
-                };
-            });
-        }
-
-        function saveProfile() {
-            state.avatar = document.getElementById('set-my-avatar').value;
-            localStorage.setItem('tat_my_avatar', state.avatar);
-            alert("Профиль обновлен!");
-            closeModals();
-        }
-
-        function createGroup() {
-            const name = document.getElementById('group-name').value;
-            const av = document.getElementById('group-avatar').value;
-            if (!name) return;
-
-            const newGroup = { id: 'grp_' + Date.now(), name, avatar: av };
-            state.groups.push(newGroup);
-            localStorage.setItem('tat_groups', JSON.stringify(state.groups));
-            renderGroups();
-            closeModals();
-        }
-
-        function renderGroups() {
-            const nav = document.getElementById('group-nav-list');
-            nav.innerHTML = '';
-            state.groups.forEach(g => {
-                const div = document.createElement('div');
-                div.className = 'nav-item';
-                div.title = g.name;
-                div.onclick = () => selectChat(g.id, g.name);
-                if (g.avatar) {
-                    div.innerHTML = `<img src="${g.avatar}">`;
-                } else {
-                    div.innerHTML = `<i class="fas fa-users"></i>`;
-                }
-                nav.appendChild(div);
-            });
-        }
-
-        function renderFriends() {
-            const list = document.getElementById('contact-list');
-            list.innerHTML = '';
-            state.friends.forEach(f => {
-                const div = document.createElement('div');
-                div.className = `item-row ${state.activeChat === f ? 'active' : ''}`;
-                div.onclick = () => selectChat(f, f);
-                div.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${f}"> ${f}`;
-                list.appendChild(div);
-            });
-        }
-
-        function selectChat(id, name) {
-            state.activeChat = id;
-            document.getElementById('chat-target-name').innerText = name;
-            renderFriends();
-            renderMessages();
-        }
-
-        function sendMsg() {
-            const input = document.getElementById('msg-input');
-            const val = input.value.trim();
-            if (!val || !state.activeChat) return;
-
-            if (state.activeChat.startsWith('grp_')) {
-                // Групповой чат в P2P — это имитация (сообщение сохраняется локально)
-                saveToHistory(state.activeChat, val, 'sent');
-                renderMessages();
-            } else {
-                const conn = state.peer.connect(state.activeChat);
-                conn.on('open', () => {
-                    conn.send({ type: 'msg', text: val });
-                    saveToHistory(state.activeChat, val, 'sent');
-                    renderMessages();
-                });
-            }
-            input.value = '';
-        }
-
-        function receiveMsg(id, text) {
-            saveToHistory(id, text, 'received');
-            if (!state.friends.includes(id)) {
-                state.friends.push(id);
-                localStorage.setItem('tat_friends', JSON.stringify(state.friends));
-                renderFriends();
-            }
-            if (state.activeChat === id) renderMessages();
-        }
-
-        function saveToHistory(id, text, type) {
-            if (!state.history[id]) state.history[id] = [];
-            state.history[id].push({ text, type, time: Date.now() });
-            localStorage.setItem('tat_history', JSON.stringify(state.history));
-        }
-
-        function renderMessages() {
-            const box = document.getElementById('messages');
-            box.innerHTML = '';
-            const msgs = state.history[state.activeChat] || [];
-            msgs.forEach(m => {
-                const div = document.createElement('div');
-                div.className = `msg ${m.type}`;
-                div.innerHTML = `<span class="msg-author">${m.type === 'sent' ? 'Вы' : state.activeChat}</span><div class="msg-content">${m.text}</div>`;
-                box.appendChild(div);
-            });
-            box.scrollTop = box.scrollHeight;
-        }
-
-        async function call(video) {
-            const stream = await navigator.mediaDevices.getUserMedia({video, audio:true});
-            document.getElementById('local-video').srcObject = stream;
-            openModal('call');
-            const call = state.peer.call(state.activeChat, stream);
-            state.currentCall = call;
-            call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-        }
-
-        function endCall() {
-            if (state.currentCall) state.currentCall.close();
-            closeModals();
-        }
-
-        function adminVerify() {
-            const tid = document.getElementById('admin-target').value;
-            const conn = state.peer.connect(tid);
-            conn.on('open', () => {
-                conn.send({ type: 'verify' });
-                alert("Пользователь верифицирован!");
-            });
-        }
-
-        function openModal(id) {
-            document.getElementById('modal-overlay').classList.remove('hidden');
-            document.getElementById('modal-' + id).classList.remove('hidden');
-            if (id === 'settings') {
-                document.getElementById('my-verif-status').innerText = state.verified ? "Верифицирован ✅" : "Обычный";
-                if (state.isAdmin) document.getElementById('admin-tools').classList.remove('hidden');
-            }
-        }
-
-        function closeModals() {
-            document.getElementById('modal-overlay').classList.add('hidden');
-            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-        }
-
-        document.getElementById('add-friend').onkeypress = (e) => {
-            if (e.key === 'Enter') {
-                const id = e.target.value.trim();
-                if (id && !state.friends.includes(id)) {
-                    state.friends.push(id);
-                    localStorage.setItem('tat_friends', JSON.stringify(state.friends));
-                    renderFriends();
-                    e.target.value = '';
-                }
-            }
-        };
-
-        document.getElementById('msg-input').onkeypress = (e) => { if (e.key === 'Enter') sendMsg(); };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
