@@ -3,241 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>tatarsms | Nebula v3</title>
+    <title>tatarsms | Russian Edition</title>
     
-    <!-- Ресурсы -->
+    <!-- Используем стабильные зеркала для РФ -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Загрузка скриптов через jsdelivr (стабильно в РФ) -->
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <style>
         :root {
             --accent: #00f2ff;
             --accent-dark: #0062ff;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --bg-deep: #050508;
+            --danger: #ff3b3b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            color: white; 
+            height: 100vh; 
+            background: var(--bg-deep);
+            overflow: hidden;
+        }
 
-        /* Живой фон */
-        .nebula-bg {
+        /* Живой фон (Nebula) */
+        .nebula {
             position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 50%, #0f0c29 0%, #302b63 40%, #24243e 70%, #050505 100%);
+            background: radial-gradient(circle at 20% 30%, #0f0c29 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, #302b63 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, #24243e 0%, #050508 100%);
             background-size: 200% 200%;
-            animation: nebulaMove 15s ease infinite;
+            animation: nebulaMove 12s ease infinite;
             z-index: -1;
         }
-        @keyframes nebulaMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes nebulaMove { 0% {background-position:0 50%} 50% {background-position:100% 50%} 100% {background-position:0 50%} }
 
         .hidden { display: none !important; }
-        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .glass { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); }
+        
+        /* Animations */
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Анимации */
-        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes msgIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* --- AUTH SYSTEM --- */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .auth-card { width: 90%; max-width: 400px; padding: 35px; border-radius: 30px; text-align: center; animation: popIn 0.5s ease; }
+        .glow-text { font-weight: 800; font-size: 32px; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; }
+        
+        .input-box { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 14px; border-radius: 14px; color: white; margin-bottom: 12px; transition: 0.3s; }
+        .input-box:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,242,255,0.15); }
+        
+        .btn-main { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 14px; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-main:active { transform: scale(0.96); }
 
-        /* --- AUTH SCREEN --- */
-        .auth-card { 
-            background: rgba(15, 15, 25, 0.8); border-radius: 24px; padding: 40px; width: 90%; max-width: 420px; 
-            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: pop 0.5s ease;
-        }
-        .glow-text { background: linear-gradient(90deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 36px; margin-bottom: 20px; }
-        .glass-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; transition: 0.3s; }
-        .glass-input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,242,255,0.2); }
-        .btn-primary { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 15px; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-primary:active { transform: scale(0.98); }
-
-        /* --- MAIN LAYOUT --- */
-        #app { display: flex; height: 100vh; }
+        /* --- APP LAYOUT --- */
+        #app { display: flex; height: 100vh; width: 100vw; }
         
         #sidebar { 
             width: 320px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(0,0,0,0.4); backdrop-filter: blur(20px);
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .side-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
-        .me-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .me-info img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
 
-        /* Tabs */
-        .tabs { display: flex; background: rgba(0,0,0,0.2); margin: 10px; border-radius: 10px; padding: 4px; }
-        .tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; cursor: pointer; border-radius: 8px; transition: 0.3s; color: #888; }
-        .tab.active { background: var(--accent-dark); color: white; }
+        .side-head { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .user-me { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .user-me img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
 
         .list-area { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; position: relative; }
+        .item-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; cursor: pointer; margin-bottom: 8px; transition: 0.2s; }
         .item-card:hover { background: rgba(255,255,255,0.05); }
         .item-card.active { background: linear-gradient(90deg, var(--accent-dark), transparent); }
-        .item-card img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
-        .badge { position: absolute; top: 12px; right: 12px; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+        .item-card img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; }
 
         /* --- CHAT AREA --- */
-        #chat-window { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        .chat-header { height: 70px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); }
-        .target-info { display: flex; align-items: center; gap: 12px; }
-        .target-info img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
-        
+        #chat-window { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .chat-head { height: 70px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); }
+        .chat-target { display: flex; align-items: center; gap: 12px; }
+        .chat-target img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--accent); object-fit: cover; }
+
         .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgIn 0.3s ease; }
+        .msg { max-width: 80%; display: flex; flex-direction: column; animation: slideUp 0.3s ease; }
         .msg.sent { align-self: flex-end; align-items: flex-end; }
-        .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; background: var(--glass); border: 1px solid var(--glass-border); position: relative; }
-        .sent .msg-bubble { background: var(--accent-dark); border: none; border-bottom-right-radius: 2px; }
-        .received .msg-bubble { border-bottom-left-radius: 2px; }
+        .msg-bubble { padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.5; background: var(--glass); border: 1px solid var(--glass-border); }
+        .sent .msg-bubble { background: var(--accent-dark); border: none; border-bottom-right-radius: 4px; }
+        .received .msg-bubble { border-bottom-left-radius: 4px; }
 
-        /* Media */
-        .media-frame { max-width: 240px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; transition: 0.3s; }
-        .media-frame:hover { transform: scale(1.02); }
-        .media-frame img { width: 100%; display: block; }
-        audio { height: 35px; width: 200px; margin-top: 5px; filter: invert(1); }
+        /* Медиа в чате */
+        .media-box { max-width: 240px; border-radius: 15px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; }
+        .media-box img { width: 100%; display: block; transition: 0.3s; }
+        .media-box:hover img { transform: scale(1.05); }
+        audio { height: 35px; width: 220px; margin-top: 5px; }
 
-        /* Input */
-        .chat-input { padding: 20px; background: rgba(0,0,0,0.4); border-top: 1px solid var(--glass-border); }
-        .input-bar { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; gap: 15px; }
-        .input-bar input { flex: 1; background: none; border: none; padding: 10px; color: white; font-size: 16px; }
-        .input-bar i { font-size: 22px; color: #aaa; cursor: pointer; transition: 0.2s; }
-        .input-bar i:hover { color: var(--accent); }
-        .rec-active { color: #ff4d4d !important; animation: pulse 1s infinite; }
+        /* Ввод */
+        .chat-footer { padding: 20px; background: rgba(0,0,0,0.5); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+        .input-wrap { background: rgba(255,255,255,0.06); border-radius: 22px; padding: 5px 18px; display: flex; align-items: center; gap: 15px; }
+        .input-wrap input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 16px; }
+        .input-wrap i { font-size: 22px; color: #888; cursor: pointer; transition: 0.2s; }
+        .input-wrap i:hover { color: var(--accent); }
+        .mic-active { color: var(--danger) !important; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.5; } }
 
-        /* --- MODALS --- */
-        .modal { background: #0f0f15; padding: 30px; border-radius: 28px; width: 92%; max-width: 440px; border: 1px solid var(--glass-border); position: relative; animation: pop 0.4s ease; text-align: center; }
-        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #555; }
-        .large-av { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 15px; object-fit: cover; cursor: pointer; }
-
-        /* Stickers Panel */
-        .sticker-panel { position: absolute; bottom: 85px; left: 20px; width: 300px; background: rgba(10,10,15,0.95); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; }
-        .sticker-grid img { width: 100%; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-        .sticker-grid img:hover { transform: scale(1.1); }
-
-        /* Video Call */
-        #call-ui { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; }
-        .v-main { flex: 1; position: relative; }
-        .v-main video { width: 100%; height: 100%; object-fit: cover; }
-        .v-small { width: 120px; height: 160px; position: absolute; bottom: 30px; right: 20px; border-radius: 15px; border: 2px solid var(--accent); overflow: hidden; z-index: 10; }
-        .call-btns { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; }
-        .btn-call { width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 28px; color: white; cursor: pointer; }
-
-        /* Mobile Adjustments */
+        /* Мобильная адаптация */
         @media (max-width: 768px) {
             #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; transform: translateX(0); }
             #sidebar.closed { transform: translateX(-100%); }
             .back-btn { display: block !important; }
         }
-        .back-btn { display: none; font-size: 22px; cursor: pointer; margin-right: 10px; }
+        .back-btn { display: none; font-size: 22px; cursor: pointer; margin-right: 15px; }
+
+        /* Модальные окна */
+        .modal { background: #0a0a0f; padding: 30px; border-radius: 30px; width: 92%; max-width: 420px; border: 1px solid var(--glass-border); position: relative; animation: popIn 0.3s ease; text-align: center; }
+        .large-av { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 15px; object-fit: cover; }
+        .sticker-panel { position: absolute; bottom: 100px; left: 20px; width: 300px; padding: 15px; border-radius: 20px; z-index: 1000; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+        .st-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; }
+        .st-grid img { width: 100%; cursor: pointer; border-radius: 10px; transition: 0.2s; }
+        .st-grid img:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
 
-    <div class="nebula-bg"></div>
+    <div class="nebula"></div>
 
-    <!-- Загрузка -->
-    <div id="loading-screen" class="overlay">
-        <div style="text-align:center;">
-            <div class="glow-text">tatarsms</div>
-            <p style="color:var(--accent); letter-spacing: 5px;">P2P SECURE</p>
+    <!-- Loader -->
+    <div id="loading" class="overlay">
+        <div style="text-align:center">
+            <h1 class="glow-text">tatarsms</h1>
+            <p style="color:var(--accent); letter-spacing:4px">ПОДКЛЮЧЕНИЕ...</p>
         </div>
     </div>
 
     <!-- AUTH -->
     <div id="auth-screen" class="overlay hidden">
-        <div class="auth-card">
+        <div class="auth-card glass">
             <h1 class="glow-text">tatarsms</h1>
             
-            <div id="auth-login">
-                <input type="text" id="login-id" class="glass-input" placeholder="ID (Никнейм)">
-                <input type="password" id="login-pw" class="glass-input" placeholder="Пароль">
-                <button class="btn-primary" onclick="auth.login()">ВОЙТИ</button>
-                <p style="margin-top:20px; font-size:13px; color:#aaa; cursor:pointer;" onclick="auth.switch('reg')">Нет аккаунта? Создать</p>
+            <div id="view-login">
+                <input type="text" id="login-id" class="input-box" placeholder="Ваш ID">
+                <input type="password" id="login-pw" class="input-box" placeholder="Пароль">
+                <button class="btn-main" onclick="auth.login()">ВОЙТИ</button>
+                <p style="margin-top:20px; color:#888; cursor:pointer;" onclick="auth.switch('reg')">Регистрация</p>
             </div>
 
-            <div id="auth-reg" class="hidden">
-                <input type="email" id="reg-email" class="glass-input" placeholder="Ваш Gmail">
-                <input type="text" id="reg-id" class="glass-input" placeholder="Придумайте ID">
-                <input type="password" id="reg-pw" class="glass-input" placeholder="Пароль">
+            <div id="view-reg" class="hidden">
+                <input type="email" id="reg-email" class="input-box" placeholder="Ваш Gmail">
+                <input type="text" id="reg-id" class="input-box" placeholder="Придумайте ID">
+                <input type="password" id="reg-pw" class="input-box" placeholder="Пароль">
                 
-                <!-- Bot Check -->
-                <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; margin-bottom:15px;">
-                    <p id="captcha-text" style="font-size:14px; margin-bottom:10px;"></p>
-                    <input type="text" id="captcha-input" class="glass-input" placeholder="Ответ" style="margin-bottom:0;">
+                <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:15px; margin-bottom:15px">
+                    <p id="captcha-text" style="font-size:14px; margin-bottom:10px"></p>
+                    <input type="text" id="captcha-input" class="input-box" placeholder="Ответ" style="margin-bottom:0">
                 </div>
 
-                <button class="btn-primary" onclick="auth.startReg()">ОТПРАВИТЬ КОД</button>
-                <p style="margin-top:20px; font-size:13px; color:#aaa; cursor:pointer;" onclick="auth.switch('login')">Назад</p>
+                <button class="btn-main" onclick="auth.checkBot()">ОТПРАВИТЬ КОД</button>
+                <p style="margin-top:20px; color:#888; cursor:pointer;" onclick="auth.switch('login')">Назад</p>
             </div>
 
-            <div id="auth-code" class="hidden">
-                <p style="margin-bottom:20px; color:var(--accent);">Код подтверждения отправлен на почту</p>
-                <input type="text" id="verify-code" class="glass-input" placeholder="Код из 6 цифр" style="text-align:center; font-size:24px; letter-spacing:5px;">
-                <button class="btn-primary" onclick="auth.complete()">ЗАВЕРШИТЬ</button>
+            <div id="view-code" class="hidden">
+                <p style="margin-bottom:20px">Введите 6-значный код из письма</p>
+                <input type="text" id="verify-code" class="input-box" style="text-align:center; font-size:26px; letter-spacing:8px">
+                <button class="btn-main" onclick="auth.verify()">ПОДТВЕРДИТЬ</button>
             </div>
         </div>
     </div>
 
     <!-- APP -->
     <div id="app" class="hidden">
-        <aside id="sidebar">
-            <div class="side-header">
-                <div class="me-info" onclick="ui.modal('settings')">
-                    <img id="my-av" src="">
-                    <span id="my-name-disp">User</span>
+        <aside id="sidebar" class="glass">
+            <div class="side-head">
+                <div class="user-me" onclick="ui.modal('profile')">
+                    <img id="my-av-img" src="">
+                    <span id="my-id-disp">User</span>
                 </div>
-                <div style="display:flex; gap:15px; font-size:18px;">
-                    <i class="fas fa-plus-circle" style="cursor:pointer" onclick="ui.modal('add-friend')"></i>
-                    <i class="fas fa-users" style="cursor:pointer" onclick="ui.modal('create-group')"></i>
+                <div style="display:flex; gap:15px">
+                    <i class="fas fa-user-plus" onclick="ui.modal('add')"></i>
+                    <i class="fas fa-users" onclick="ui.modal('group')"></i>
                 </div>
             </div>
             
-            <div class="tabs">
-                <div class="tab active" onclick="ui.tab('dm')">Личные</div>
-                <div class="tab" onclick="ui.tab('group')">Группы</div>
+            <div style="display:flex; padding:10px; gap:10px">
+                <div class="btn-main" style="padding:8px; font-size:12px" onclick="ui.setTab('dm')">ЛС</div>
+                <div class="btn-main" style="padding:8px; font-size:12px; background:#333" onclick="ui.setTab('gr')">Группы</div>
             </div>
 
             <div class="list-area" id="contact-list"></div>
         </aside>
 
         <main id="chat-window">
-            <div id="chat-welcome" class="empty-state" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3;">
-                <i class="fas fa-satellite" style="font-size:100px; margin-bottom:20px;"></i>
+            <div id="welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3">
+                <i class="fas fa-user-shield" style="font-size:100px; margin-bottom:20px"></i>
                 <h2>P2P ENCRYPTED</h2>
             </div>
 
-            <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column;">
-                <header class="chat-header">
-                    <div class="target-info">
+            <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column">
+                <header class="chat-head">
+                    <div class="chat-target">
                         <i class="fas fa-arrow-left back-btn" onclick="ui.closeChat()"></i>
                         <img id="target-av" src="">
-                        <div>
-                            <h4 id="target-name">...</h4>
-                            <small id="target-status" style="color:var(--accent)">Secure Connection</small>
-                        </div>
+                        <div style="font-weight:700" id="target-name">...</div>
                     </div>
-                    <div style="display:flex; gap:20px; font-size:20px; color:#aaa;">
-                        <i class="fas fa-phone" style="cursor:pointer" onclick="calls.init(false)"></i>
-                        <i class="fas fa-video" style="cursor:pointer" onclick="calls.init(true)"></i>
+                    <div style="display:flex; gap:20px; color:#888; font-size:20px">
+                        <i class="fas fa-phone" onclick="calls.init(false)"></i>
+                        <i class="fas fa-video" onclick="calls.init(true)"></i>
                     </div>
                 </header>
 
                 <div class="messages" id="msg-box"></div>
 
-                <div class="chat-input">
-                    <div id="sticker-panel" class="sticker-panel hidden">
-                        <div class="sticker-grid" id="sticker-grid"></div>
-                        <div style="display:flex; gap:5px; margin-top:10px;">
-                            <input type="text" id="st-url" class="glass-input" placeholder="URL стикера" style="margin:0; padding:8px;">
-                            <button class="btn-primary" style="width:auto; padding:0 15px;" onclick="stickers.add()">+</button>
+                <div class="chat-footer">
+                    <div id="st-panel" class="sticker-panel glass hidden">
+                        <div class="st-grid" id="st-grid"></div>
+                        <div style="display:flex; gap:5px; margin-top:10px">
+                            <input type="text" id="st-url" class="input-box" placeholder="URL стикера" style="margin:0; padding:8px; font-size:12px">
+                            <button class="btn-main" style="width:auto; padding:0 15px" onclick="stickers.add()">+</button>
                         </div>
                     </div>
 
-                    <div class="input-bar">
+                    <div class="input-wrap">
                         <i class="far fa-sticky-note" onclick="ui.toggleStickers()"></i>
                         <label for="file-up"><i class="fas fa-paperclip"></i></label>
                         <input type="file" id="file-up" hidden onchange="msg.file(this)">
-                        <input type="text" id="main-input" placeholder="Написать сообщение..." onkeypress="msg.keys(event)">
+                        <input type="text" id="main-input" placeholder="Сообщение..." onkeypress="msg.keys(event)">
                         <i class="fas fa-microphone" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
                         <i class="fas fa-paper-plane" style="color:var(--accent)" onclick="msg.send()"></i>
                     </div>
@@ -248,67 +239,62 @@
 
     <!-- MODALS -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
-        <!-- Settings -->
-        <div id="modal-settings" class="modal hidden" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
-            <h2>Настройки</h2>
-            <img id="set-av" class="large-av" onclick="document.getElementById('av-change').click()">
-            <input type="file" id="av-change" hidden accept="image/*" onchange="ui.changeAvatar(this)">
-            <p>ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
-            <div id="admin-panel" class="hidden" style="margin-top:15px; border-top:1px solid #333; padding-top:15px;">
-                <p style="color:var(--accent); font-weight:800;">АДМИН-ПАНЕЛЬ</p>
-                <input type="text" id="adm-target" class="glass-input" placeholder="ID пользователя" style="margin-top:10px;">
-                <button class="btn-primary" onclick="admin.verify()">ВЫДАТЬ ГАЛОЧКУ</button>
+        <!-- Profile -->
+        <div id="modal-profile" class="modal glass" onclick="event.stopPropagation()">
+            <h2>Мой Профиль</h2>
+            <img id="set-av" class="large-av" onclick="document.getElementById('av-up').click()">
+            <input type="file" id="av-up" hidden onchange="ui.changeAv(this)">
+            <p>ID: <strong id="set-id"></strong></p>
+            <div id="admin-box" class="hidden" style="margin-top:20px; padding-top:20px; border-top:1px solid #333">
+                <p style="color:var(--accent); font-weight:800">АДМИН-ПАНЕЛЬ</p>
+                <input type="text" id="adm-target" class="input-box" placeholder="ID пользователя" style="margin-top:10px">
+                <button class="btn-main" onclick="admin.verify()">ВЫДАТЬ ГАЛОЧКУ</button>
             </div>
-            <button class="btn-primary" style="background:#333; margin-top:20px;" onclick="auth.logout()">ВЫЙТИ</button>
+            <button class="btn-main" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
         </div>
 
         <!-- Add Friend -->
-        <div id="modal-add-friend" class="modal hidden" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
+        <div id="modal-add" class="modal glass" onclick="event.stopPropagation()">
             <h3>Добавить друга</h3>
-            <p style="color:#888; font-size:14px; margin:10px 0 20px;">Отправьте запрос пользователю по его ID.</p>
-            <input type="text" id="friend-id-input" class="glass-input" placeholder="tatar_user">
-            <button class="btn-primary" onclick="msg.request()">ОТПРАВИТЬ ЗАПРОС</button>
+            <input type="text" id="friend-id" class="input-box" placeholder="Никнейм (ID)" style="margin-top:15px">
+            <button class="btn-main" onclick="msg.req()">ОТПРАВИТЬ ЗАПРОС</button>
         </div>
 
         <!-- Create Group -->
-        <div id="modal-create-group" class="modal hidden" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
+        <div id="modal-group" class="modal glass" onclick="event.stopPropagation()">
             <h3>Создать группу</h3>
-            <input type="text" id="gr-name" class="glass-input" placeholder="Название группы" style="margin-top:15px;">
-            <input type="text" id="gr-members" class="glass-input" placeholder="Участники через запятую (ID)">
-            <button class="btn-primary" onclick="groups.create()">СОЗДАТЬ</button>
+            <input type="text" id="gr-name" class="input-box" placeholder="Название группы" style="margin-top:15px">
+            <button class="btn-main" onclick="groups.create()">СОЗДАТЬ</button>
         </div>
 
-        <!-- Inbound Request -->
-        <div id="modal-inreq" class="modal hidden" onclick="event.stopPropagation()">
-            <h3 style="color:var(--accent)">Входящая заявка</h3>
-            <p style="margin:20px 0;">Пользователь <strong id="req-id-disp"></strong> хочет в друзья.</p>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-primary" style="background:#2ecc71" onclick="msg.handleReq(true)">ПРИНЯТЬ</button>
-                <button class="btn-primary" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗАТЬ</button>
+        <!-- Friend Req -->
+        <div id="modal-req" class="modal glass" onclick="event.stopPropagation()">
+            <h3>Входящий запрос</h3>
+            <p style="margin:20px 0" id="req-info"></p>
+            <div style="display:flex; gap:10px">
+                <button class="btn-main" style="background:#2ecc71" onclick="msg.handleReq(true)">ПРИНЯТЬ</button>
+                <button class="btn-main" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗ</button>
             </div>
         </div>
     </div>
 
     <!-- CALL UI -->
-    <div id="call-ui" class="hidden">
-        <div class="v-main"><video id="remote-video" autoplay playsinline></video></div>
-        <div class="v-small"><video id="local-video" autoplay muted playsinline></video></div>
-        <div class="call-btns">
-            <button class="btn-call" id="call-accept" style="background:#2ecc71;"><i class="fas fa-phone"></i></button>
-            <button class="btn-call" style="background:#e74c3c;" onclick="location.reload()"><i class="fas fa-phone-slash"></i></button>
+    <div id="call-ui" class="hidden" style="position:fixed; inset:0; background:#000; z-index:20000">
+        <video id="remote-v" style="width:100%; height:100%; object-fit:cover" autoplay playsinline></video>
+        <video id="local-v" style="width:120px; height:160px; position:absolute; bottom:100px; right:20px; border-radius:15px; border:2px solid var(--accent); object-fit:cover" autoplay muted playsinline></video>
+        <div style="position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; gap:30px">
+            <button id="call-acc" class="btn-main" style="width:65px; height:65px; border-radius:50%; background:#2ecc71; font-size:25px"><i class="fas fa-phone"></i></button>
+            <button class="btn-main" style="width:65px; height:65px; border-radius:50%; background:#e74c3c; font-size:25px" onclick="location.reload()"><i class="fas fa-phone-slash"></i></button>
         </div>
     </div>
 
-    <!-- Media Viewer -->
-    <div id="media-viewer" class="overlay hidden" onclick="this.classList.add('hidden')">
-        <img id="full-img" src="" style="max-width:95%; max-height:95%; border-radius:15px;">
+    <!-- Media Full Screen -->
+    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')">
+        <img id="fs-img" src="" style="max-width:95%; max-height:95%; border-radius:15px">
     </div>
 
     <script>
-        // --- CONFIG & KEYS ---
+        // --- CONFIG ---
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
         const EMAIL_SERV = "service_tatarsms";
         const EMAIL_TEMP = "template_zxlr5as";
@@ -316,69 +302,67 @@
         const ADMIN_PW = "spinogrz666";
 
         let state = {
-            user: JSON.parse(localStorage.getItem('tat_sess')),
-            db: JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}'),
-            friends: JSON.parse(localStorage.getItem(`fr_${localStorage.getItem('tat_sess')?.id}`) || '[]'),
-            groups: JSON.parse(localStorage.getItem(`grps_${localStorage.getItem('tat_sess')?.id}`) || '[]'),
-            history: JSON.parse(localStorage.getItem('tat_hist') || '{}'),
-            stickers: JSON.parse(localStorage.getItem('tat_st') || []),
-            peer: null, chat: null, type: 'dm', pending: null, code: null, temp: null, captcha: null, rec: null
+            user: JSON.parse(localStorage.getItem('ts_sess')),
+            db: JSON.parse(localStorage.getItem('ts_db') || '{"users":{}}'),
+            friends: JSON.parse(localStorage.getItem(`ts_fr_${localStorage.getItem('ts_sess')?.id}`) || '[]'),
+            groups: JSON.parse(localStorage.getItem(`ts_gr_${localStorage.getItem('ts_sess')?.id}`) || '[]'),
+            history: JSON.parse(localStorage.getItem('ts_hist') || '{}'),
+            stickers: JSON.parse(localStorage.getItem('ts_st') || []),
+            peer: null, chat: null, tab: 'dm', pending: null, captcha: null, code: null, temp: null
         };
 
         // --- AUTH ---
         const auth = {
             switch(v) {
-                ['login','reg','code'].forEach(id => document.getElementById(`auth-${id}`).classList.add('hidden'));
-                document.getElementById(`auth-${v}`).classList.remove('hidden');
+                ['login','reg','code'].forEach(id => document.getElementById(`view-${id}`).classList.add('hidden'));
+                document.getElementById(`view-${v}`).classList.remove('hidden');
                 if(v === 'reg') this.genCaptcha();
             },
             genCaptcha() {
-                const a = Math.floor(Math.random()*15); const b = Math.floor(Math.random()*10);
+                const a = Math.floor(Math.random()*15), b = Math.floor(Math.random()*10);
                 this.captcha = a + b;
-                document.getElementById('captcha-text').innerText = `Защита от ботов: ${a} + ${b} = ?`;
+                document.getElementById('captcha-text').innerText = `Защита: ${a} + ${b} = ?`;
             },
-            startReg() {
+            checkBot() {
+                if(document.getElementById('captcha-input').value != this.captcha) return alert("Капча неверна!");
+                this.sendCode();
+            },
+            sendCode() {
                 const id = document.getElementById('reg-id').value.trim();
                 const email = document.getElementById('reg-email').value.trim();
                 const pw = document.getElementById('reg-pw').value.trim();
-                const cap = document.getElementById('captcha-input').value;
-                if(!id || !email || !pw) return alert("Заполните всё");
-                if(cap != this.captcha) { alert("Капча неверна!"); return this.genCaptcha(); }
-                if(state.db.users[id]) return alert("ID занят");
+                if(!id || !email || !pw) return alert("Заполните всё!");
+                if(state.db.users[id]) return alert("ID занят!");
 
                 this.code = Math.floor(100000 + Math.random() * 900000);
-                this.temp = {id, pw, email};
+                this.temp = {id, email, pw};
 
                 emailjs.init(EMAIL_KEY);
                 emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: email, code: this.code })
-                .then(() => this.switch('code'), (err) => {
-                    alert("Ошибка EmailJS (Симуляция): " + this.code);
+                .then(() => this.switch('code'), () => {
+                    alert("СИМУЛЯЦИЯ: Код " + this.code);
                     this.switch('code');
                 });
             },
             verify() {
                 if(document.getElementById('verify-code').value != this.code) return alert("Неверно");
-                state.db.users[this.temp.id] = { 
-                    pw: btoa(this.temp.pw), 
-                    av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}`,
-                    verif: false 
-                };
-                localStorage.setItem('tat_db', JSON.stringify(state.db));
-                alert("Аккаунт готов!"); this.switch('login');
+                state.db.users[this.temp.id] = { pw: btoa(this.temp.pw), av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}` };
+                localStorage.setItem('ts_db', JSON.stringify(state.db));
+                alert("Готово!"); this.switch('login');
             },
             login() {
                 const id = document.getElementById('login-id').value.trim();
                 const pw = document.getElementById('login-pw').value.trim();
                 if(id === ADMIN_ID && pw === ADMIN_PW) return this.start(id, 'https://api.dicebear.com/7.x/avataaars/svg?seed=adm', true);
                 const u = state.db.users[id];
-                if(u && atob(u.pw) === pw) this.start(id, u.av, u.verif);
+                if(u && atob(u.pw) === pw) this.start(id, u.av, false);
                 else alert("Ошибка!");
             },
-            start(id, av, verif) {
-                localStorage.setItem('tat_sess', JSON.stringify({id, av, verif}));
+            start(id, av, adm) {
+                localStorage.setItem('ts_sess', JSON.stringify({id, av, adm}));
                 location.reload();
             },
-            logout() { localStorage.removeItem('tat_sess'); location.reload(); }
+            logout() { localStorage.removeItem('ts_sess'); location.reload(); }
         };
 
         // --- MESSENGER ---
@@ -386,7 +370,7 @@
             init() {
                 state.peer = new Peer(state.user.id);
                 state.peer.on('open', () => {
-                    document.getElementById('loading-screen').classList.add('hidden');
+                    document.getElementById('loading').classList.add('hidden');
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
                     ui.renderList();
@@ -398,31 +382,20 @@
                 state.peer.on('call', call => calls.incoming(call));
             },
             receive(data, from) {
-                if(data.type === 'req') {
-                    state.pending = from;
-                    document.getElementById('req-id-disp').innerText = from;
-                    ui.modal('inreq');
-                } else if(data.type === 'acc') {
-                    if(!state.friends.includes(from)) state.friends.push(from);
-                    this.saveFr(); ui.renderList();
-                } else if(data.type === 'verif_up') {
-                    state.user.verif = true;
-                    localStorage.setItem('tat_sess', JSON.stringify(state.user));
-                    ui.modal('settings');
-                } else {
-                    this.saveMsg(from, data, 'received');
-                }
+                if(data.type === 'req') return ui.showReq(from);
+                if(data.type === 'acc') { state.friends.push(from); this.saveFr(); return ui.renderList(); }
+                if(data.type === 'verif') { state.user.adm = true; localStorage.setItem('ts_sess', JSON.stringify(state.user)); location.reload(); }
+                this.save(from, data, 'received');
             },
             request() {
-                const target = document.getElementById('friend-id-input').value.trim();
+                const target = document.getElementById('friend-id').value.trim();
                 if(!target || target === state.user.id) return;
                 const conn = state.peer.connect(target);
                 conn.on('open', () => { conn.send({type:'req'}); alert("Запрос отправлен!"); ui.closeModals(); });
             },
             handleReq(acc) {
                 if(acc && state.pending) {
-                    state.friends.push(state.pending);
-                    this.saveFr(); ui.renderList();
+                    state.friends.push(state.pending); this.saveFr(); ui.renderList();
                     const conn = state.peer.connect(state.pending);
                     conn.on('open', () => conn.send({type:'acc'}));
                 }
@@ -432,11 +405,10 @@
                 const val = document.getElementById('main-input').value.trim();
                 const content = dataObj || {type:'text', val};
                 if(!content.val || !state.chat) return;
-                
                 const conn = state.peer.connect(state.chat);
                 conn.on('open', () => {
                     conn.send(content);
-                    this.saveMsg(state.chat, content, 'sent');
+                    this.save(state.chat, content, 'sent');
                     if(!dataObj) document.getElementById('main-input').value = '';
                 });
             },
@@ -446,57 +418,50 @@
                 r.onload = e => this.send({type: f.type.startsWith('image') ? 'img' : 'file', val: e.target.result});
                 r.readAsDataURL(f);
             },
-            saveMsg(peer, data, dir) {
+            save(peer, data, dir) {
                 if(!state.history[peer]) state.history[peer] = [];
                 state.history[peer].push({...data, dir, time: new Date().toLocaleTimeString().slice(0,5)});
-                localStorage.setItem('tat_hist', JSON.stringify(state.history));
+                localStorage.setItem('ts_hist', JSON.stringify(state.history));
                 if(state.chat === peer) ui.renderChat();
             },
-            saveFr() { localStorage.setItem(`fr_${state.user.id}`, JSON.stringify(state.friends)); },
-            keys(e) { if(e.key === 'Enter') this.send(); }
+            saveFr() { localStorage.setItem(`ts_fr_${state.user.id}`, JSON.stringify(state.friends)); },
+            keys(e) { if(e.key === 'Enter') this.send(); },
+            req() { this.request(); }
         };
 
         // --- GROUPS ---
         const groups = {
             create() {
-                const name = document.getElementById('gr-name').value;
-                const members = document.getElementById('gr-members').value.split(',').map(m => m.trim());
-                if(!name) return;
-                const id = 'group_' + Date.now();
-                state.groups.push({id, name, members, av: `https://api.dicebear.com/7.x/initials/svg?seed=${name}`});
-                localStorage.setItem(`grps_${state.user.id}`, JSON.stringify(state.groups));
-                ui.closeModals(); ui.tab('group');
+                const n = document.getElementById('gr-name').value;
+                if(!n) return;
+                state.groups.push({id:'gr_'+Date.now(), name:n, av:`https://api.dicebear.com/7.x/initials/svg?seed=${n}`});
+                localStorage.setItem(`ts_gr_${state.user.id}`, JSON.stringify(state.groups));
+                ui.closeModals(); ui.setTab('gr');
             }
-        }
+        };
 
         // --- UI ---
         const ui = {
-            tab(t) {
-                state.type = t;
-                document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-                event.target.classList.add('active');
-                this.renderList();
-            },
+            setTab(t) { state.tab = t; this.renderList(); },
             renderList() {
                 const list = document.getElementById('contact-list'); list.innerHTML = '';
-                const items = state.type === 'dm' ? state.friends : state.groups;
-                items.forEach(item => {
-                    const id = typeof item === 'string' ? item : item.id;
-                    const name = typeof item === 'string' ? item : item.name;
-                    const av = typeof item === 'string' ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}` : item.av;
-                    
+                const items = state.tab === 'dm' ? state.friends : state.groups;
+                items.forEach(i => {
+                    const id = typeof i === 'string' ? i : i.id;
+                    const name = typeof i === 'string' ? i : i.name;
+                    const av = typeof i === 'string' ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}` : i.av;
                     const div = document.createElement('div');
                     div.className = `item-card ${state.chat === id ? 'active' : ''}`;
                     div.onclick = () => this.select(id, name, av);
-                    div.innerHTML = `<img src="${av}"><div><div style="font-weight:700">${name}</div><div style="font-size:12px;opacity:0.5">${state.type==='dm'?'P2P Friend':'Group'}</div></div>`;
+                    div.innerHTML = `<img src="${av}"><div><div style="font-weight:700">${name}</div><div style="font-size:12px;opacity:0.5">${state.tab==='dm'?'P2P Friend':'Group'}</div></div>`;
                     list.appendChild(div);
                 });
-                document.getElementById('my-av').src = state.user.av;
-                document.getElementById('my-name-disp').innerText = state.user.id;
+                document.getElementById('my-av-img').src = state.user.av;
+                document.getElementById('my-id-disp').innerText = state.user.id;
             },
             select(id, name, av) {
                 state.chat = id;
-                document.getElementById('chat-welcome').classList.add('hidden');
+                document.getElementById('welcome').classList.add('hidden');
                 document.getElementById('chat-active').classList.remove('hidden');
                 document.getElementById('target-name').innerText = name;
                 document.getElementById('target-av').src = av;
@@ -508,118 +473,108 @@
                 (state.history[state.chat] || []).forEach(m => {
                     const div = document.createElement('div');
                     div.className = `msg ${m.dir}`;
-                    let content = `<div class="msg-bubble">`;
-                    if(m.type === 'text') content += m.val;
-                    else if(m.type === 'img') content += `<div class="media-frame"><img src="${m.val}" onclick="ui.view(this.src)"></div>`;
-                    else if(m.type === 'voice') content += `<audio src="${m.val}" controls></audio>`;
-                    else content += `<a href="${m.val}" download style="color:var(--accent)">Файл</a>`;
-                    content += `<div class="msg-time">${m.time}</div></div>`;
-                    div.innerHTML = content;
+                    let html = `<div class="msg-bubble">`;
+                    if(m.type === 'text') html += m.val;
+                    else if(m.type === 'img') html += `<div class="media-box"><img src="${m.val}" onclick="ui.view(this.src)"></div>`;
+                    else if(m.type === 'voice') html += `<audio src="${m.val}" controls></audio>`;
+                    else html += `<a href="${m.val}" download style="color:var(--accent)">Файл</a>`;
+                    html += `<div class="msg-time">${m.time}</div></div>`;
+                    div.innerHTML = html;
                     box.appendChild(div);
                 });
                 box.scrollTop = box.scrollHeight + 1000;
             },
-            view(src) { document.getElementById('media-viewer').classList.remove('hidden'); document.getElementById('full-img').src = src; },
-            modal(id) { 
-                document.getElementById('modal-overlay').classList.remove('hidden'); 
+            view(s) { document.getElementById('media-fs').classList.remove('hidden'); document.getElementById('fs-img').src = s; },
+            modal(id) {
+                document.getElementById('modal-overlay').classList.remove('hidden');
                 document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
                 document.getElementById(`modal-${id}`).classList.remove('hidden');
-                if(id === 'settings') {
+                if(id === 'profile') {
                     document.getElementById('set-id').innerText = state.user.id;
                     document.getElementById('set-av').src = state.user.av;
-                    if(state.user.verif) document.getElementById('set-verif').innerHTML = "ВЕРИФИЦИРОВАН ✅";
-                    if(state.user.id === ADMIN_ID) document.getElementById('admin-panel').classList.remove('hidden');
+                    if(state.user.adm) document.getElementById('admin-box').classList.remove('hidden');
                 }
             },
             closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
-            toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); },
-            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('chat-welcome').classList.remove('hidden'); this.toggleSidebar(); },
-            toggleStickers() { document.getElementById('sticker-panel').classList.toggle('hidden'); },
+            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('welcome').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
+            toggleStickers() { document.getElementById('st-panel').classList.toggle('hidden'); },
             renderStickers() {
-                const grid = document.getElementById('sticker-grid'); grid.innerHTML = '';
+                const grid = document.getElementById('st-grid'); grid.innerHTML = '';
                 state.stickers.forEach(s => {
                     const img = document.createElement('img'); img.src = s;
                     img.onclick = () => { msg.send({type:'img', val:s}); this.toggleStickers(); };
                     grid.appendChild(img);
                 });
             },
-            changeAvatar(el) {
+            changeAv(el) {
                 const r = new FileReader();
                 r.onload = e => {
                     state.user.av = e.target.result;
-                    localStorage.setItem('tat_sess', JSON.stringify(state.user));
-                    const db = JSON.parse(localStorage.getItem('tat_db'));
-                    db.users[state.user.id].av = e.target.result;
-                    localStorage.setItem('tat_db', JSON.stringify(db));
+                    localStorage.setItem('ts_sess', JSON.stringify(state.user));
                     location.reload();
                 };
                 r.readAsDataURL(el.files[0]);
-            }
-        };
-
-        // --- CALLS ---
-        const calls = {
-            async init(video) {
-                try {
-                    const s = await navigator.mediaDevices.getUserMedia({video, audio:true});
-                    document.getElementById('local-video').srcObject = s;
-                    document.getElementById('call-ui').classList.remove('hidden');
-                    const call = state.peer.call(state.chat, s);
-                    call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                } catch(e) { alert("Ошибка камеры"); }
             },
-            incoming(call) {
-                document.getElementById('call-ui').classList.remove('hidden');
-                document.getElementById('call-accept').onclick = async () => {
-                    const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                    document.getElementById('local-video').srcObject = s;
-                    call.answer(s);
-                    call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                    document.getElementById('call-accept').classList.add('hidden');
-                };
-            }
+            showReq(f) { state.pending = f; document.getElementById('req-info').innerText = f + " хочет в друзья"; this.modal('req'); }
         };
 
         // --- VOICE ---
         const voice = {
             start() {
                 navigator.mediaDevices.getUserMedia({audio:true}).then(s => {
-                    state.rec = new MediaRecorder(s);
+                    this.rec = new MediaRecorder(s);
                     let ch = [];
-                    state.rec.ondataavailable = e => ch.push(e.data);
-                    state.rec.onstop = () => {
+                    this.rec.ondataavailable = e => ch.push(e.data);
+                    this.rec.onstop = () => {
                         const r = new FileReader();
                         r.onload = e => msg.send({type:'voice', val: e.target.result});
                         r.readAsDataURL(new Blob(ch));
                     };
-                    state.rec.start();
-                    document.getElementById('mic-btn').classList.add('rec-active');
+                    this.rec.start();
+                    document.getElementById('mic-btn').classList.add('mic-active');
                 });
             },
-            stop() { if(state.rec) { state.rec.stop(); document.getElementById('mic-btn').classList.remove('rec-active'); } }
+            stop() { if(this.rec) { this.rec.stop(); document.getElementById('mic-btn').classList.remove('mic-active'); } }
+        };
+
+        // --- CALLS ---
+        const calls = {
+            async init(v) {
+                const s = await navigator.mediaDevices.getUserMedia({video:v, audio:true});
+                document.getElementById('local-v').srcObject = s;
+                document.getElementById('call-ui').classList.remove('hidden');
+                const call = state.peer.call(state.chat, s);
+                call.on('stream', rs => document.getElementById('remote-v').srcObject = rs);
+            },
+            incoming(call) {
+                document.getElementById('call-ui').classList.remove('hidden');
+                document.getElementById('call-acc').onclick = async () => {
+                    const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+                    document.getElementById('local-v').srcObject = s;
+                    call.answer(s);
+                    call.on('stream', rs => document.getElementById('remote-v').srcObject = rs);
+                };
+            }
         };
 
         // --- ADMIN ---
         const admin = {
             verify() {
-                const target = document.getElementById('adm-target').value;
-                const conn = state.peer.connect(target);
-                conn.on('open', () => {
-                    conn.send({type:'verif_up'});
-                    alert("Готово!");
-                });
+                const t = document.getElementById('adm-target').value;
+                const conn = state.peer.connect(t);
+                conn.on('open', () => conn.send({type:'verif'}));
             }
         };
 
         const stickers = {
             add() {
-                const url = document.getElementById('st-url').value;
-                if(url) { state.stickers.push(url); localStorage.setItem('tat_st', JSON.stringify(state.stickers)); ui.renderStickers(); }
+                const u = document.getElementById('st-url').value;
+                if(u) { state.stickers.push(u); localStorage.setItem('ts_st', JSON.stringify(state.stickers)); ui.renderStickers(); }
             }
         };
 
         if(state.user) msg.init();
-        else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
+        else { document.getElementById('loading').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
     </script>
 </body>
 </html>
