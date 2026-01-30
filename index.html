@@ -3,152 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tatarsms | Friends Update</title>
+    <title>tatarsms | Animated</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Шрифты и Иконки -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- PeerJS -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent: #00d2ff;
-            --accent-grad: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            /* Живой фон */
+            --bg-anim: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #141e30);
+            --glass: rgba(20, 20, 25, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(15px);
+            --accent: #00f2ff;
+            --accent-grad: linear-gradient(90deg, #00f2ff, #0072ff);
             --text: #ffffff;
-            --msg-sent: rgba(0, 210, 255, 0.25);
-            --msg-received: rgba(255, 255, 255, 0.1);
+            --msg-sent: rgba(0, 114, 255, 0.4);
+            --msg-received: rgba(255, 255, 255, 0.08);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg-gradient); color: var(--text); height: 100vh; overflow: hidden; }
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            color: var(--text); 
+            height: 100vh; 
+            overflow: hidden;
+            background: var(--bg-anim);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        /* --- АНИМАЦИИ --- */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        @keyframes msgUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
         .hidden { display: none !important; }
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        /* --- UI ELEMENTS --- */
+        .btn {
+            background: var(--accent-grad); border: none; padding: 12px 20px;
+            border-radius: 12px; color: white; font-weight: 700; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(0, 114, 255, 0.3);
+            width: 100%; margin-top: 10px; position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:hover { box-shadow: 0 8px 25px rgba(0, 114, 255, 0.5); }
+
+        .input-box { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 12px; border-radius: 10px; color: white; margin-bottom: 10px; transition: 0.3s; }
+        .input-box:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
 
         /* --- AUTH --- */
         #auth-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center; z-index: 10000;
         }
         .auth-card {
-            background: rgba(20, 20, 30, 0.8); border: 1px solid var(--glass-border);
-            width: 90%; max-width: 400px; padding: 40px; border-radius: 20px; text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            background: var(--glass); border: 1px solid var(--glass-border);
+            width: 90%; max-width: 400px; padding: 40px; border-radius: 24px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .auth-card h1 { font-size: 32px; font-weight: 800; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
-        
-        .input-box { margin-bottom: 15px; text-align: left; }
-        .input-box label { font-size: 11px; color: #aaa; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; display: block; }
-        .input-box input {
-            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
-            padding: 12px; color: white; border-radius: 10px; transition: 0.3s;
-        }
-        .input-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
+        .auth-card h1 { font-size: 36px; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; font-weight: 800; }
 
-        .btn {
-            width: 100%; background: var(--accent-grad); border: none; padding: 12px;
-            border-radius: 10px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s;
-            margin-top: 10px;
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3); }
-
-        /* --- APP --- */
-        #app { display: flex; height: 100vh; }
+        /* --- APP LAYOUT --- */
+        #app { display: flex; height: 100vh; animation: popIn 0.8s ease; }
 
         .sidebar {
-            width: 300px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px);
+            width: 300px; background: rgba(15, 15, 20, 0.6); backdrop-filter: var(--glass-blur);
             border-right: 1px solid var(--glass-border); display: flex; flex-direction: column;
+            transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 100;
         }
-        .sidebar-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); }
-        .user-mini { display: flex; align-items: center; gap: 10px; }
-        .user-mini img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); }
-
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .user-mini { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .user-mini img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        
         .contact-list { flex: 1; overflow-y: auto; padding: 10px; }
         .contact-item {
             display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px;
-            cursor: pointer; transition: 0.2s; margin-bottom: 5px;
+            cursor: pointer; transition: 0.2s; margin-bottom: 5px; background: rgba(255,255,255,0.03);
         }
-        .contact-item:hover, .contact-item.active { background: rgba(255,255,255,0.1); }
+        .contact-item:hover, .contact-item.active { background: rgba(255,255,255,0.1); transform: translateX(5px); }
         .contact-item.active { border-left: 3px solid var(--accent); }
-        .contact-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .contact-item img { width: 40px; height: 40px; border-radius: 50%; background: #000; object-fit: cover; }
 
         /* --- CHAT --- */
         .chat-view { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(0,0,0,0.2); }
         .chat-header {
             height: 65px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
-            flex-shrink: 0; /* Чтобы шапка не сжималась */
-        }
-
-        .messages {
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
-            scroll-behavior: smooth; /* Плавная прокрутка */
+            background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
         }
         
-        .msg { max-width: 75%; display: flex; flex-direction: column; }
+        .messages { 
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; 
+            scroll-behavior: smooth;
+        }
+        
+        .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgUp 0.4s ease; }
         .msg.sent { align-self: flex-end; align-items: flex-end; }
         .msg-bubble {
-            padding: 10px 15px; border-radius: 16px; font-size: 15px; line-height: 1.4;
-            position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.2); word-wrap: break-word;
+            padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
+            position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); word-break: break-word;
         }
-        .sent .msg-bubble { background: var(--msg-sent); color: white; border-bottom-right-radius: 2px; }
-        .received .msg-bubble { background: var(--msg-received); border-bottom-left-radius: 2px; border: 1px solid var(--glass-border); }
+        .sent .msg-bubble { background: var(--msg-sent); color: white; border-bottom-right-radius: 4px; border: 1px solid rgba(0, 242, 255, 0.2); }
+        .received .msg-bubble { background: var(--msg-received); border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); }
+        
         .msg-time { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; }
-        .media-content { max-width: 250px; border-radius: 10px; margin-bottom: 5px; cursor: pointer; }
+        .media-content { max-width: 250px; border-radius: 10px; margin: 5px 0; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
 
         /* --- INPUT --- */
-        .input-area { 
-            padding: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); 
-            border-top: 1px solid var(--glass-border); flex-shrink: 0; 
-        }
-        .input-bar {
+        .input-area { padding: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); }
+        .input-wrap {
             background: rgba(255,255,255,0.05); border-radius: 14px; display: flex; align-items: center;
-            padding: 5px 15px; border: 1px solid var(--glass-border);
+            padding: 5px 15px; border: 1px solid var(--glass-border); transition: 0.3s;
         }
-        .input-bar input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 15px; }
-        .icon-btn { font-size: 20px; color: #aaa; cursor: pointer; padding: 8px; transition: 0.2s; }
-        .icon-btn:hover { color: var(--accent); }
-        .icon-btn.rec { color: #ff4d4d; animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.5; } }
+        .input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); }
+        .input-wrap input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 15px; }
+        .icon { font-size: 20px; color: #aaa; cursor: pointer; padding: 8px; transition: 0.2s; }
+        .icon:hover { color: var(--accent); transform: scale(1.1); }
+        .icon.rec { color: #ff4d4d; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- MODALS --- */
+        /* --- CUSTOM WINDOWS (MODALS) --- */
         #modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
             display: flex; align-items: center; justify-content: center; z-index: 5000;
         }
         .modal {
-            background: #1a1a2e; padding: 25px; border-radius: 20px; width: 95%; max-width: 400px;
-            border: 1px solid var(--glass-border); text-align: center;
+            background: #1a1a2e; padding: 30px; border-radius: 24px; width: 95%; max-width: 420px;
+            border: 1px solid var(--glass-border); box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            animation: popIn 0.3s ease; position: relative;
         }
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; }
+        
         .request-card h3 { color: var(--accent); margin-bottom: 10px; }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-accept { flex: 1; background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
-        .btn-decline { flex: 1; background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .btn-green { flex:1; background: #2ecc71; border:none; padding:10px; border-radius:8px; color:white; cursor:pointer; }
+        .btn-red { flex:1; background: #e74c3c; border:none; padding:10px; border-radius:8px; color:white; cursor:pointer; }
 
-        /* Стикеры */
-        .sticker-panel { position: absolute; bottom: 80px; left: 20px; width: 280px; background: #1a1a2e; padding: 10px; border-radius: 12px; z-index: 50; border: 1px solid var(--glass-border); }
-        .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; }
-        .sticker-grid img { width: 100%; cursor: pointer; border-radius: 6px; }
+        /* Stickers */
+        .sticker-panel { 
+            position: absolute; bottom: 85px; left: 15px; width: 300px; 
+            background: rgba(20,20,30,0.95); padding: 15px; border-radius: 16px; 
+            z-index: 50; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: popIn 0.2s ease;
+        }
+        .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; }
+        .sticker-grid img { width: 100%; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .sticker-grid img:hover { transform: scale(1.1); }
 
-        /* Звонок */
+        /* Video Call */
         #call-ui { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; }
         .video-box { flex: 1; position: relative; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        #local-video { width: 120px; height: 160px; position: absolute; bottom: 30px; right: 20px; border-radius: 12px; border: 2px solid var(--accent); z-index: 10; }
-        .call-controls { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 20; }
-        .btn-round { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; color: white; cursor: pointer; }
-
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; inset: 0; z-index: 100; transition: 0.3s; transform: translateX(0); }
-            .sidebar.closed { transform: translateX(-100%); }
-            .back-btn { display: block !important; margin-right: 15px; font-size: 22px; cursor: pointer; }
+        #local-video { width: 130px; height: 170px; position: absolute; bottom: 100px; right: 20px; border-radius: 12px; border: 2px solid var(--accent); z-index: 10; object-fit: cover; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .call-controls { 
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 30px; z-index: 20; background: rgba(0,0,0,0.5); padding: 10px 30px; border-radius: 30px; backdrop-filter: blur(10px);
         }
-        .back-btn { display: none; }
+        .btn-round { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; color: white; cursor: pointer; transition: 0.2s; }
+        .btn-round:hover { transform: scale(1.1); }
+
+        /* --- MOBILE --- */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; inset: 0; transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .back-btn { display: block !important; margin-right: 15px; font-size: 22px; cursor: pointer; }
+            .mobile-menu-btn { display: block !important; font-size: 24px; margin-right: 15px; cursor: pointer; }
+            .input-area { padding: 10px; }
+        }
+        .back-btn, .mobile-menu-btn { display: none; }
     </style>
 </head>
 <body>
@@ -158,69 +194,63 @@
         <div class="auth-card">
             <h1>tatarsms</h1>
             
+            <!-- Login -->
             <div id="auth-login">
-                <div class="input-box">
-                    <label>Ваш ID</label>
-                    <input type="text" id="login-id" placeholder="tatar_user">
-                </div>
-                <div class="input-box">
-                    <label>Пароль</label>
-                    <input type="password" id="login-pass" placeholder="••••••">
-                </div>
+                <input class="input-box" type="text" id="login-id" placeholder="Ваш ID">
+                <input class="input-box" type="password" id="login-pass" placeholder="Пароль">
                 <button class="btn" onclick="security.login()">Войти</button>
                 <p style="margin-top:15px; font-size:13px; color:#aaa; cursor:pointer;" onclick="security.switch('reg')">Нет аккаунта? Создать</p>
             </div>
 
+            <!-- Reg -->
             <div id="auth-reg" class="hidden">
-                <div class="input-box"><label>Почта</label><input type="email" id="reg-email" placeholder="email@com"></div>
-                <div class="input-box"><label>Новый ID</label><input type="text" id="reg-id" placeholder="new_id"></div>
-                <div class="input-box"><label>Пароль</label><input type="password" id="reg-pass" placeholder="••••••"></div>
-                <button class="btn" onclick="security.sendCode()">Отправить код</button>
+                <input class="input-box" type="email" id="reg-email" placeholder="Email (для вида)">
+                <input class="input-box" type="text" id="reg-id" placeholder="Придумайте ID">
+                <input class="input-box" type="password" id="reg-pass" placeholder="Придумайте пароль">
+                <button class="btn" onclick="security.reg()">Зарегистрироваться</button>
                 <p style="margin-top:15px; font-size:13px; color:#aaa; cursor:pointer;" onclick="security.switch('login')">Назад</p>
-            </div>
-
-            <div id="auth-code" class="hidden">
-                <p style="margin-bottom:10px;">Код отправлен (см. alert)</p>
-                <div class="input-box"><input type="text" id="reg-verify" placeholder="12345" style="text-align:center; font-size:24px;"></div>
-                <button class="btn" onclick="security.verify()">Подтвердить</button>
             </div>
         </div>
     </div>
 
     <!-- ИНТЕРФЕЙС -->
     <div id="app" class="hidden">
+        <!-- Сайдбар -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="user-mini" onclick="ui.modal('settings')">
                     <img id="my-av" src="">
-                    <div><div style="font-weight:700" id="my-id">...</div><div style="font-size:11px; color:#00d2ff">В сети</div></div>
+                    <div><div style="font-weight:700" id="my-id">...</div><div style="font-size:12px; color:var(--accent)">В сети</div></div>
                 </div>
-                <i class="fas fa-cog icon-btn" onclick="ui.modal('settings')"></i>
-            </div>
-            <div style="padding:15px;">
-                <div class="input-box" style="margin:0;">
-                    <input type="text" placeholder="Добавить друга (ID)..." onkeypress="messenger.sendRequest(event)">
+                <div style="display:flex; gap:15px;">
+                    <i class="fas fa-user-plus" style="color:var(--text); cursor:pointer;" onclick="ui.modal('add-friend')"></i>
+                    <i class="fas fa-times mobile-menu-btn" onclick="ui.toggleSidebar()"></i>
                 </div>
             </div>
             <div class="contact-list" id="contact-list"></div>
         </aside>
 
+        <!-- Чат -->
         <main class="chat-view">
-            <div id="chat-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.5;">
-                <i class="fas fa-comment-dots" style="font-size:80px; margin-bottom:20px; color:var(--accent);"></i>
+            <div id="chat-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.6;">
+                <i class="fas fa-bars mobile-menu-btn" style="position:absolute; top:20px; left:20px;" onclick="ui.toggleSidebar()"></i>
+                <i class="fas fa-meteor" style="font-size:80px; margin-bottom:20px; color:var(--accent);"></i>
                 <h2>Выберите чат</h2>
             </div>
 
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column;">
                 <header class="chat-header">
                     <div style="display:flex; align-items:center;">
-                        <i class="fas fa-arrow-left back-btn" onclick="ui.toggleSidebar()"></i>
-                        <img id="target-av" src="" style="width:40px; height:40px; border-radius:50%; margin-right:12px;">
-                        <div style="font-weight:700; font-size:18px;" id="target-name">User</div>
+                        <i class="fas fa-arrow-left back-btn" onclick="ui.closeChat()"></i>
+                        <img id="target-av" src="" style="width:42px; height:42px; border-radius:50%; margin-right:12px; object-fit:cover; border:2px solid var(--accent);">
+                        <div>
+                            <div style="font-weight:700; font-size:16px;" id="target-name">User</div>
+                            <div style="font-size:12px; color:#2ecc71;">Online P2P</div>
+                        </div>
                     </div>
                     <div style="display:flex; gap:15px;">
-                        <i class="fas fa-phone icon-btn" onclick="calls.start(false)"></i>
-                        <i class="fas fa-video icon-btn" onclick="calls.start(true)"></i>
+                        <i class="fas fa-phone icon" onclick="calls.start(false)"></i>
+                        <i class="fas fa-video icon" onclick="calls.start(true)"></i>
                     </div>
                 </header>
 
@@ -229,49 +259,58 @@
                 <div class="input-area">
                     <div id="sticker-panel" class="sticker-panel hidden">
                         <div class="sticker-grid" id="sticker-grid"></div>
-                        <input type="text" id="st-url" placeholder="URL..." style="width:100%; background:#000; border:none; color:white; padding:5px; margin-top:5px; border-radius:4px;">
-                        <button class="btn" style="padding:5px; margin-top:5px; font-size:12px;" onclick="messenger.addSticker()">OK</button>
+                        <input type="text" id="st-url" placeholder="URL стикера..." class="input-box" style="margin-top:10px; font-size:12px; padding:8px;">
+                        <button class="btn" style="margin-top:5px; padding:8px; font-size:12px;" onclick="messenger.addSticker()">Добавить</button>
                     </div>
 
-                    <div class="input-bar">
-                        <i class="far fa-smile icon-btn" onclick="ui.toggleStickers()"></i>
-                        <label for="file-up"><i class="fas fa-paperclip icon-btn"></i></label>
+                    <div class="input-wrap">
+                        <i class="far fa-smile icon" onclick="ui.toggleStickers()"></i>
+                        <label for="file-up"><i class="fas fa-paperclip icon"></i></label>
                         <input type="file" id="file-up" hidden onchange="messenger.sendFile(this)">
                         <input type="text" id="msg-input" placeholder="Сообщение..." onkeypress="messenger.enter(event)">
-                        <i class="fas fa-microphone icon-btn" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
-                        <i class="fas fa-paper-plane icon-btn" style="color:var(--accent);" onclick="messenger.sendText()"></i>
+                        <i class="fas fa-microphone icon" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
+                        <i class="fas fa-paper-plane icon" style="color:var(--accent);" onclick="messenger.sendText()"></i>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- МОДАЛКИ -->
+    <!-- МОДАЛКИ (CUSTOM WINDOWS) -->
     <div id="modal-overlay" class="hidden">
         <!-- Настройки -->
         <div id="modal-settings" class="modal hidden">
-            <h2>Профиль</h2>
-            <img id="set-av" src="" style="width:80px; height:80px; border-radius:50%; margin:15px 0;">
-            <p>ID: <strong id="set-id"></strong></p>
-            <p>Статус: <span id="set-stat">User</span></p>
-            
-            <div id="admin-panel" class="hidden" style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
-                <label style="color:var(--accent); font-weight:700;">АДМИН</label>
-                <input type="text" id="verify-target" placeholder="ID пользователя" style="width:100%; padding:8px; background:#000; border:none; color:white; margin:5px 0; border-radius:6px;">
-                <button class="btn" onclick="admin.verify()">Верифицировать</button>
+            <span class="modal-close" onclick="ui.close()">&times;</span>
+            <h2 style="margin-bottom:20px; text-align:center;">Профиль</h2>
+            <div style="text-align:center; margin-bottom:20px;">
+                <img id="set-av" src="" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); object-fit:cover;">
             </div>
-            
-            <button class="btn" style="background:#444; margin-top:20px;" onclick="security.logout()">Выйти</button>
-            <button class="btn" style="background:transparent; border:1px solid #444;" onclick="ui.close()">Закрыть</button>
+            <p>ID: <strong id="set-id"></strong></p>
+            <p>Статус: <span id="set-verif">User</span></p>
+            <div id="admin-panel" class="hidden" style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+                <label style="color:var(--accent); font-weight:700;">АДМИН</label>
+                <input type="text" id="verify-target" placeholder="ID юзера" class="input-box" style="margin-top:5px;">
+                <button class="btn" onclick="admin.verify()">Выдать галочку</button>
+            </div>
+            <button class="btn" style="background:#333; margin-top:20px;" onclick="security.logout()">Выйти</button>
         </div>
 
-        <!-- Запрос в друзья -->
+        <!-- Добавить друга -->
+        <div id="modal-add-friend" class="modal hidden">
+            <span class="modal-close" onclick="ui.close()">&times;</span>
+            <h3>Добавить друга</h3>
+            <p style="color:#aaa; margin-bottom:15px;">Введите ID пользователя, чтобы отправить запрос.</p>
+            <input type="text" id="req-id-input" class="input-box" placeholder="tatar_user">
+            <button class="btn" onclick="messenger.sendRequest()">Отправить запрос</button>
+        </div>
+
+        <!-- Запрос -->
         <div id="modal-request" class="modal hidden">
-            <h3 style="color:var(--accent);">Заявка в друзья</h3>
-            <p>Пользователь <strong id="req-id"></strong> хочет добавить вас.</p>
+            <h3 style="color:var(--accent);">Входящая заявка</h3>
+            <p style="margin:15px 0;">Пользователь <strong id="req-id-disp"></strong> хочет добавить вас.</p>
             <div class="btn-group">
-                <button class="btn-accept" onclick="messenger.handleReq(true)">Принять</button>
-                <button class="btn-decline" onclick="messenger.handleReq(false)">Отклонить</button>
+                <button class="btn-green" onclick="messenger.handleReq(true)">Принять</button>
+                <button class="btn-red" onclick="messenger.handleReq(false)">Отклонить</button>
             </div>
         </div>
     </div>
@@ -294,35 +333,22 @@
 
         // --- SECURITY ---
         const security = {
-            temp: {}, code: null,
             switch(v) {
-                ['login','reg','code'].forEach(id => document.getElementById(`auth-${id}`).classList.add('hidden'));
+                document.getElementById('auth-login').classList.add('hidden');
+                document.getElementById('auth-reg').classList.add('hidden');
                 document.getElementById(`auth-${v}`).classList.remove('hidden');
             },
-            sendCode() {
+            reg() {
                 const id = document.getElementById('reg-id').value;
-                const email = document.getElementById('reg-email').value;
                 const pw = document.getElementById('reg-pass').value;
-                if(!id || !email || !pw) return alert("Заполните всё");
+                if(!id || !pw) return alert("Заполните поля");
                 
                 const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
                 if(db.users[id]) return alert("ID занят");
 
-                this.code = Math.floor(10000 + Math.random() * 90000);
-                this.temp = {id, pw, email};
-                alert(`Код на ${email}: ${this.code}`);
-                this.switch('code');
-            },
-            verify() {
-                if(document.getElementById('reg-verify').value != this.code) return alert("Неверно");
-                const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
-                db.users[this.temp.id] = { 
-                    pw: btoa(this.temp.pw), 
-                    av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}`,
-                    verif: false 
-                };
+                db.users[id] = { pw: btoa(pw), av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, verif: false };
                 localStorage.setItem('tat_db', JSON.stringify(db));
-                alert("Успешно!"); this.switch('login');
+                alert("Успешно! Теперь войдите."); this.switch('login');
             },
             login() {
                 const id = document.getElementById('login-id').value;
@@ -332,7 +358,7 @@
                 const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
                 const u = db.users[id];
                 if(u && atob(u.pw) === pw) this.sess(id, u.av, u.verif);
-                else alert("Ошибка");
+                else alert("Ошибка входа");
             },
             sess(id, av, verif) {
                 localStorage.setItem('tat_sess', JSON.stringify({id, av, verif}));
@@ -348,7 +374,7 @@
             friends: JSON.parse(localStorage.getItem(`fr_${localStorage.getItem('tat_sess')?.id}`) || '[]'),
             history: JSON.parse(localStorage.getItem('tat_hist') || '{}'),
             stickers: JSON.parse(localStorage.getItem('tat_st') || '[]'),
-            pendingReq: null
+            pending: null
         };
 
         // --- MESSENGER ---
@@ -368,30 +394,31 @@
                 state.peer.on('call', call => calls.incoming(call));
             },
 
-            sendRequest(e) {
-                if(e.key !== 'Enter') return;
-                const target = e.target.value.trim();
-                if(target === state.user.id || state.friends.includes(target)) return alert("Уже в друзьях или это вы!");
+            sendRequest() {
+                const target = document.getElementById('req-id-input').value.trim();
+                if(!target) return;
+                if(target === state.user.id || state.friends.includes(target)) return alert("Нельзя!");
                 
                 const conn = state.peer.connect(target);
                 conn.on('open', () => {
-                    conn.send({type: 'friend_req', from: state.user.id});
+                    conn.send({type: 'req', from: state.user.id});
                     alert("Заявка отправлена!");
-                    e.target.value = '';
+                    ui.close();
                 });
-                conn.on('error', () => alert("Пользователь не найден/оффлайн"));
+                conn.on('error', () => alert("Пользователь оффлайн"));
             },
 
             receive(data, from) {
-                if(data.type === 'friend_req') {
-                    state.pendingReq = from;
-                    ui.showReq(from);
-                } else if (data.type === 'friend_accept') {
+                if(data.type === 'req') {
+                    state.pending = from;
+                    document.getElementById('req-id-disp').innerText = from;
+                    ui.modal('request');
+                } else if(data.type === 'acc') {
                     if(!state.friends.includes(from)) {
                         state.friends.push(from);
                         this.saveFr();
                         ui.renderList();
-                        alert(`${from} принял вашу заявку!`);
+                        alert(`${from} принял заявку!`);
                     }
                 } else {
                     this.saveMsg(from, data, 'received');
@@ -399,12 +426,12 @@
             },
 
             handleReq(accept) {
-                if(accept && state.pendingReq) {
-                    state.friends.push(state.pendingReq);
+                if(accept && state.pending) {
+                    state.friends.push(state.pending);
                     this.saveFr();
                     ui.renderList();
-                    const conn = state.peer.connect(state.pendingReq);
-                    conn.on('open', () => conn.send({type: 'friend_accept'}));
+                    const conn = state.peer.connect(state.pending);
+                    conn.on('open', () => conn.send({type: 'acc'}));
                 }
                 ui.close();
             },
@@ -423,7 +450,7 @@
                 r.onload = e => {
                     let type = 'file';
                     if(file.type.startsWith('image')) type = 'image';
-                    if(file.type.startsWith('audio')) type = 'audio';
+                    else if(file.type.startsWith('audio')) type = 'audio';
                     this.dispatch({type, content:e.target.result, mime:file.type});
                 };
                 r.readAsDataURL(file);
@@ -443,7 +470,7 @@
                 localStorage.setItem('tat_hist', JSON.stringify(state.history));
                 if(state.chat === peer) {
                     ui.renderChat();
-                    ui.scrollDown(); // АВТО-ПРОКРУТКА
+                    ui.scroll(); // AUTO SCROLL FIX
                 }
             },
 
@@ -469,7 +496,7 @@
                     document.getElementById('call-ui').classList.remove('hidden');
                     const call = state.peer.call(state.chat, s);
                     call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                } catch(e) { alert("Камера недоступна"); }
+                } catch(e) { alert("Нет камеры/микрофона"); }
             },
             incoming(call) {
                 document.getElementById('call-ui').classList.remove('hidden');
@@ -520,9 +547,8 @@
                 document.getElementById('target-name').innerText = id;
                 document.getElementById('target-av').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
                 this.renderChat();
-                this.renderList();
                 if(window.innerWidth < 768) this.toggleSidebar();
-                this.scrollDown();
+                this.scroll();
             },
             renderChat() {
                 const box = document.getElementById('msg-box'); box.innerHTML = '';
@@ -531,22 +557,19 @@
                     div.className = `msg ${m.dir}`;
                     let content = '';
                     if(m.type === 'text') content = m.content;
-                    else if(m.type === 'image') content = `<img src="${m.content}" class="media-content" onclick="window.open(this.src)">`;
+                    else if(m.type === 'image') content = `<img src="${m.content}" class="media-content" onload="ui.scroll()">`;
                     else if(m.type === 'audio') content = `<audio src="${m.content}" controls></audio>`;
-                    else content = `<a href="${m.content}" download style="color:#00d2ff">Скачать файл</a>`;
+                    else content = `<a href="${m.content}" download style="color:var(--accent)">Файл</a>`;
                     
                     div.innerHTML = `<div class="msg-bubble">${content}<div class="msg-time">${m.time}</div></div>`;
                     box.appendChild(div);
                 });
             },
-            scrollDown() {
-                const box = document.getElementById('msg-box');
-                setTimeout(() => box.scrollTop = box.scrollHeight, 100);
-            },
-            showReq(from) {
-                document.getElementById('req-id').innerText = from;
-                document.getElementById('modal-overlay').classList.remove('hidden');
-                document.getElementById('modal-request').classList.remove('hidden');
+            scroll() {
+                setTimeout(() => {
+                    const box = document.getElementById('msg-box');
+                    box.scrollTop = box.scrollHeight;
+                }, 50);
             },
             toggleStickers() { 
                 document.getElementById('sticker-panel').classList.toggle('hidden');
@@ -562,21 +585,24 @@
             },
             modal(id) {
                 document.getElementById('modal-overlay').classList.remove('hidden');
-                document.getElementById(`modal-${id}`)?.classList.remove('hidden');
+                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+                document.getElementById(`modal-${id}`).classList.remove('hidden');
                 if(id === 'settings') {
                     document.getElementById('set-id').innerText = state.user.id;
                     document.getElementById('set-av').src = state.user.av;
-                    if(state.user.verif) document.getElementById('set-stat').innerHTML = "Верифицирован <i class='fas fa-check-circle' style='color:#00d2ff'></i>";
+                    if(state.user.verif) document.getElementById('set-verif').innerHTML = "Верифицирован <i class='fas fa-check-circle' style='color:#00d2ff'></i>";
                     if(state.user.id === ADMIN_ID) document.getElementById('admin-panel').classList.remove('hidden');
                 }
             },
-            close() { 
-                document.getElementById('modal-overlay').classList.add('hidden'); 
-                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-            },
+            close() { document.getElementById('modal-overlay').classList.add('hidden'); },
             toggleSidebar() { 
                 const s = document.getElementById('sidebar');
-                s.style.transform = s.style.transform === 'translateX(-100%)' ? 'translateX(0)' : 'translateX(-100%)';
+                s.classList.toggle('active');
+            },
+            closeChat() {
+                document.getElementById('chat-active').classList.add('hidden');
+                document.getElementById('chat-empty').classList.remove('hidden');
+                this.toggleSidebar();
             }
         };
 
