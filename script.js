@@ -1,13 +1,12 @@
-// === НАСТРОЙКИ ПОЧТЫ (EMAILJS) ===
-        // Вставьте сюда данные из шага 1
-        const EMAIL_KEY = "_QD5eXUp0g9r3WEC-";      // Например: "user_Xyz..."
-        const EMAIL_SERV = "service_tatarsms";     // Например: "service_gmail"
-        const EMAIL_TEMP = "template_jlewu48";    // Например: "template_123"
+
+        const EMAIL_KEY = "_QD5eXUp0g9r3WEC-";      /
+        const EMAIL_SERV = "service_tatarsms";     /
+        const EMAIL_TEMP = "template_jlewu48";    /
 
         const ADMIN_ID = "tatar_506";
         const ADMIN_PW = "spinogrz666";
 
-        // --- SECURITY ---
+       
         const security = {
             temp: {}, code: null,
             switch(v) {
@@ -93,3 +92,4 @@
             },
             logout() { localStorage.removeItem('tat_sess'); location.reload(); }
         };
+
