@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tatarsms | Stable Edition</title>
+    <title>tatarsms | Premium Stable</title>
     
-    <!-- Ресурсы -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
@@ -14,10 +13,10 @@
         :root {
             --bg-dark: #1e1f22;
             --bg-side: #2b2d31;
-            --bg-main: #313338;
+            --bg-chat: #313338;
             --accent: #5865f2;
             --accent-hover: #4752c4;
-            --text: #dbdee1;
+            --text-main: #f2f3f5;
             --text-muted: #949ba4;
             --msg-received: #383a40;
             --success: #23a55a;
@@ -25,8 +24,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); height: 100vh; overflow: hidden; }
-
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
         /* --- AUTH SCREEN --- */
@@ -38,7 +36,7 @@
             background: var(--bg-side); width: 90%; max-width: 400px; padding: 32px;
             border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); text-align: center;
         }
-        .auth-card h1 { font-size: 32px; font-weight: 800; color: var(--accent); margin-bottom: 24px; }
+        .auth-card h1 { font-size: 28px; font-weight: 800; color: var(--accent); margin-bottom: 24px; }
         .input-group { text-align: left; margin-bottom: 16px; }
         .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
         .input-group input { width: 100%; background: var(--bg-dark); border: none; padding: 12px; color: white; border-radius: 4px; outline: none; }
@@ -46,7 +44,7 @@
         .btn { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 10px; }
         .btn:hover { background: var(--accent-hover); }
 
-        /* --- LAYOUT --- */
+        /* --- APP LAYOUT --- */
         #app { display: flex; height: 100vh; }
         .sidebar { width: 300px; background: var(--bg-side); display: flex; flex-direction: column; border-right: 1px solid rgba(0,0,0,0.2); transition: 0.3s; }
         .sidebar-header { padding: 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
@@ -54,8 +52,7 @@
         .contact-list { flex: 1; overflow-y: auto; padding: 10px; }
         .contact-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; transition: 0.2s; }
         .contact-item:hover, .contact-item.active { background: rgba(255,255,255,0.06); }
-        .contact-item.active { border-left: 3px solid var(--accent); }
-        .contact-item img { width: 36px; height: 36px; border-radius: 50%; background: #000; }
+        .contact-item img { width: 36px; height: 36px; border-radius: 50%; background: #000; object-fit: cover; }
 
         .chat-view { flex: 1; background: var(--bg-main); display: flex; flex-direction: column; }
         .chat-header { height: 60px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.1); }
@@ -69,7 +66,7 @@
         /* Input Area */
         .input-area { padding: 15px 20px; background: var(--bg-main); }
         .input-wrap { background: #383a40; border-radius: 8px; display: flex; align-items: center; padding: 0 15px; gap: 15px; }
-        #msg-input { flex: 1; background: none; border: none; padding: 12px 0; color: white; outline: none; }
+        #msg-input { flex: 1; background: none; border: none; padding: 12px 0; color: white; outline: none; font-size: 15px; }
         .icon { color: var(--text-muted); cursor: pointer; font-size: 18px; transition: 0.2s; }
         .icon:hover { color: white; }
 
@@ -93,10 +90,10 @@
 </head>
 <body>
 
-    <!-- AUTH SCREEN -->
+    <!-- ЭКРАН ВХОДА -->
     <div id="auth-screen">
         <div class="auth-card">
-            <h1>tatarsms</h1>
+            <h1 id="auth-header-text">tatarsms</h1>
             <div id="auth-form">
                 <div class="input-group">
                     <label>Никнейм (ID)</label>
@@ -108,17 +105,18 @@
                 </div>
                 <div id="reg-fields" class="hidden">
                     <div class="input-group">
-                        <label>Ссылка на фото</label>
+                        <label>Ссылка на фото профиля</label>
                         <input type="text" id="auth-av" placeholder="https://...">
                     </div>
                 </div>
                 <button class="btn" id="submit-btn" onclick="security.handleAuth()">Войти</button>
                 <p id="toggle-auth" style="margin-top:15px; font-size:12px; color:var(--text-muted); cursor:pointer;" onclick="security.toggleMode()">Нет аккаунта? Зарегистрироваться</p>
+                <button class="btn" style="background:#444; margin-top:20px; font-size:11px;" onclick="localStorage.clear(); location.reload();">Сбросить данные (если ошибка)</button>
             </div>
         </div>
     </div>
 
-    <!-- APP -->
+    <!-- ПРИЛОЖЕНИЕ -->
     <div id="app" class="hidden">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -134,7 +132,7 @@
         <main class="chat-view">
             <div id="chat-empty" style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-muted); flex-direction:column; opacity:0.3;">
                 <i class="fas fa-comments" style="font-size:80px; margin-bottom:10px;"></i>
-                <p>Выберите чат</p>
+                <p>Выберите чат или введите ID друга</p>
             </div>
 
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column;">
@@ -143,7 +141,7 @@
                         <img id="active-av" src="" style="width:36px; height:36px; border-radius:50%; object-fit: cover;">
                         <div>
                             <div style="font-weight:700" id="active-name">User</div>
-                            <div style="font-size:11px; color:var(--success)">P2P Secure</div>
+                            <div style="font-size:11px; color:var(--success)">P2P Online</div>
                         </div>
                     </div>
                     <div style="display:flex; gap:20px; color:var(--text-muted);">
@@ -155,7 +153,7 @@
                 <div class="input-area">
                     <div id="sticker-panel" class="sticker-panel hidden">
                         <div class="sticker-grid" id="sticker-grid"></div>
-                        <input type="text" id="st-url" placeholder="URL картинки..." style="width:100%; background:var(--bg-dark); border:none; color:white; padding:8px; margin-top:10px; font-size:12px;">
+                        <input type="text" id="st-url" placeholder="URL стикера..." style="width:100%; background:var(--bg-dark); border:none; color:white; padding:8px; margin-top:10px; font-size:12px;">
                         <button class="btn" onclick="messenger.addSticker()">Добавить</button>
                     </div>
                     <div class="input-wrap">
@@ -170,7 +168,7 @@
         </main>
     </div>
 
-    <!-- CALLS -->
+    <!-- CALL UI -->
     <div id="call-ui" class="hidden">
         <div class="video-box">
             <video id="remote-video" autoplay playsinline></video>
@@ -178,7 +176,7 @@
         </div>
         <div style="margin-top:20px; display:flex; gap:20px;">
             <button class="btn" id="call-accept-btn" style="background:var(--success); border-radius:50%; width:60px; height:60px;"><i class="fas fa-phone"></i></button>
-            <button class="btn" onclick="calls.end()" style="background:var(--danger); border-radius:50%; width:60px; height:60px;"><i class="fas fa-phone-slash"></i></button>
+            <button class="btn" onclick="location.reload()" style="background:var(--danger); border-radius:50%; width:60px; height:60px;"><i class="fas fa-phone-slash"></i></button>
         </div>
     </div>
 
@@ -204,10 +202,13 @@
             isReg: false,
             toggleMode() {
                 this.isReg = !this.isReg;
-                document.getElementById('auth-form').querySelector('h1').innerText = "tatarsms";
-                document.getElementById('submit-btn').innerText = this.isReg ? "Зарегистрироваться" : "Войти";
+                const header = document.getElementById('auth-header-text');
+                const submitBtn = document.getElementById('submit-btn');
+                const toggleBtn = document.getElementById('toggle-auth');
+                if(header) header.innerText = "tatarsms";
+                if(submitBtn) submitBtn.innerText = this.isReg ? "Зарегистрироваться" : "Войти";
                 document.getElementById('reg-fields').classList.toggle('hidden', !this.isReg);
-                document.getElementById('toggle-auth').innerText = this.isReg ? "Есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться";
+                if(toggleBtn) toggleBtn.innerText = this.isReg ? "Есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться";
             },
             handleAuth() {
                 const id = document.getElementById('auth-user').value.trim();
@@ -224,13 +225,13 @@
                 const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
                 if(this.isReg) {
                     if(db.users[id]) return alert("ID занят");
-                    db.users[id] = { pw: btoa(pw), av: av || `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, verif: false };
+                    db.users[id] = { pw: pw, av: av || `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, verif: false };
                     localStorage.setItem('tat_db', JSON.stringify(db));
                     alert("Регистрация успешна!"); this.toggleMode();
                 } else {
                     const u = db.users[id];
-                    if(u && atob(u.pw) === pw) this.setSession(id, u.av, u.verif);
-                    else alert("Неверный пароль");
+                    if(u && u.pw === pw) this.setSession(id, u.av, u.verif);
+                    else alert("Неверные данные");
                 }
             },
             setSession(id, av, verif) {
@@ -341,14 +342,15 @@
                     call.on('stream', s => document.getElementById('remote-video').srcObject = s);
                     document.getElementById('call-accept-btn').classList.add('hidden');
                 };
-            },
-            end() { location.reload(); }
+            }
         };
 
         // --- UI ---
         const ui = {
             renderFriends() {
-                const list = document.getElementById('contact-list'); list.innerHTML = '';
+                const list = document.getElementById('contact-list'); 
+                if(!list) return;
+                list.innerHTML = '';
                 state.friends.forEach(id => {
                     const div = document.createElement('div');
                     div.className = `contact-item ${state.activeChat === id ? 'active' : ''}`;
@@ -366,16 +368,18 @@
                 this.renderMessages(); this.renderFriends();
             },
             renderMessages() {
-                const box = document.getElementById('messages-box'); box.innerHTML = '';
+                const box = document.getElementById('messages-box'); 
+                if(!box) return;
+                box.innerHTML = '';
                 const msgs = state.history[state.activeChat] || [];
                 msgs.forEach(m => {
                     const div = document.createElement('div');
                     div.className = `msg ${m.type}`;
                     let content = m.content;
                     if(m.type === 'file') {
-                        if(m.mime.startsWith('image')) content = `<img src="${m.content}" class="media">`;
-                        else if(m.mime.startsWith('audio')) content = `<audio src="${m.content}" controls style="width:200px"></audio>`;
-                        else content = `<a href="${m.content}" download style="color:white">Файл</a>`;
+                        if(m.mime && m.mime.startsWith('image')) content = `<img src="${m.content}" class="media">`;
+                        else if(m.mime && m.mime.startsWith('audio')) content = `<audio src="${m.content}" controls style="width:200px"></audio>`;
+                        else content = `<a href="${m.content}" download style="color:white">Скачать файл</a>`;
                     }
                     div.innerHTML = `<div class="msg-bubble">${content}</div><div style="font-size:10px; color:gray; margin-top:5px;">${m.time}</div>`;
                     box.appendChild(div);
@@ -384,7 +388,9 @@
             },
             toggleStickers() { document.getElementById('sticker-panel').classList.toggle('hidden'); this.renderStickers(); },
             renderStickers() {
-                const grid = document.getElementById('sticker-grid'); grid.innerHTML = '';
+                const grid = document.getElementById('sticker-grid'); 
+                if(!grid) return;
+                grid.innerHTML = '';
                 state.stickers.forEach(url => {
                     const img = document.createElement('img'); img.src = url;
                     img.onclick = () => { messenger.dispatch({type:'file', content:url, mime:'image/png'}); this.toggleStickers(); };
@@ -394,7 +400,6 @@
             modal(id) {
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 if(id === 'settings') {
-                    document.getElementById('my-id-set').innerText = state.user.id;
                     if(state.user.id === ADMIN_ID) document.getElementById('admin-panel').classList.remove('hidden');
                 }
             },
@@ -405,16 +410,15 @@
             verify() {
                 const id = document.getElementById('twink-id').value.trim();
                 const db = JSON.parse(localStorage.getItem('tat_db'));
-                if(db.users[id]) {
+                if(db && db.users[id]) {
                     db.users[id].verif = true;
                     localStorage.setItem('tat_db', JSON.stringify(db));
-                    alert("Готово!");
+                    alert("Успешно!");
                 }
             }
         };
 
         if(state.user) messenger.init();
-        else document.getElementById('auth-status').innerText = "Ожидание входа...";
     </script>
 </body>
 </html>
