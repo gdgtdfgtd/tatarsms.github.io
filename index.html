@@ -4,206 +4,473 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>tatarsms | Premium P2P</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Библиотеки -->
+    
+    <!-- Шрифты и Иконки -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+
+    <style>
+        /* --- CSS ПЕРЕМЕННЫЕ (DISCORD STYLE) --- */
+        :root {
+            --bg-darkest: #1e1f22;
+            --bg-sidebar: #2b2d31;
+            --bg-main: #313338;
+            --accent: #5865f2;
+            --accent-hover: #4752c4;
+            --text-main: #dbdee1;
+            --text-muted: #949ba4;
+            --danger: #f23f43;
+            --success: #23a55a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-darkest); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+        /* --- АНИМАЦИИ --- */
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none !important; }
+
+        /* --- ЭКРАН ВХОДА И РЕГИСТРАЦИИ --- */
+        #auth-screen {
+            position: fixed; inset: 0; background: var(--bg-darkest);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .auth-card {
+            background: var(--bg-sidebar); width: 100%; max-width: 400px;
+            padding: 32px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: slideUp 0.5s ease; text-align: center;
+        }
+        .auth-card h1 { font-size: 32px; color: var(--accent); margin-bottom: 8px; font-weight: 800; }
+        .auth-card p { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+
+        .input-group { text-align: left; margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+        .input-group input { width: 100%; background: var(--bg-darkest); border: none; padding: 12px; color: white; border-radius: 4px; outline: none; transition: 0.2s; }
+        .input-group input:focus { box-shadow: 0 0 0 2px var(--accent); }
+
+        .btn-main { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-main:hover { background: var(--accent-hover); }
+        .auth-footer { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+        .auth-footer span { color: var(--accent); cursor: pointer; }
+
+        .avatar-setup { margin-bottom: 20px; position: relative; display: inline-block; }
+        .avatar-setup img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; }
+        .avatar-setup button { position: absolute; bottom: 0; right: 0; background: var(--accent); border: none; width: 28px; height: 28px; border-radius: 50%; color: white; cursor: pointer; }
+
+        /* --- ГЛАВНЫЙ ИНТЕРФЕЙС --- */
+        #app { display: flex; height: 100vh; animation: fadeIn 0.5s ease; }
+
+        /* Сайдбар */
+        .sidebar { width: 300px; background: var(--bg-sidebar); display: flex; flex-direction: column; transition: 0.3s; }
+        .sidebar-header { padding: 16px; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .search-box { padding: 12px; }
+        .search-box input { width: 100%; background: var(--bg-darkest); border: none; padding: 10px; color: white; border-radius: 4px; outline: none; }
+        
+        .contact-list { flex: 1; overflow-y: auto; padding: 8px; }
+        .contact-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; margin-bottom: 2px; }
+        .contact-item:hover { background: rgba(255,255,255,0.05); }
+        .contact-item.active { background: var(--accent); color: white; }
+        .contact-item img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+
+        /* Область Чата */
+        .chat-view { flex: 1; background: var(--bg-main); display: flex; flex-direction: column; position: relative; }
+        .chat-header { height: 60px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-sidebar); border-bottom: 1px solid rgba(0,0,0,0.2); }
+        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+        /* Сообщения */
+        .msg { max-width: 70%; animation: slideUp 0.3s ease; display: flex; flex-direction: column; }
+        .msg.sent { align-self: flex-end; align-items: flex-end; }
+        .msg-bubble { background: var(--bg-sidebar); padding: 10px 14px; border-radius: 18px; line-height: 1.4; position: relative; }
+        .sent .msg-bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+        .received .msg-bubble { border-bottom-left-radius: 4px; }
+        .msg-info { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+
+        /* Ввод */
+        .input-area { padding: 20px; background: var(--bg-main); }
+        .input-wrap { background: #383a40; border-radius: 8px; display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+        #msg-input { flex: 1; background: none; border: none; padding: 15px 0; color: white; outline: none; font-size: 15px; }
+        .tool-icon { color: var(--text-muted); cursor: pointer; font-size: 18px; transition: 0.2s; }
+        .tool-icon:hover { color: white; }
+        .tool-icon.recording { color: var(--danger); animation: fadeIn 1s infinite; }
+
+        /* Модалки */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 5000; }
+        .modal { background: var(--bg-main); padding: 24px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 1000; width: 85%; }
+            .sidebar.open { left: 0; }
+            .chat-view { width: 100%; }
+            .back-btn { display: block !important; margin-right: 15px; cursor: pointer; }
+        }
+
+        .media-file { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        .blue-tick { color: #00a8fc; margin-left: 5px; }
+    </style>
 </head>
 <body>
 
-    <!-- Экран загрузки -->
-    <div id="loader" class="loader-overlay">
-        <div class="loader-content">
-            <div class="spinner"></div>
-            <p>Инициализация TATARSMS...</p>
-        </div>
+    <!-- ЗАГРУЗКА -->
+    <div id="loading-screen" style="position:fixed; inset:0; background:var(--bg-darkest); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+        <div style="width:40px; height:40px; border:4px solid #333; border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite;"></div>
+        <p style="margin-top:15px; color:var(--text-muted);">Инициализация tatarsms...</p>
     </div>
 
-    <!-- ЭКРАН ВХОДА И РЕГИСТРАЦИИ -->
-    <div id="auth-screen" class="auth-wrapper hidden">
-        <div class="auth-container">
-            <div class="auth-card">
-                <div class="auth-header">
-                    <h1 class="logo-text">tatarsms</h1>
-                    <p id="auth-desc">Войдите в свою учетную запись</p>
+    <!-- ОКНО ВХОДА -->
+    <div id="auth-screen" class="hidden">
+        <div class="auth-card">
+            <h1>tatarsms</h1>
+            <p id="auth-title">Войдите в аккаунт</p>
+            
+            <div id="reg-fields" class="hidden">
+                <div class="avatar-setup">
+                    <img id="reg-av-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=tatar">
+                    <button onclick="document.getElementById('file-av').click()"><i class="fas fa-camera"></i></button>
+                    <input type="file" id="file-av" hidden accept="image/*" onchange="ui.handleRegAvatar(this)">
                 </div>
-                
-                <div id="auth-form">
-                    <div class="input-group">
-                        <label>Никнейм (ID)</label>
-                        <input type="text" id="auth-login" placeholder="Напр: tatar_user">
-                    </div>
-                    <div class="input-group">
-                        <label>Пароль</label>
-                        <input type="password" id="auth-pass" placeholder="••••••••">
-                    </div>
-                    
-                    <div id="reg-extra" class="hidden">
-                        <div class="input-group">
-                            <label>Аватар</label>
-                            <div class="avatar-setup">
-                                <img id="reg-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=tatar" alt="">
-                                <button type="button" class="btn-small" onclick="document.getElementById('reg-file').click()">Выбрать фото</button>
-                                <input type="file" id="reg-file" hidden accept="image/*">
-                            </div>
-                        </div>
-                    </div>
+            </div>
 
-                    <button class="btn-main" id="btn-submit" onclick="auth.submit()">Войти</button>
-                    <p class="auth-toggle">Нет аккаунта? <span onclick="auth.toggleMode()">Зарегистрироваться</span></p>
-                </div>
+            <div class="input-group">
+                <label>Ваш Никнейм (ID)</label>
+                <input type="text" id="auth-id" placeholder="tatar_user">
+            </div>
+            <div class="input-group">
+                <label>Пароль</label>
+                <input type="password" id="auth-pw" placeholder="••••••••">
+            </div>
+
+            <button class="btn-main" onclick="auth.submit()">Продолжить</button>
+            
+            <div class="auth-footer">
+                <span id="auth-toggle-btn" onclick="auth.toggle()">Нет аккаунта? Зарегистрироваться</span>
             </div>
         </div>
     </div>
 
-    <!-- ГЛАВНОЕ ПРИЛОЖЕНИЕ -->
-    <div id="app" class="app-layout hidden">
-        <!-- Левое меню (Навигация) -->
-        <nav class="nav-bar">
-            <div class="nav-top">
-                <div class="nav-item active" onclick="ui.tab('chats')"><i class="fas fa-comment-dots"></i></div>
-                <div class="nav-item" onclick="ui.tab('channels')"><i class="fas fa-bullhorn"></i></div>
-                <div class="nav-item" onclick="ui.tab('cloud')"><i class="fas fa-cloud"></i></div>
-            </div>
-            <div class="nav-bottom">
-                <div class="nav-item" onclick="ui.openModal('settings')"><i class="fas fa-cog"></i></div>
-            </div>
-        </nav>
-
-        <!-- Сайдбар (Список чатов) -->
+    <!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+    <div id="app" class="hidden">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2>Чаты</h2>
-                <div class="header-btns">
-                    <button onclick="ui.openModal('add-peer')"><i class="fas fa-plus"></i></button>
-                    <button class="mobile-only" onclick="ui.toggleSidebar()"><i class="fas fa-times"></i></button>
-                </div>
+                <span>TATARSMS</span>
+                <i class="fas fa-cog" style="cursor:pointer" onclick="ui.modal('settings')"></i>
             </div>
-            <div class="search-wrap">
-                <input type="text" id="peer-search" placeholder="Поиск людей и каналов..." oninput="ui.filterPeers()">
+            <div class="search-box">
+                <input type="text" id="peer-search" placeholder="ID друга..." onkeypress="messenger.addByEnter(event)">
             </div>
-            <div class="peer-list" id="peer-list">
-                <!-- Контакты -->
-            </div>
+            <div class="contact-list" id="contact-list"></div>
         </aside>
 
-        <!-- Основная зона (Чат) -->
         <main class="chat-view">
-            <div id="no-chat-selected" class="empty-view">
-                <div class="empty-content">
-                    <i class="fas fa-comments"></i>
-                    <h3>Выберите чат</h3>
-                    <p>Найдите друга по ID или создайте новый канал</p>
-                </div>
+            <div id="no-chat" style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-muted); flex-direction:column;">
+                <i class="fas fa-comments" style="font-size:60px; opacity:0.1; margin-bottom:20px;"></i>
+                <p>Выберите чат или введите ID друга</p>
             </div>
 
-            <div id="chat-active" class="chat-container hidden">
+            <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column;">
                 <header class="chat-header">
-                    <div class="chat-info">
-                        <button class="mobile-only back-btn" onclick="ui.toggleSidebar()"><i class="fas fa-chevron-left"></i></button>
-                        <img id="chat-avatar" src="" alt="">
-                        <div class="chat-titles">
-                            <h3 id="chat-name">Nickname</h3>
-                            <span id="chat-status">в сети</span>
+                    <div style="display:flex; align-items:center;">
+                        <i class="fas fa-chevron-left back-btn hidden" onclick="ui.toggleSidebar()"></i>
+                        <img id="chat-av" src="" style="width:36px; height:36px; border-radius:50%; margin-right:12px;">
+                        <div>
+                            <div style="font-weight:700" id="chat-name">User</div>
+                            <div style="font-size:11px; color:var(--success)" id="chat-status">в сети</div>
                         </div>
                     </div>
-                    <div class="chat-actions">
-                        <button onclick="calls.init(false)"><i class="fas fa-phone"></i></button>
-                        <button onclick="calls.init(true)"><i class="fas fa-video"></i></button>
+                    <div style="display:flex; gap:20px; color:var(--text-muted);">
+                        <i class="fas fa-phone tool-icon" onclick="calls.init(false)"></i>
+                        <i class="fas fa-video tool-icon" onclick="calls.init(true)"></i>
                     </div>
                 </header>
 
-                <div class="message-list" id="message-list">
-                    <!-- Сообщения -->
-                </div>
+                <div class="messages" id="messages-box"></div>
 
-                <div class="chat-footer">
-                    <div class="input-container">
-                        <button class="tool-btn" onclick="ui.toggleStickers()"><i class="far fa-sticky-note"></i></button>
-                        <button class="tool-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
-                        <input type="file" id="file-input" hidden multiple>
+                <div class="input-area">
+                    <div class="input-wrap">
+                        <i class="fas fa-paperclip tool-icon" onclick="document.getElementById('file-send').click()"></i>
+                        <input type="file" id="file-send" hidden onchange="messenger.sendFile(this)">
                         
-                        <div class="msg-input-wrapper">
-                            <input type="text" id="msg-input" placeholder="Напишите сообщение...">
-                        </div>
-
-                        <button class="voice-btn" id="voice-rec-btn" onmousedown="voice.start()" onmouseup="voice.stop()"><i class="fas fa-microphone"></i></button>
-                        <button class="send-btn" onclick="messenger.send()"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-
-                    <!-- Панель стикеров -->
-                    <div id="sticker-panel" class="sticker-panel hidden">
-                        <div class="sticker-header">
-                            <span>Стикеры</span>
-                            <button onclick="ui.openModal('add-sticker')">+</button>
-                        </div>
-                        <div class="sticker-grid" id="sticker-grid"></div>
+                        <input type="text" id="msg-input" placeholder="Написать сообщение..." onkeypress="messenger.sendByEnter(event)">
+                        
+                        <i class="fas fa-microphone tool-icon" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
+                        <i class="fas fa-paper-plane tool-icon" onclick="messenger.sendText()" style="color:var(--accent)"></i>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <!-- Настройки -->
-        <div id="modal-settings" class="modal hidden">
-            <div class="modal-header">
-                <h3>Настройки</h3>
-                <button onclick="ui.closeModals()">&times;</button>
+    <!-- МОДАЛКИ -->
+    <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
+        <div id="modal-settings" class="modal hidden" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom:20px;">Настройки</h2>
+            <div style="text-align:center; margin-bottom:20px;">
+                <img id="my-av-settings" src="" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--accent);">
             </div>
-            <div class="modal-body">
-                <div class="setting-item">
-                    <label>Сменить аватар</label>
-                    <input type="file" id="change-av-file" onchange="user.updateAvatar(this)">
-                </div>
-                <div class="setting-item">
-                    <label>О себе</label>
-                    <textarea id="set-bio" placeholder="Расскажите о себе..."></textarea>
-                </div>
-                <div class="setting-item">
-                    <label>Верификация</label>
-                    <button class="btn-small" onclick="ui.verifyRequest()">Запросить синий чек</button>
-                </div>
-                
-                <div id="admin-section" class="admin-zone hidden">
-                    <hr>
-                    <h4>Панель Администратора</h4>
-                    <button class="btn-main" onclick="ui.openModal('create-twink')">Создать Твинк-аккаунт</button>
-                    <button class="btn-main danger" onclick="admin.clearStorage()">Сбросить всё (DB)</button>
-                </div>
-
-                <button class="btn-main danger" style="margin-top: 20px;" onclick="auth.logout()">Выйти из аккаунта</button>
+            <p style="font-size:14px; margin-bottom:15px;">Мой ID: <strong id="my-id-display"></strong></p>
+            <p style="font-size:14px; margin-bottom:20px;">Статус: <span id="verif-status">Обычный</span></p>
+            
+            <div id="admin-panel" class="hidden" style="border-top:1px solid #444; padding-top:15px;">
+                <p style="color:var(--accent); font-weight:700; margin-bottom:10px;">Админ-панель</p>
+                <input type="text" id="twink-id" placeholder="ID нового твинка" style="width:100%; background:#111; border:none; padding:10px; color:white; margin-bottom:10px; border-radius:4px;">
+                <button class="btn-main" onclick="admin.createTwink()">Создать твинк</button>
             </div>
-        </div>
-
-        <!-- Создание твинка -->
-        <div id="modal-create-twink" class="modal hidden">
-            <div class="modal-header">
-                <h3>Создать твинк</h3>
-                <button onclick="ui.closeModals()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="twink-login" placeholder="Логин для твинка">
-                <input type="password" id="twink-pass" placeholder="Пароль для твинка">
-                <button class="btn-main" onclick="admin.createTwink()">Создать и сохранить в DB</button>
-            </div>
-        </div>
-
-        <!-- Поиск друга -->
-        <div id="modal-add-peer" class="modal hidden">
-            <div class="modal-header">
-                <h3>Добавить контакт</h3>
-                <button onclick="ui.closeModals()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="new-peer-id" placeholder="Введите Peer ID друга">
-                <button class="btn-main" onclick="messenger.addContact()">Найти и добавить</button>
-            </div>
+            
+            <button class="btn-main" style="background:#4e5058; margin-top:20px;" onclick="auth.logout()">Выйти</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // --- КОНСТАНТЫ И БД ---
+        const ADMIN_ID = "tatar_506";
+        const ADMIN_PW = "spinogrz666";
+
+        let state = {
+            db: JSON.parse(localStorage.getItem('tatarsms_db') || '{"users":{}}'),
+            user: JSON.parse(localStorage.getItem('tatarsms_session') || 'null'),
+            peer: null,
+            activeChat: null,
+            friends: JSON.parse(localStorage.getItem('tatarsms_friends') || '[]'),
+            history: JSON.parse(localStorage.getItem('tatarsms_history') || '{}'),
+            isReg: false,
+            recorder: null,
+            chunks: []
+        };
+
+        // --- СИСТЕМА ВХОДА ---
+        const auth = {
+            toggle() {
+                state.isReg = !state.isReg;
+                document.getElementById('auth-title').innerText = state.isReg ? "Регистрация" : "Войдите в аккаунт";
+                document.getElementById('auth-toggle-btn').innerText = state.isReg ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться";
+                document.getElementById('reg-fields').classList.toggle('hidden', !state.isReg);
+            },
+            submit() {
+                const id = document.getElementById('auth-id').value.trim();
+                const pw = document.getElementById('auth-pw').value.trim();
+                const av = document.getElementById('reg-av-preview').src;
+
+                if(!id || !pw) return alert("Заполните все поля");
+
+                if(state.isReg) {
+                    if(state.db.users[id]) return alert("Этот ID уже занят");
+                    state.db.users[id] = { pw: btoa(pw), av, verif: (id === ADMIN_ID) };
+                    localStorage.setItem('tatarsms_db', JSON.stringify(state.db));
+                    alert("Успешно! Теперь войдите.");
+                    this.toggle();
+                } else {
+                    const u = state.db.users[id];
+                    if((u && atob(u.pw) === pw) || (id === ADMIN_ID && pw === ADMIN_PW)) {
+                        state.user = { id, av: u?.av || '', verif: u?.verif || (id === ADMIN_ID) };
+                        localStorage.setItem('tatarsms_session', JSON.stringify(state.user));
+                        location.reload();
+                    } else {
+                        alert("Неверный ID или пароль");
+                    }
+                }
+            },
+            logout() {
+                localStorage.removeItem('tatarsms_session');
+                location.reload();
+            }
+        };
+
+        // --- МЕССЕНДЖЕР ---
+        const messenger = {
+            init() {
+                state.peer = new Peer(state.user.id);
+                state.peer.on('open', () => {
+                    document.getElementById('loading-screen').classList.add('hidden');
+                    if(state.user) {
+                        document.getElementById('auth-screen').classList.add('hidden');
+                        document.getElementById('app').classList.remove('hidden');
+                        ui.renderFriends();
+                    }
+                });
+                state.peer.on('connection', conn => {
+                    conn.on('data', data => this.handleData(data, conn.peer));
+                });
+                state.peer.on('call', call => {
+                    if(confirm("Входящий звонок от " + call.peer)) {
+                        navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(s => {
+                            call.answer(s);
+                            // Здесь можно добавить UI видео
+                        });
+                    }
+                });
+            },
+            handleData(data, from) {
+                if(!state.friends.includes(from)) {
+                    state.friends.push(from);
+                    localStorage.setItem('tatarsms_friends', JSON.stringify(state.friends));
+                    ui.renderFriends();
+                }
+                this.saveMsg(from, data, 'received');
+            },
+            sendText() {
+                const input = document.getElementById('msg-input');
+                const text = input.value.trim();
+                if(!text || !state.activeChat) return;
+                this.dispatch({ type: 'text', content: text });
+                input.value = '';
+            },
+            sendFile(input) {
+                const file = input.files[0];
+                if(!file || !state.activeChat) return;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    this.dispatch({ type: 'file', content: e.target.result, mime: file.type });
+                };
+                reader.readAsDataURL(file);
+            },
+            dispatch(data) {
+                const conn = state.peer.connect(state.activeChat);
+                conn.on('open', () => {
+                    conn.send(data);
+                    this.saveMsg(state.activeChat, data, 'sent');
+                });
+            },
+            saveMsg(peer, data, type) {
+                if(!state.history[peer]) state.history[peer] = [];
+                state.history[peer].push({...data, type, time: new Date().toLocaleTimeString()});
+                localStorage.setItem('tatarsms_history', JSON.stringify(state.history));
+                if(state.activeChat === peer) ui.renderMessages();
+            },
+            addByEnter(e) {
+                if(e.key === 'Enter') {
+                    const id = e.target.value.trim();
+                    if(id && id !== state.user.id && !state.friends.includes(id)) {
+                        state.friends.push(id);
+                        localStorage.setItem('tatarsms_friends', JSON.stringify(state.friends));
+                        ui.renderFriends();
+                        ui.selectChat(id);
+                        e.target.value = '';
+                    }
+                }
+            },
+            sendByEnter(e) { if(e.key === 'Enter') this.sendText(); }
+        };
+
+        // --- ГОЛОСОВЫЕ ---
+        const voice = {
+            async start() {
+                try {
+                    const s = await navigator.mediaDevices.getUserMedia({audio:true});
+                    state.recorder = new MediaRecorder(s);
+                    state.chunks = [];
+                    state.recorder.ondataavailable = e => state.chunks.push(e.data);
+                    state.recorder.onstop = () => {
+                        const blob = new Blob(state.chunks, {type:'audio/ogg'});
+                        const reader = new FileReader();
+                        reader.onload = e => messenger.dispatch({type:'file', content:e.target.result, mime:'audio/ogg'});
+                        reader.readAsDataURL(blob);
+                    };
+                    state.recorder.start();
+                    document.getElementById('mic-btn').classList.add('recording');
+                } catch(e) { alert("Микрофон недоступен"); }
+            },
+            stop() {
+                if(state.recorder) {
+                    state.recorder.stop();
+                    document.getElementById('mic-btn').classList.remove('recording');
+                }
+            }
+        };
+
+        // --- ИНТЕРФЕЙС ---
+        const ui = {
+            renderFriends() {
+                const list = document.getElementById('contact-list');
+                list.innerHTML = '';
+                state.friends.forEach(id => {
+                    const div = document.createElement('div');
+                    div.className = `contact-item ${state.activeChat === id ? 'active' : ''}`;
+                    div.onclick = () => this.selectChat(id);
+                    div.innerHTML = `
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${id}">
+                        <span>${id}</span>
+                    `;
+                    list.appendChild(div);
+                });
+            },
+            selectChat(id) {
+                state.activeChat = id;
+                document.getElementById('no-chat').classList.add('hidden');
+                document.getElementById('chat-active').classList.remove('hidden');
+                document.getElementById('chat-name').innerText = id;
+                document.getElementById('chat-av').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+                this.renderMessages();
+                this.renderFriends();
+                if(window.innerWidth < 768) this.toggleSidebar();
+            },
+            renderMessages() {
+                const box = document.getElementById('messages-box');
+                box.innerHTML = '';
+                const msgs = state.history[state.activeChat] || [];
+                msgs.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `msg ${m.type}`;
+                    let content = m.content;
+                    if(m.type === 'file') {
+                        if(m.mime.startsWith('image')) content = `<img src="${m.content}" class="media-file">`;
+                        else if(m.mime.startsWith('audio')) content = `<audio src="${m.content}" controls style="width:200px"></audio>`;
+                        else content = `<a href="${m.content}" download style="color:white">Скачать файл</a>`;
+                    }
+                    div.innerHTML = `
+                        <div class="msg-bubble">${content}</div>
+                        <div class="msg-info">${m.time}</div>
+                    `;
+                    box.appendChild(div);
+                });
+                box.scrollTop = box.scrollHeight;
+            },
+            modal(id) {
+                document.getElementById('modal-overlay').classList.remove('hidden');
+                document.getElementById('modal-'+id).classList.remove('hidden');
+                if(id === 'settings') {
+                    document.getElementById('my-id-display').innerText = state.user.id;
+                    document.getElementById('my-av-settings').src = state.user.av || `https://api.dicebear.com/7.x/avataaars/svg?seed=${state.user.id}`;
+                    document.getElementById('verif-status').innerHTML = state.user.verif ? 'Верифицирован <i class="fas fa-check-circle blue-tick"></i>' : 'Обычный';
+                    if(state.user.id === ADMIN_ID) document.getElementById('admin-panel').classList.remove('hidden');
+                }
+            },
+            closeModals() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+            },
+            handleRegAvatar(input) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById('reg-av-preview').src = e.target.result;
+                reader.readAsDataURL(input.files[0]);
+            },
+            toggleSidebar() {
+                document.getElementById('sidebar').classList.toggle('open');
+            }
+        };
+
+        // --- АДМИН ---
+        const admin = {
+            createTwink() {
+                const id = document.getElementById('twink-id').value.trim();
+                if(!id) return;
+                state.db.users[id] = { pw: btoa("1234"), av: '', verif: false };
+                localStorage.setItem('tatarsms_db', JSON.stringify(state.db));
+                alert(`Аккаунт ${id} создан. Пароль по умолчанию: 1234`);
+                document.getElementById('twink-id').value = '';
+            }
+        };
+
+        // --- СТАРТ ---
+        if(state.user) {
+            messenger.init();
+        } else {
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
