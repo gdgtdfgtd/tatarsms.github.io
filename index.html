@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>tatarsms | Nebula Ultimate v6</title>
+    <title>tatarsms | Nebula Cloud v7</title>
     
-    <!-- Ресурсы для РФ -->
+    <!-- Стабильные зеркала для РФ -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -23,6 +23,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
+        /* Живой фон Nebula */
         .nebula-bg {
             position: fixed; inset: 0;
             background: radial-gradient(circle at 50% 50%, #0f0c29 0%, #302b63 40%, #24243e 70%, #050505 100%);
@@ -33,35 +34,41 @@
         @keyframes nebulaMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .hidden { display: none !important; }
-        .glass { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
+        .glass { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
         @keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes msgIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+        /* --- AUTH --- */
         .auth-card { 
-            background: rgba(15, 15, 25, 0.8); border-radius: 24px; padding: 40px; width: 92%; max-width: 420px; 
+            background: rgba(15, 15, 25, 0.8); border-radius: 30px; padding: 40px; width: 92%; max-width: 400px; 
             text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: pop 0.5s ease;
         }
         .glow-text { background: linear-gradient(90deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 36px; margin-bottom: 20px; }
         .glass-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; transition: 0.3s; }
-        .btn-primary { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 15px; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-primary { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 15px; border-radius: 16px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
 
+        /* --- LAYOUT --- */
         #app { display: flex; height: 100vh; width: 100vw; }
-        #sidebar { width: 320px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; background: rgba(0,0,0,0.4); backdrop-filter: blur(20px); transition: 0.4s; }
+        #sidebar { 
+            width: 320px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(20px); transition: 0.4s;
+        }
         .side-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
         .me-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .me-info img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .me-info img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
 
         .tabs { display: flex; background: rgba(0,0,0,0.2); margin: 10px; border-radius: 10px; padding: 4px; }
-        .tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; cursor: pointer; border-radius: 10px; color: #888; }
+        .tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; cursor: pointer; border-radius: 10px; color: #888; transition: 0.3s; }
         .tab.active { background: var(--accent-dark); color: white; }
 
         .list-area { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; }
+        .item-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; }
         .item-card.active { background: linear-gradient(90deg, var(--accent-dark), transparent); }
-        .item-card img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #222; }
+        .item-card img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; background: #222; }
 
+        /* --- CHAT --- */
         #chat-window { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .chat-header { height: 75px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); backdrop-filter: blur(15px); }
         .target-info { display: flex; align-items: center; gap: 12px; }
@@ -71,9 +78,10 @@
         .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgIn 0.3s ease; }
         .msg.sent { align-self: flex-end; align-items: flex-end; }
         .msg-bubble { padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; background: var(--glass); border: 1px solid var(--glass-border); position: relative; }
-        .sent .msg-bubble { background: var(--accent-dark); border: none; }
+        .sent .msg-bubble { background: var(--accent-dark); border: none; border-bottom-right-radius: 4px; }
+        .received .msg-bubble { border-bottom-left-radius: 4px; }
 
-        .media-frame { max-width: 240px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; }
+        .media-frame { max-width: 240px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; transition: 0.3s; }
         .media-frame img { width: 100%; display: block; }
         audio { height: 35px; width: 200px; margin-top: 5px; filter: invert(1); }
 
@@ -81,13 +89,14 @@
         .input-bar { background: rgba(255,255,255,0.06); border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--glass-border); }
         .input-bar input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 16px; }
         .input-bar i { font-size: 22px; color: #888; cursor: pointer; }
+        .input-bar i:hover { color: var(--accent); }
 
         .modal { background: #0a0a0f; padding: 30px; border-radius: 30px; width: 92%; max-width: 420px; border: 1px solid var(--glass-border); text-align: center; }
         .modal-close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: #555; }
         .large-av { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 15px; object-fit: cover; cursor: pointer; display: block; }
 
         @media (max-width: 768px) {
-            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; }
+            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; transform: translateX(0); }
             #sidebar.closed { transform: translateX(-100%); }
             .back-btn { display: block !important; }
         }
@@ -98,8 +107,9 @@
 
     <div class="nebula-bg"></div>
 
-    <div id="loader" class="overlay">
-        <h1 class="glow-text" style="font-size: 42px;">tatarsms</h1>
+    <div id="loading-screen" class="overlay">
+        <h1 class="glow-text">tatarsms</h1>
+        <p style="color:var(--accent); font-size:10px; letter-spacing:4px">CLOUD SYNC...</p>
     </div>
 
     <!-- AUTH -->
@@ -110,15 +120,14 @@
                 <input type="text" id="login-id" class="glass-input" placeholder="ID">
                 <input type="password" id="login-pw" class="glass-input" placeholder="Пароль">
                 <button class="btn-primary" onclick="auth.login()">ВОЙТИ</button>
-                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('reg')">Нет аккаунта? Регистрация</p>
-                <p onclick="localStorage.clear(); location.reload();" style="margin-top: 15px; font-size: 10px; opacity: 0.3; cursor: pointer;">ОЧИСТИТЬ КЭШ ПРИ ОШИБКЕ</p>
+                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('reg')">Нет аккаунта? Создать</p>
             </div>
             <div id="auth-reg" class="hidden">
                 <input type="email" id="reg-email" class="glass-input" placeholder="Ваш Gmail">
                 <input type="text" id="reg-id" class="glass-input" placeholder="Никнейм">
                 <input type="password" id="reg-pw" class="glass-input" placeholder="Пароль">
-                <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:12px; margin-bottom:12px">
-                    <p id="captcha-text" style="font-size:14px; margin-bottom:5px"></p>
+                <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; margin-bottom:15px">
+                    <p id="captcha-text" style="font-size:12px; margin-bottom:5px"></p>
                     <input type="text" id="captcha-input" class="glass-input" placeholder="Ответ" style="margin-bottom:0">
                 </div>
                 <button class="btn-primary" id="reg-send-btn" onclick="auth.startReg()">ОТПРАВИТЬ КОД</button>
@@ -126,7 +135,7 @@
             </div>
             <div id="auth-code" class="hidden">
                 <p style="margin-bottom:20px">Код подтверждения отправлен!</p>
-                <input type="text" id="verify-code" class="glass-input" style="text-align:center; font-size:26px; letter-spacing:8px" maxlength="6">
+                <input type="text" id="verify-code" class="glass-input" style="text-align:center; font-size:24px; letter-spacing:8px" maxlength="6">
                 <button class="btn-primary" onclick="auth.complete()">ПОДТВЕРДИТЬ</button>
             </div>
         </div>
@@ -140,7 +149,7 @@
                     <img id="my-av" src="">
                     <span id="my-name-disp">...</span>
                 </div>
-                <div style="display:flex; gap:18px; font-size:18px; color:#aaa">
+                <div style="display:flex; gap:15px; font-size:18px; color:#aaa">
                     <i class="fas fa-user-plus" style="cursor:pointer" onclick="ui.modal('add')"></i>
                     <i class="fas fa-users" style="cursor:pointer" onclick="ui.modal('group')"></i>
                 </div>
@@ -153,9 +162,9 @@
         </aside>
 
         <main id="chat-window">
-            <div id="welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.25">
-                <i class="fas fa-satellite" style="font-size:100px; margin-bottom:20px"></i>
-                <h2>P2P CLOUD</h2>
+            <div id="welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.2">
+                <i class="fas fa-satellite-dish" style="font-size:100px; margin-bottom:20px"></i>
+                <h2>P2P ENCRYPTED</h2>
             </div>
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column; height:100%;">
                 <header class="chat-header">
@@ -182,32 +191,23 @@
     <!-- MODALS -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
         <div id="modal-profile" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
-            <h2>Настройки</h2>
             <img id="set-av" class="large-av" onclick="document.getElementById('av-up').click()" title="Сменить фото">
             <input type="file" id="av-up" hidden accept="image/*" onchange="ui.changeAv(this)">
-            <p style="font-size: 18px;">ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
-            <div id="admin-panel" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:20px">
-                <p style="color:var(--accent); font-weight:800; font-size:12px">АДМИН-ПАНЕЛЬ</p>
-                <input type="text" id="adm-target" class="glass-input" placeholder="ID пользователя" style="margin-top:10px">
-                <button class="btn-primary" onclick="admin.verify()">ВЫДАТЬ ГАЛОЧКУ</button>
-            </div>
-            <button class="btn-primary" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ ИЗ АККАУНТА</button>
+            <p>ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
+            <button class="btn-primary" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
         </div>
         <div id="modal-add" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
             <h3>Добавить друга</h3>
             <input type="text" id="friend-id-input" class="glass-input" placeholder="Введите ID" style="margin-top:15px">
             <button class="btn-primary" onclick="msg.request()">ОТПРАВИТЬ ЗАПРОС</button>
         </div>
         <div id="modal-group" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
             <h3>Создать группу</h3>
             <input type="text" id="gr-name" class="glass-input" placeholder="Название" style="margin-top:15px">
             <button class="btn-primary" onclick="groups.create()">СОЗДАТЬ</button>
         </div>
         <div id="modal-inreq" class="modal glass" onclick="event.stopPropagation()">
-            <h3 style="color:var(--accent)">Входящая заявка</h3>
+            <h3>Входящая заявка</h3>
             <p id="req-id-disp" style="margin:20px 0"></p>
             <div style="display:flex; gap:10px">
                 <button class="btn-primary" style="background:#2ecc71" onclick="msg.handleReq(true)">ПРИНЯТЬ</button>
@@ -220,28 +220,25 @@
     <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')"><img id="fs-img" src="" style="max-width:90%; border-radius:15px"></div>
 
     <script>
-        // --- CLOUD DB SYSTEM ---
-        const CLOUD_URL = "https://api.npoint.io/4077d60f4c80351f0458"; // Новый ID облака
+        function safeJSON(key, fallback) {
+            try { const data = localStorage.getItem(key); return (data && data !== "undefined" && data !== "null") ? JSON.parse(data) : fallback; } 
+            catch(e) { return fallback; }
+        }
+
+        // --- CLOUD DB SYSTEM (Fix 404) ---
+        const CLOUD_URL = "https://api.npoint.io/6787d60f4c80351f0458"; // Обновленный ID
 
         async function cloudGet() {
             try { 
                 const r = await fetch(CLOUD_URL); 
-                if (r.status === 404) return {users:{}}; // ЕСЛИ 404, ВОЗВРАЩАЕМ ПУСТУЮ БАЗУ
+                if (r.status === 404) return {users:{}}; 
                 const d = await r.json();
                 return d.users ? d : {users:{}};
-            } catch(e) { 
-                console.warn("Cloud offline, using local mode.");
-                return safeJSON('tat_db', {users:{}}); 
-            }
+            } catch(e) { return safeJSON('tat_db', {users:{}}); }
         }
         async function cloudSet(db) {
             try { await fetch(CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db)}); } catch(e) {}
             localStorage.setItem('tat_db', JSON.stringify(db));
-        }
-
-        function safeJSON(key, fallback) {
-            try { const data = localStorage.getItem(key); return (data && data !== "undefined" && data !== "null") ? JSON.parse(data) : fallback; } 
-            catch(e) { return fallback; }
         }
 
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
@@ -255,68 +252,56 @@
             peer: null, chat: null, tab: 'dm', pending: null, captcha: null, code: null, temp: null
         };
 
-        // --- AUTH ---
         const auth = {
             switch(v) {
                 ['login','reg','code'].forEach(id => document.getElementById(`auth-${id}`).classList.add('hidden'));
                 document.getElementById(`auth-${v}`).classList.remove('hidden');
-                if(v === 'reg') this.genCaptcha();
-            },
-            genCaptcha() {
-                const a = Math.floor(Math.random()*15)+5, b = Math.floor(Math.random()*10);
-                this.captcha = a + b;
-                document.getElementById('captcha-text').innerText = `Проверка: ${a} + ${b} = ?`;
+                if(v === 'reg') {
+                    const a = Math.floor(Math.random()*15)+5, b = Math.floor(Math.random()*10);
+                    this.captcha = a + b;
+                    document.getElementById('captcha-text').innerText = `Проверка: ${a} + ${b} = ?`;
+                }
             },
             async startReg() {
                 const id = document.getElementById('reg-id').value.trim();
                 const email = document.getElementById('reg-email').value.trim();
                 const pw = document.getElementById('reg-pw').value.trim();
-                const cap = document.getElementById('captcha-input').value;
-                if(cap != this.captcha) return alert("Капча неверна!");
+                if(document.getElementById('captcha-input').value != this.captcha) return alert("Капча неверна");
                 if(!id || !email || !pw) return alert("Заполните всё");
 
-                const db = await cloudGet();
-                if(db.users[id]) return alert("ID занят");
+                document.getElementById('reg-send-btn').innerText = "ОТПРАВКА...";
+                state.db = await cloudGet();
+                if(state.db.users[id]) return alert("ID занят");
 
-                // ГЕНЕРИРУЕМ 6 ЦИФР
                 const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
                 this.code = randomCode;
                 this.temp = {id, email, pw};
 
-                document.getElementById('reg-send-btn').innerText = "ОТПРАВКА...";
                 emailjs.init(EMAIL_KEY);
-                
-                // ФОРМИРУЕМ ПИСЬМО
                 emailjs.send(EMAIL_SERV, EMAIL_TEMP, { 
                     to_email: email, 
+                    title: "tatarsms code",
+                    name: "tatarsms code",
                     message: "Приветствую вас в tatarsms хорошего общения код - " + randomCode
-                }).then(() => {
-                    this.switch('code');
-                    document.getElementById('reg-send-btn').innerText = "ОТПРАВИТЬ КОД";
-                }, (err) => {
-                    alert("Ошибка почты! Код для теста: " + this.code);
-                    this.switch('code');
-                });
+                })
+                .then(() => this.switch('code'), () => { alert("Код (РФ): " + this.code); this.switch('code'); });
             },
             async complete() {
                 if(document.getElementById('verify-code').value != this.code) return alert("Неверно");
-                const db = await cloudGet();
-                db.users[this.temp.id] = { 
-                    pw: btoa(this.temp.pw), 
-                    av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}` 
-                };
-                await cloudSet(db);
-                alert("Аккаунт готов!"); this.switch('login');
+                state.db = await cloudGet();
+                state.db.users[this.temp.id] = { pw: btoa(this.temp.pw), av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}` };
+                await cloudSet(state.db);
+                alert("Аккаунт создан!"); this.switch('login');
             },
             async login() {
                 const id = document.getElementById('login-id').value.trim();
                 const pw = document.getElementById('login-pw').value.trim();
                 if(id === "tatar_506" && pw === "spinogrz666") return this.startSess(id, "https://api.dicebear.com/7.x/avataaars/svg?seed=adm");
                 
-                const db = await cloudGet();
-                const u = db.users[id];
-                if(u && u.pw === btoa(pw)) this.startSess(id, u.av);
-                else alert("Ошибка входа!");
+                state.db = await cloudGet();
+                const u = state.db.users[id];
+                if(u && atob(u.pw) === pw) this.startSess(id, u.av);
+                else alert("Ошибка входа! Проверьте данные.");
             },
             startSess(id, av) {
                 localStorage.setItem('tat_sess', JSON.stringify({id, av}));
@@ -329,9 +314,9 @@
             async init() {
                 state.friends = safeJSON(`fr_${state.user.id}`, []);
                 state.groups = safeJSON(`grps_${state.user.id}`, []);
-                state.peer = new Peer(state.user.id, { config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
+                state.peer = new Peer(state.user.id);
                 state.peer.on('open', () => {
-                    document.getElementById('loader').classList.add('hidden');
+                    document.getElementById('loading-screen').classList.add('hidden');
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
                     ui.renderList();
@@ -347,13 +332,12 @@
             },
             request() {
                 const target = document.getElementById('friend-id-input').value.trim();
-                if(!target || target === state.user.id) return;
                 const conn = state.peer.connect(target);
                 conn.on('open', () => { conn.send({type:'req'}); alert("Запрос отправлен!"); ui.closeModals(); });
             },
             handleReq(acc) {
                 if(acc && state.pending) {
-                    if(!state.friends.includes(state.pending)) state.friends.push(state.pending);
+                    if(!state.friends.includes(state.pending)) state.friends.push(state.pending); 
                     this.saveFr(); ui.renderList();
                     const conn = state.peer.connect(state.pending);
                     conn.on('open', () => conn.send({type:'acc'}));
@@ -388,7 +372,7 @@
         };
 
         const ui = {
-            setTab(t) { state.tab = t; document.getElementById('tab-dm').classList.toggle('active', t==='dm'); document.getElementById('tab-gr').classList.toggle('active', t==='gr'); this.renderList(); },
+            setTab(t) { state.tab = t; this.renderList(); },
             renderList() {
                 const list = document.getElementById('contact-list'); list.innerHTML = '';
                 const items = state.tab === 'dm' ? state.friends : state.groups;
@@ -449,7 +433,7 @@
         };
 
         if(state.user) msg.init();
-        else { document.getElementById('loader').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
+        else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
     </script>
 </body>
 </html>
