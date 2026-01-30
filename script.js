@@ -1,262 +1,239 @@
-// --- КОНФИГУРАЦИЯ И БД ---
 const ADMIN_ID = "tatar_506";
-const ADMIN_PASS = "spinogrz666";
+const ADMIN_PW = "spinogrz666";
 
 let state = {
-    user: null,
+    db: JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}'),
+    user: JSON.parse(localStorage.getItem('tat_session') || 'null'),
     peer: null,
     activeChat: null,
-    friends: [],
-    history: {},
-    isRegMode: false,
-    db: JSON.parse(localStorage.getItem('tatarsms_db')) || { users: {}, twinks: [] }
+    friends: JSON.parse(localStorage.getItem('tat_friends') || '[]'),
+    history: JSON.parse(localStorage.getItem('tat_history') || '{}'),
+    stickers: JSON.parse(localStorage.getItem('tat_stickers') || []),
+    isReg: false,
+    recorder: null,
+    chunks: []
 };
 
-// --- ИНИЦИАЛИЗАЦИЯ ---
-window.onload = () => {
-    setTimeout(() => {
-        document.getElementById('loader').classList.add('hidden');
-        const session = localStorage.getItem('tatarsms_session');
-        if (session) {
-            state.user = JSON.parse(session);
-            app.init();
-        } else {
-            document.getElementById('auth-screen').classList.remove('hidden');
-        }
-    }, 1500);
-};
-
-// --- СИСТЕМА АУТЕНТИФИКАЦИИ ---
-const auth = {
-    toggleMode() {
-        state.isRegMode = !state.isRegMode;
-        document.getElementById('auth-desc').innerText = state.isRegMode ? "Создать новый аккаунт" : "Войти в свою учетную запись";
-        document.getElementById('btn-submit').innerText = state.isRegMode ? "Зарегистрироваться" : "Войти";
-        document.getElementById('reg-extra').classList.toggle('hidden', !state.isRegMode);
+// --- AUTH ---
+const account = {
+    toggle() {
+        state.isReg = !state.isReg;
+        document.querySelector('.toggle-text').innerHTML = state.isReg ? 'Уже есть аккаунт? <span onclick="account.toggle()">Войти</span>' : 'Нет аккаунта? <span onclick="account.toggle()">Создать</span>';
+        document.getElementById('reg-fields').classList.toggle('hidden', !state.isReg);
     },
-
     submit() {
-        const id = document.getElementById('auth-login').value.trim();
-        const pass = document.getElementById('auth-pass').value.trim();
-        const avatar = document.getElementById('reg-preview').src;
+        const id = document.getElementById('auth-id').value.trim();
+        const pw = document.getElementById('auth-pw').value.trim();
+        const av = document.getElementById('auth-av').value.trim();
 
-        if (!id || !pass) return alert("Заполните все поля");
+        if(!id || !pw) return alert("Заполните поля");
 
-        if (state.isRegMode) {
-            if (state.db.users[id]) return alert("Этот ID уже занят");
-            state.db.users[id] = { pass: btoa(pass), avatar, verified: (id === ADMIN_ID) };
-            this.saveDB();
-            alert("Регистрация успешна! Теперь войдите.");
-            this.toggleMode();
+        if(state.isReg) {
+            if(state.db.users[id]) return alert("ID занят");
+            state.db.users[id] = { pw: btoa(pw), av: av || `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, verif: id === ADMIN_ID };
+            localStorage.setItem('tat_db', JSON.stringify(state.db));
+            alert("Успешно! Войдите.");
+            this.toggle();
         } else {
-            const user = state.db.users[id];
-            if (user && atob(user.pass) === pass) {
-                state.user = { id, ...user };
-                localStorage.setItem('tatarsms_session', JSON.stringify(state.user));
-                app.init();
-            } else if (id === ADMIN_ID && pass === ADMIN_PASS) {
-                // Если админ еще не в базе
-                state.user = { id, avatar: '', verified: true, isAdmin: true };
-                localStorage.setItem('tatarsms_session', JSON.stringify(state.user));
-                app.init();
-            } else {
-                alert("Неверный логин или пароль");
-            }
+            const u = state.db.users[id];
+            if((u && atob(u.pw) === pw) || (id === ADMIN_ID && pw === ADMIN_PW)) {
+                state.user = { id, av: u?.av || '', verif: u?.verif || (id === ADMIN_ID) };
+                localStorage.setItem('tat_session', JSON.stringify(state.user));
+                location.reload();
+            } else alert("Неверный вход");
         }
     },
-
-    logout() {
-        localStorage.removeItem('tatarsms_session');
-        location.reload();
-    },
-
-    saveDB() {
-        localStorage.setItem('tatarsms_db', JSON.stringify(state.db));
-    }
+    logout() { localStorage.removeItem('tat_session'); location.reload(); }
 };
 
-// --- ГЛАВНОЕ ПРИЛОЖЕНИЕ ---
-const app = {
-    init() {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        
-        // Подгружаем историю и друзей
-        state.friends = JSON.parse(localStorage.getItem(`friends_${state.user.id}`)) || [];
-        state.history = JSON.parse(localStorage.getItem(`history_${state.user.id}`)) || {};
-
-        this.initPeer();
-        ui.renderFriends();
-        if(state.user.id === ADMIN_ID) document.getElementById('admin-section').classList.remove('hidden');
-    },
-
-    initPeer() {
-        state.peer = new Peer(state.user.id);
-
-        state.peer.on('open', (id) => {
-            console.log('Peer connected as:', id);
-            document.getElementById('chat-status').innerText = "Онлайн (P2P)";
-        });
-
-        state.peer.on('connection', (conn) => {
-            conn.on('data', (data) => {
-                messenger.handleIncoming(data, conn.peer);
-            });
-        });
-
-        state.peer.on('call', (call) => {
-            if (confirm(`Входящий звонок от ${call.peer}. Ответить?`)) {
-                navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
-                    call.answer(stream);
-                    // Логика видео-окна (упрощено)
-                });
-            }
-        });
-    }
-};
-
-// --- МЕССЕНДЖЕР ---
+// --- MESSENGER ---
 const messenger = {
-    addContact() {
-        const id = document.getElementById('new-peer-id').value.trim();
-        if (!id || id === state.user.id) return;
-        
-        if (!state.friends.find(f => f.id === id)) {
-            state.friends.push({ id, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}` });
-            this.saveFriends();
-            ui.renderFriends();
-        }
-        ui.closeModals();
+    init() {
+        state.peer = new Peer(state.user.id);
+        state.peer.on('open', () => {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            ui.refresh();
+        });
+        state.peer.on('connection', conn => {
+            conn.on('data', data => this.handleData(data, conn.peer));
+        });
+        state.peer.on('call', call => calls.incoming(call));
     },
-
+    handleData(data, from) {
+        if(!state.friends.includes(from)) {
+            state.friends.push(from);
+            localStorage.setItem('tat_friends', JSON.stringify(state.friends));
+            ui.refresh();
+        }
+        this.saveMsg(from, data, 'received');
+    },
     send() {
         const input = document.getElementById('msg-input');
-        const text = input.value.trim();
-        if (!text || !state.activeChat) return;
-
-        const data = { type: 'text', content: text, from: state.user.id };
-        this.dispatch(data);
+        if(!input.value.trim() || !state.activeChat) return;
+        this.dispatch({ type: 'text', content: input.value });
         input.value = '';
     },
-
+    async file(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = () => this.dispatch({ type: 'file', content: reader.result, mime: file.type });
+        reader.readAsDataURL(file);
+    },
     dispatch(data) {
         const conn = state.peer.connect(state.activeChat);
         conn.on('open', () => {
             conn.send(data);
             this.saveMsg(state.activeChat, data, 'sent');
-            ui.renderMessages();
         });
     },
-
-    handleIncoming(data, from) {
-        if (!state.friends.find(f => f.id === from)) {
-            state.friends.push({ id: from, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${from}` });
-            this.saveFriends();
-            ui.renderFriends();
+    saveMsg(peer, data, type) {
+        if(!state.history[peer]) state.history[peer] = [];
+        state.history[peer].push({...data, type, time: new Date().toLocaleTimeString()});
+        localStorage.setItem('tat_history', JSON.stringify(state.history));
+        if(state.activeChat === peer) ui.renderMessages();
+    },
+    addContact() {
+        const id = document.getElementById('new-peer-id').value.trim();
+        if(id && id !== state.user.id && !state.friends.includes(id)) {
+            state.friends.push(id);
+            localStorage.setItem('tat_friends', JSON.stringify(state.friends));
+            ui.refresh();
+            ui.selectChat(id);
         }
-        this.saveMsg(from, data, 'received');
-        if (state.activeChat === from) ui.renderMessages();
+        ui.closeModals();
     },
-
-    saveMsg(chatId, data, type) {
-        if (!state.history[chatId]) state.history[chatId] = [];
-        state.history[chatId].push({ ...data, type, time: new Date().toLocaleTimeString() });
-        localStorage.setItem(`history_${state.user.id}`, JSON.stringify(state.history));
+    addSticker() {
+        const url = document.getElementById('st-url').value;
+        if(url) {
+            state.stickers.push(url);
+            localStorage.setItem('tat_stickers', JSON.stringify(state.stickers));
+            ui.renderStickers();
+        }
     },
+    press(e) { if(e.key === 'Enter') this.send(); }
+};
 
-    saveFriends() {
-        localStorage.setItem(`friends_${state.user.id}`, JSON.stringify(state.friends));
+// --- VOICE ---
+const voice = {
+    async start() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+            state.recorder = new MediaRecorder(stream);
+            state.chunks = [];
+            state.recorder.ondataavailable = e => state.chunks.push(e.data);
+            state.recorder.onstop = () => {
+                const blob = new Blob(state.chunks, {type:'audio/ogg'});
+                const reader = new FileReader();
+                reader.onload = () => messenger.dispatch({type:'file', content:reader.result, mime:'audio/ogg'});
+                reader.readAsDataURL(blob);
+            };
+            state.recorder.start();
+            document.getElementById('mic-btn').style.color = 'var(--danger)';
+        } catch(e) { alert("Микрофон!"); }
+    },
+    stop() {
+        if(state.recorder) { state.recorder.stop(); document.getElementById('mic-btn').style.color = ''; }
     }
 };
 
-// --- ИНТЕРФЕЙС (UI) ---
+// --- CALLS ---
+const calls = {
+    async start(video) {
+        ui.modal('call');
+        document.getElementById('btn-accept').classList.add('hidden');
+        const stream = await navigator.mediaDevices.getUserMedia({video, audio:true});
+        document.getElementById('local-video').srcObject = stream;
+        const call = state.peer.call(state.activeChat, stream);
+        call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+    },
+    incoming(call) {
+        ui.modal('call');
+        document.getElementById('call-title').innerText = "Вызов от " + call.peer;
+        document.getElementById('btn-accept').onclick = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+            document.getElementById('local-video').srcObject = stream;
+            call.answer(stream);
+            call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+            document.getElementById('btn-accept').classList.add('hidden');
+        };
+    },
+    end() { location.reload(); }
+};
+
+// --- UI ---
 const ui = {
-    renderFriends() {
-        const list = document.getElementById('peer-list');
-        list.innerHTML = '';
-        state.friends.forEach(f => {
+    refresh() {
+        const list = document.getElementById('contact-list'); list.innerHTML = '';
+        state.friends.forEach(id => {
             const div = document.createElement('div');
-            div.className = `peer-item ${state.activeChat === f.id ? 'active' : ''}`;
-            div.onclick = () => this.selectChat(f.id);
-            div.innerHTML = `
-                <img src="${f.avatar}">
-                <div class="peer-info">
-                    <strong>${f.id}</strong>
-                </div>
-            `;
+            div.className = `contact-item ${state.activeChat === id ? 'active' : ''}`;
+            div.onclick = () => this.selectChat(id);
+            div.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${id}"><span>${id}</span>`;
             list.appendChild(div);
         });
+        document.getElementById('my-av').src = state.user.av;
     },
-
     selectChat(id) {
         state.activeChat = id;
-        const friend = state.friends.find(f => f.id === id);
-        document.getElementById('no-chat-selected').classList.add('hidden');
+        document.getElementById('chat-welcome').classList.add('hidden');
         document.getElementById('chat-active').classList.remove('hidden');
-        document.getElementById('chat-name').innerText = id;
-        document.getElementById('chat-avatar').src = friend.avatar;
-        this.renderMessages();
-        this.renderFriends();
-
-        if (window.innerWidth <= 768) {
-            document.getElementById('sidebar').classList.remove('open');
-        }
+        document.getElementById('target-name').innerText = id;
+        document.getElementById('target-av').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+        this.renderMessages(); this.refresh();
+        if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
     },
-
     renderMessages() {
-        const box = document.getElementById('message-list');
-        box.innerHTML = '';
+        const box = document.getElementById('message-box'); box.innerHTML = '';
         const msgs = state.history[state.activeChat] || [];
         msgs.forEach(m => {
             const div = document.createElement('div');
             div.className = `msg ${m.type}`;
-            div.innerHTML = `
-                <div class="msg-bubble">${m.content}</div>
-                <small style="font-size:10px; opacity:0.5; margin-top:4px;">${m.time}</small>
-            `;
+            let content = m.content;
+            if(m.type === 'file') {
+                if(m.mime.startsWith('image')) content = `<img src="${m.content}" style="max-width:200px;border-radius:8px;">`;
+                else if(m.mime.startsWith('audio')) content = `<audio src="${m.content}" controls style="width:200px"></audio>`;
+                else content = `<a href="${m.content}" download style="color:white">Файл</a>`;
+            }
+            div.innerHTML = `<div class="msg-bubble">${content}</div><small style="font-size:9px;opacity:0.5;margin-top:2px;">${m.time}</small>`;
             box.appendChild(div);
         });
         box.scrollTop = box.scrollHeight;
     },
-
-    toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
+    toggleStickers() { document.getElementById('sticker-panel').classList.toggle('hidden'); this.renderStickers(); },
+    renderStickers() {
+        const grid = document.getElementById('sticker-grid'); grid.innerHTML = '';
+        state.stickers.forEach(url => {
+            const img = document.createElement('img'); img.src = url;
+            img.onclick = () => { messenger.dispatch({type:'file', content:url, mime:'image/png'}); this.toggleStickers(); };
+            grid.appendChild(img);
+        });
     },
-
-    openModal(id) {
+    modal(id) {
         document.getElementById('modal-overlay').classList.remove('hidden');
-        document.getElementById(`modal-${id}`).classList.remove('hidden');
+        document.getElementById('modal-'+id).classList.remove('hidden');
+        if(id === 'settings') {
+            document.getElementById('my-id-val').innerText = state.user.id;
+            document.getElementById('verif-val').innerText = state.user.verif ? 'Верифицирован ✅' : 'Обычный';
+            if(state.user.id === ADMIN_ID) document.getElementById('admin-zone').classList.remove('hidden');
+        }
     },
-
-    closeModals() {
-        document.getElementById('modal-overlay').classList.add('hidden');
-        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-    }
+    closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); },
+    toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 };
 
-// --- АДМИН ПАНЕЛЬ ---
 const admin = {
     createTwink() {
-        const l = document.getElementById('twink-login').value.trim();
-        const p = document.getElementById('twink-pass').value.trim();
-        if (!l || !p) return;
-        
-        state.db.users[l] = { pass: btoa(p), avatar: '', verified: false };
-        auth.saveDB();
-        alert(`Твинк ${l} успешно добавлен в базу данных!`);
-        ui.closeModals();
-    },
-    clearStorage() {
-        if(confirm("ВНИМАНИЕ! Это удалит всех пользователей и историю. Продолжить?")) {
-            localStorage.clear();
-            location.reload();
-        }
+        const id = document.getElementById('twink-id').value.trim();
+        if(!id) return;
+        state.db.users[id] = { pw: btoa("1234"), av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, verif: false };
+        localStorage.setItem('tat_db', JSON.stringify(state.db));
+        alert("Твинк создан! Пароль: 1234");
     }
 };
 
-// --- ОБРАБОТКА ФАЙЛОВ ---
-document.getElementById('reg-file').onchange = function(e) {
-    const reader = new FileReader();
-    reader.onload = function(ev) { document.getElementById('reg-preview').src = ev.target.result; };
-    reader.readAsDataURL(e.target.files[0]);
-};
+// Start
+if(state.user) messenger.init();
+else { document.getElementById('loader').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
