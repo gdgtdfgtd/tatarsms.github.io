@@ -3,102 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tatarsms | Premium P2P</title>
+    <title>tatarsms | Verified P2P</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
     <style>
         :root {
             --bg-dark: #1e1f22;
-            --bg-sidebar: #2b2d31;
+            --bg-side: #2b2d31;
             --bg-chat: #313338;
             --accent: #5865f2;
             --accent-hover: #4752c4;
-            --text: #f2f3f5;
-            --text-low: #949ba4;
-            --msg-received: #383a40;
-            --glass: rgba(30, 31, 34, 0.7);
+            --text-main: #f2f3f5;
+            --text-muted: #949ba4;
+            --danger: #da373c;
+            --success: #248046;
+            --glass: rgba(30, 31, 34, 0.85);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); height: 100vh; overflow: hidden; }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* --- АНИМАЦИИ --- */
+        /* --- ANIMATIONS --- */
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- ВХОД --- */
+        /* --- AUTH SCREEN --- */
         #auth-overlay {
             position: fixed; inset: 0; background: var(--bg-dark);
             display: flex; align-items: center; justify-content: center; z-index: 10000;
+            background-image: radial-gradient(circle at center, #2b2d31 0%, #1e1f22 100%);
         }
         .auth-card {
-            background: var(--bg-sidebar); width: 90%; max-width: 400px;
-            padding: 40px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; animation: msgIn 0.5s ease;
+            background: var(--bg-side); width: 90%; max-width: 420px;
+            padding: 40px; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            text-align: center; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
         }
-        .input-group { text-align: left; margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-low); text-transform: uppercase; margin-bottom: 8px; }
-        .input-group input { width: 100%; background: var(--bg-dark); border: none; padding: 12px; color: white; border-radius: 6px; }
-        .btn { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        .btn:hover { background: var(--accent-hover); }
+        .auth-card h1 { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; letter-spacing: -0.5px; }
+        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
+        
+        .input-group { text-align: left; margin-bottom: 16px; transition: 0.3s; }
+        .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .input-group input { 
+            width: 100%; background: var(--bg-dark); border: 1px solid transparent; padding: 12px; 
+            color: white; border-radius: 4px; font-size: 14px; transition: 0.2s;
+        }
+        .input-group input:focus { border-color: var(--accent); background: #000; }
 
-        /* --- ГЛАВНЫЙ ИНТЕРФЕЙС --- */
-        #app { display: flex; height: 100vh; }
+        .btn { 
+            width: 100%; background: var(--accent); color: white; border: none; padding: 12px; 
+            border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; font-size: 14px;
+        }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
         
-        .sidebar { width: 300px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid rgba(0,0,0,0.2); transition: 0.3s; }
-        .sidebar-header { padding: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .toggle-link { margin-top: 20px; font-size: 12px; color: var(--accent); cursor: pointer; transition: 0.2s; }
+        .toggle-link:hover { text-decoration: underline; }
+
+        /* Verify Code Input */
+        .code-inputs { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
+        .code-inputs input { width: 50px; height: 50px; text-align: center; font-size: 24px; background: var(--bg-dark); border: 1px solid var(--text-muted); border-radius: 8px; color: white; }
+
+        /* --- APP LAYOUT --- */
+        #app { display: flex; height: 100vh; animation: msgIn 0.8s ease; }
         
-        .contact-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .contact-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; margin-bottom: 4px; }
-        .contact-item:hover, .contact-item.active { background: rgba(255,255,255,0.05); }
-        .contact-item.active { background: var(--msg-received); border-left: 4px solid var(--accent); }
-        .contact-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #000; }
+        .sidebar { width: 300px; background: var(--bg-side); display: flex; flex-direction: column; border-right: 1px solid rgba(0,0,0,0.2); z-index: 10; }
+        .sidebar-header { padding: 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        .contact-list { flex: 1; overflow-y: auto; padding: 8px; }
+        .contact-item { 
+            display: flex; align-items: center; gap: 12px; padding: 10px; 
+            border-radius: 4px; cursor: pointer; margin-bottom: 2px; transition: 0.1s; 
+        }
+        .contact-item:hover, .contact-item.active { background: rgba(255,255,255,0.08); }
+        .contact-item.active { color: white; }
+        .contact-item img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #000; }
 
         .chat-view { flex: 1; background: var(--bg-chat); display: flex; flex-direction: column; position: relative; }
-        .chat-header { height: 70px; padding: 0 25px; display: flex; align-items: center; justify-content: space-between; background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .chat-header { height: 50px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-chat); border-bottom: 1px solid rgba(0,0,0,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         
-        /* --- СООБЩЕНИЯ --- */
-        .messages { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 70%; animation: msgIn 0.3s ease; display: flex; flex-direction: column; }
+        /* Messages */
+        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+        .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .msg.sent { align-self: flex-end; align-items: flex-end; }
-        .msg-bubble { background: var(--bg-side); padding: 10px 14px; border-radius: 14px; line-height: 1.4; position: relative; }
+        .msg-bubble { 
+            background: var(--bg-side); padding: 10px 14px; border-radius: 8px; 
+            font-size: 15px; line-height: 1.4; color: var(--text-main); position: relative; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
         .sent .msg-bubble { background: var(--accent); color: white; border-bottom-right-radius: 2px; }
         .received .msg-bubble { border-bottom-left-radius: 2px; }
-        .msg-time { font-size: 10px; color: var(--text-low); margin-top: 5px; }
+        .msg-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; opacity: 0.7; }
 
-        /* Контент сообщений */
-        .chat-media { max-width: 100%; border-radius: 8px; margin: 5px 0; display: block; border: 1px solid rgba(255,255,255,0.1); }
-        .chat-audio { margin: 5px 0; height: 35px; width: 220px; }
+        /* Media in Chat */
+        .media-content { max-width: 100%; border-radius: 6px; margin: 5px 0; border: 1px solid rgba(0,0,0,0.1); display: block; }
+        audio { height: 32px; margin: 5px 0; }
 
-        /* --- ВВОД --- */
-        .input-area { padding: 20px; }
-        .input-wrap { background: #383a40; border-radius: 12px; display: flex; align-items: center; padding: 5px 15px; gap: 15px; }
+        /* Input Area */
+        .input-area { padding: 20px; background: var(--bg-chat); }
+        .input-wrap { 
+            background: #383a40; border-radius: 8px; display: flex; align-items: center; 
+            padding: 0 16px; gap: 12px; transition: 0.2s;
+        }
+        .input-wrap:focus-within { box-shadow: 0 0 0 1px var(--accent); }
         #msg-input { flex: 1; background: none; border: none; padding: 12px 0; color: white; font-size: 15px; }
-        .icon { color: var(--text-low); cursor: pointer; transition: 0.2s; font-size: 20px; }
-        .icon:hover { color: white; transform: scale(1.1); }
-        .icon.active { color: var(--danger); animation: fadeIn 1s infinite; }
+        .icon { color: var(--text-muted); cursor: pointer; font-size: 18px; transition: 0.2s; }
+        .icon:hover { color: var(--text-main); transform: scale(1.1); }
+        .icon.recording { color: var(--danger); animation: shake 0.5s infinite; }
 
-        /* --- СТИКЕРЫ --- */
-        .sticker-panel { position: absolute; bottom: 90px; left: 20px; width: 300px; background: var(--bg-sidebar); border-radius: 16px; padding: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 500; }
-        .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; }
-        .sticker-grid img { width: 100%; cursor: pointer; border-radius: 8px; }
+        /* Stickers & Modals */
+        .sticker-panel { position: absolute; bottom: 85px; left: 20px; width: 280px; background: var(--bg-side); border-radius: 8px; padding: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 100; }
+        .sticker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; }
+        .sticker-grid img { width: 100%; cursor: pointer; transition: 0.1s; }
+        .sticker-grid img:hover { transform: scale(1.15); }
 
-        /* --- ЗВОНКИ --- */
-        #call-ui { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .video-box { width: 90%; max-width: 800px; height: 60vh; position: relative; display: flex; gap: 10px; }
-        video { flex: 1; background: #000; border-radius: 12px; object-fit: cover; }
-        #local-video { width: 150px; height: 110px; position: absolute; bottom: 20px; right: 20px; border: 2px solid var(--accent); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 5000; }
+        .modal { background: var(--bg-side); padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; animation: msgIn 0.3s ease; }
 
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 5000; }
-        .modal { background: var(--bg-side); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; }
+        /* Video Call */
+        #call-ui { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .video-box { width: 100%; height: 100%; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #local-video { width: 120px; height: 160px; position: absolute; bottom: 20px; right: 20px; border-radius: 8px; border: 2px solid var(--bg-side); z-index: 10; object-fit: cover; }
+        .call-controls { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 20; }
+        .btn-call { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; color: white; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .btn-hangup { background: var(--danger); }
+        .btn-accept { background: var(--success); }
 
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; width: 85%; z-index: 1000; }
+            .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; width: 85%; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
             .sidebar.open { left: 0; }
             .back-btn { display: block !important; margin-right: 15px; }
         }
@@ -107,33 +146,58 @@
 </head>
 <body>
 
-    <!-- AUTH -->
+    <!-- AUTHENTICATION -->
     <div id="auth-overlay">
         <div class="auth-card">
-            <h1 style="color:var(--accent); margin-bottom:10px;">tatarsms</h1>
-            <p id="auth-desc" style="color:var(--text-low); margin-bottom:25px;">Загрузка системы...</p>
-            <div id="auth-form" class="hidden">
+            <h1>tatarsms</h1>
+            
+            <!-- Login Form -->
+            <div id="view-login">
+                <p class="subtitle">С возвращением! Войдите в аккаунт.</p>
                 <div class="input-group">
                     <label>Никнейм (ID)</label>
-                    <input type="text" id="auth-user" placeholder="tatar_user">
+                    <input type="text" id="login-id" placeholder="tatar_user">
                 </div>
                 <div class="input-group">
                     <label>Пароль</label>
-                    <input type="password" id="auth-pass" placeholder="••••••••">
+                    <input type="password" id="login-pass" placeholder="••••••••">
                 </div>
-                <div id="reg-ext" class="hidden">
-                    <div class="input-group">
-                        <label>URL Фото (опционально)</label>
-                        <input type="text" id="auth-av" placeholder="https://...">
-                    </div>
+                <button class="btn" onclick="security.login()">Войти</button>
+                <div class="toggle-link" onclick="security.switchView('register')">Зарегистрироваться</div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="view-register" class="hidden">
+                <p class="subtitle">Создание новой учетной записи</p>
+                <div class="input-group">
+                    <label>Email (для кода)</label>
+                    <input type="email" id="reg-email" placeholder="mail@example.com">
                 </div>
-                <button class="btn" onclick="security.handleAuth()">Войти</button>
-                <p style="margin-top:20px; font-size:12px; color:var(--text-low); cursor:pointer;" onclick="security.toggle()">Нет аккаунта? Регистрация</p>
+                <div class="input-group">
+                    <label>Придумайте Никнейм</label>
+                    <input type="text" id="reg-id" placeholder="tatar_king">
+                </div>
+                <div class="input-group">
+                    <label>Пароль</label>
+                    <input type="password" id="reg-pass" placeholder="••••••••">
+                </div>
+                <button class="btn" onclick="security.sendCode()">Отправить код</button>
+                <div class="toggle-link" onclick="security.switchView('login')">Уже есть аккаунт?</div>
+            </div>
+
+            <!-- Verify Form -->
+            <div id="view-verify" class="hidden">
+                <p class="subtitle">Введите код, отправленный на <span id="verify-email-display" style="color:var(--text-main)"></span></p>
+                <div class="input-group">
+                    <input type="text" id="verify-code" placeholder="1234" style="text-align:center; font-size:24px; letter-spacing:5px;" maxlength="4">
+                </div>
+                <button class="btn" onclick="security.completeReg()">Подтвердить</button>
+                <div class="toggle-link" onclick="security.switchView('register')">Назад</div>
             </div>
         </div>
     </div>
 
-    <!-- APP -->
+    <!-- APP INTERFACE -->
     <div id="app" class="hidden">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -141,49 +205,47 @@
                 <i class="fas fa-cog icon" onclick="ui.modal('settings')"></i>
             </div>
             <div style="padding:15px;">
-                <input type="text" placeholder="Поиск по ID..." style="width:100%; background:var(--bg-dark); border:none; padding:12px; border-radius:8px; color:white;" onkeypress="messenger.add(event)">
+                <input type="text" placeholder="Поиск друга..." style="width:100%; background:var(--bg-dark); border:none; padding:10px; border-radius:4px; color:white;" onkeypress="messenger.add(event)">
             </div>
             <div class="contact-list" id="contact-list"></div>
         </aside>
 
         <main class="chat-view">
-            <div id="chat-none" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.2;">
-                <i class="fas fa-shield-halved" style="font-size:80px; margin-bottom:20px;"></i>
-                <h2>P2P ENCRYPTED</h2>
+            <div id="chat-none" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3; color:var(--text-muted);">
+                <i class="fas fa-shield-cat" style="font-size:80px; margin-bottom:20px;"></i>
+                <h2>Безопасный чат</h2>
             </div>
 
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column;">
                 <header class="chat-header">
                     <div style="display:flex; align-items:center;">
                         <i class="fas fa-arrow-left back-btn" onclick="ui.toggleSidebar()"></i>
-                        <img id="active-av" src="" style="width:40px; height:40px; border-radius:50%; margin-right:12px; object-fit:cover;">
+                        <img id="active-av" src="" style="width:36px; height:36px; border-radius:50%; margin-right:12px;">
                         <div>
                             <div style="font-weight:700" id="active-name">User</div>
-                            <div style="font-size:11px; color:var(--success)">В сети</div>
+                            <div style="font-size:11px; color:var(--success)">В сети (P2P)</div>
                         </div>
                     </div>
-                    <div style="display:flex; gap:20px; color:var(--text-low);">
+                    <div style="display:flex; gap:20px; color:var(--text-muted);">
                         <i class="fas fa-phone icon" onclick="calls.init(false)"></i>
                         <i class="fas fa-video icon" onclick="calls.init(true)"></i>
                     </div>
                 </header>
 
-                <div class="messages" id="msg-box"></div>
+                <div class="messages" id="messages-box"></div>
 
                 <div class="input-area">
                     <div id="sticker-panel" class="sticker-panel hidden">
                         <div class="sticker-grid" id="sticker-grid"></div>
-                        <div style="margin-top:10px; display:flex; gap:5px;">
-                            <input type="text" id="st-url" placeholder="URL стикера..." style="flex:1; background:var(--bg-dark); border:none; color:white; padding:8px; border-radius:5px; font-size:12px;">
-                            <button class="btn" style="width:auto; margin:0; padding:0 15px;" onclick="messenger.addSticker()">+</button>
-                        </div>
+                        <input type="text" id="st-url" placeholder="URL картинки..." style="width:100%; background:var(--bg-dark); border:none; color:white; padding:8px; margin-top:10px; border-radius:4px; font-size:12px;">
+                        <button class="btn" style="padding:6px; margin-top:5px; font-size:12px;" onclick="messenger.addSticker()">Добавить</button>
                     </div>
                     <div class="input-wrap">
                         <i class="far fa-sticky-note icon" onclick="ui.toggleStickers()"></i>
                         <label for="file-up"><i class="fas fa-paperclip icon"></i></label>
                         <input type="file" id="file-up" hidden onchange="messenger.file(this)">
-                        <input type="text" id="msg-input" placeholder="Сообщение..." onkeypress="messenger.keys(event)">
-                        <i class="fas fa-microphone icon" id="mic-icon" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
+                        <input type="text" id="msg-input" placeholder="Написать..." onkeypress="messenger.keys(event)">
+                        <i class="fas fa-microphone icon" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
                         <i class="fas fa-paper-plane icon" onclick="messenger.sendText()" style="color:var(--accent)"></i>
                     </div>
                 </div>
@@ -191,28 +253,33 @@
         </main>
     </div>
 
-    <!-- CALL UI -->
+    <!-- CALL OVERLAY -->
     <div id="call-ui" class="hidden">
         <div class="video-box">
             <video id="remote-video" autoplay playsinline></video>
             <video id="local-video" autoplay muted playsinline></video>
         </div>
-        <div style="margin-top:20px; display:flex; gap:20px;">
-            <button class="btn" id="call-accept" style="background:var(--success); width:60px; height:60px; border-radius:50%;"><i class="fas fa-phone"></i></button>
-            <button class="btn" onclick="location.reload()" style="background:var(--danger); width:60px; height:60px; border-radius:50%;"><i class="fas fa-phone-slash"></i></button>
+        <div class="call-controls">
+            <button class="btn-call btn-accept hidden" id="call-answer"><i class="fas fa-phone"></i></button>
+            <button class="btn-call btn-hangup" onclick="calls.end()"><i class="fas fa-phone-slash"></i></button>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- SETTINGS MODAL -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.close()">
         <div class="modal" onclick="event.stopPropagation()">
-            <h2>Настройки</h2>
-            <div id="admin-panel" class="hidden" style="border-top:1px solid #444; padding-top:15px; margin-top:15px;">
-                <p style="color:var(--accent); font-weight:700; font-size:12px; margin-bottom:10px;">АДМИН-ПАНЕЛЬ</p>
-                <input type="text" id="twink-id" placeholder="ID пользователя" style="width:100%; background:#111; border:none; padding:10px; color:white; margin-bottom:10px; border-radius:5px;">
-                <button class="btn" onclick="admin.verify()">Выдать верификацию</button>
+            <h2 style="margin-bottom:20px;">Профиль</h2>
+            <div style="text-align:center; margin-bottom:20px;">
+                <img id="set-av" src="" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--accent);">
             </div>
-            <button class="btn" style="background:#4e5058; margin-top:20px;" onclick="security.logout()">Выйти</button>
+            <p>ID: <strong id="set-id"></strong></p>
+            <p>Статус: <span id="set-verif">Обычный</span></p>
+            <div id="admin-tools" class="hidden" style="margin-top:15px; padding-top:15px; border-top:1px solid #444;">
+                <label style="font-size:11px; font-weight:700; color:var(--accent);">АДМИН: ВЫДАТЬ ГАЛОЧКУ</label>
+                <input type="text" id="target-id" placeholder="ID пользователя" style="width:100%; background:var(--bg-dark); border:none; padding:10px; margin-top:5px; border-radius:4px; color:white;">
+                <button class="btn" onclick="admin.verify()">Подтвердить</button>
+            </div>
+            <button class="btn" style="background:#383a40; margin-top:20px;" onclick="security.logout()">Выйти</button>
         </div>
     </div>
 
@@ -220,48 +287,89 @@
         const ADMIN_ID = "tatar_506";
         const ADMIN_PW = "spinogrz666";
 
-        // --- SECURITY ---
+        // --- SECURITY & AUTH ---
         const security = {
-            isReg: false,
-            toggle() {
-                this.isReg = !this.isReg;
-                document.getElementById('auth-desc').innerText = this.isReg ? "Регистрация" : "Вход";
-                document.getElementById('reg-ext').classList.toggle('hidden', !this.isReg);
-            },
-            handleAuth() {
-                const id = document.getElementById('auth-user').value.trim();
-                const pw = document.getElementById('auth-pass').value.trim();
-                const av = document.getElementById('auth-av').value.trim();
-                if(!id || !pw) return alert("Введите данные");
+            tempReg: {},
+            verificationCode: null,
 
-                if(id === ADMIN_ID && pw === ADMIN_PW) return this.start(id, "", true);
+            switchView(view) {
+                document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('view-register').classList.add('hidden');
+                document.getElementById('view-verify').classList.add('hidden');
+                document.getElementById('view-' + view).classList.remove('hidden');
+            },
+
+            sendCode() {
+                const email = document.getElementById('reg-email').value.trim();
+                const id = document.getElementById('reg-id').value.trim();
+                const pw = document.getElementById('reg-pass').value.trim();
+
+                if(!email || !id || !pw) return alert("Заполните все поля!");
+                const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
+                if(db.users[id]) return alert("Этот ID уже занят!");
+
+                // Generate code & Simulate Email
+                this.verificationCode = Math.floor(1000 + Math.random() * 9000);
+                this.tempReg = { id, pw, email };
+                
+                alert(`[IMAP SERVER] Письмо отправлено на ${email}.\nВаш код подтверждения: ${this.verificationCode}`);
+                
+                document.getElementById('verify-email-display').innerText = email;
+                this.switchView('verify');
+            },
+
+            completeReg() {
+                const code = document.getElementById('verify-code').value.trim();
+                if(code != this.verificationCode) return alert("Неверный код!");
 
                 const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
-                if(this.isReg) {
-                    db.users[id] = { pw: btoa(pw), av: av || `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, verif: false };
-                    localStorage.setItem('tat_db', JSON.stringify(db));
-                    alert("Успешно!"); this.toggle();
+                db.users[this.tempReg.id] = {
+                    pw: btoa(this.tempReg.pw),
+                    av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.tempReg.id}`,
+                    verif: false
+                };
+                localStorage.setItem('tat_db', JSON.stringify(db));
+                alert("Регистрация успешна!");
+                this.switchView('login');
+            },
+
+            login() {
+                const id = document.getElementById('login-id').value.trim();
+                const pw = document.getElementById('login-pass').value.trim();
+                if(!id || !pw) return alert("Введите данные");
+
+                // Admin Bypass
+                if(id === ADMIN_ID && pw === ADMIN_PW) {
+                    this.startSession(id, `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`, true);
+                    return;
+                }
+
+                const db = JSON.parse(localStorage.getItem('tat_db') || '{"users":{}}');
+                const user = db.users[id];
+
+                if(user && atob(user.pw) === pw) {
+                    this.startSession(id, user.av, user.verif);
                 } else {
-                    const u = db.users[id];
-                    if(u && atob(u.pw) === pw) this.start(id, u.av, u.verif);
-                    else alert("Ошибка!");
+                    alert("Неверный логин или пароль!");
                 }
             },
-            start(id, av, verif) {
+
+            startSession(id, av, verif) {
                 localStorage.setItem('tat_session', JSON.stringify({id, av, verif}));
                 location.reload();
             },
+
             logout() { localStorage.removeItem('tat_session'); location.reload(); }
         };
 
-        // --- STATE ---
+        // --- CORE STATE ---
         let state = {
             user: JSON.parse(localStorage.getItem('tat_session')),
             peer: null, activeChat: null,
             friends: JSON.parse(localStorage.getItem('tat_friends') || '[]'),
             history: JSON.parse(localStorage.getItem('tat_history') || '{}'),
             stickers: JSON.parse(localStorage.getItem('tat_stickers') || '[]'),
-            recorder: null, chunks: [], localStream: null
+            localStream: null
         };
 
         // --- MESSENGER ---
@@ -271,7 +379,7 @@
                 state.peer.on('open', () => {
                     document.getElementById('auth-overlay').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
-                    ui.refresh();
+                    ui.renderFriends();
                 });
                 state.peer.on('connection', conn => {
                     conn.on('data', data => this.receive(data, conn.peer));
@@ -282,7 +390,7 @@
                 if(!state.friends.includes(from)) {
                     state.friends.push(from);
                     localStorage.setItem('tat_friends', JSON.stringify(state.friends));
-                    ui.refresh();
+                    ui.renderFriends();
                 }
                 this.save(from, data, 'received');
             },
@@ -294,6 +402,7 @@
             },
             file(input) {
                 const file = input.files[0];
+                if(!file || !state.activeChat) return;
                 const reader = new FileReader();
                 reader.onload = e => {
                     const type = file.type.startsWith('image') ? 'image' : (file.type.startsWith('audio') ? 'audio' : 'file');
@@ -317,15 +426,15 @@
             add(e) {
                 if(e.key === 'Enter') {
                     const id = e.target.value.trim();
-                    if(id && id !== state.user.id) {
-                        if(!state.friends.includes(id)) state.friends.push(id);
+                    if(id && id !== state.user.id && !state.friends.includes(id)) {
+                        state.friends.push(id);
                         localStorage.setItem('tat_friends', JSON.stringify(state.friends));
-                        ui.refresh(); ui.select(id); e.target.value = '';
+                        ui.renderFriends(); ui.select(id); e.target.value = '';
                     }
                 }
             },
             addSticker() {
-                const url = document.getElementById('st-url').value;
+                const url = document.getElementById('st-url').value.trim();
                 if(url) {
                     state.stickers.push(url);
                     localStorage.setItem('tat_stickers', JSON.stringify(state.stickers));
@@ -348,14 +457,16 @@
             },
             incoming(call) {
                 document.getElementById('call-ui').classList.remove('hidden');
-                document.getElementById('call-accept').onclick = async () => {
+                document.getElementById('call-answer').classList.remove('hidden');
+                document.getElementById('call-answer').onclick = async () => {
                     state.localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
                     document.getElementById('local-video').srcObject = state.localStream;
                     call.answer(state.localStream);
                     call.on('stream', s => document.getElementById('remote-video').srcObject = s);
-                    document.getElementById('call-accept').classList.add('hidden');
+                    document.getElementById('call-answer').classList.add('hidden');
                 };
-            }
+            },
+            end() { location.reload(); }
         };
 
         // --- VOICE ---
@@ -373,15 +484,15 @@
                         r.readAsDataURL(b);
                     };
                     state.recorder.start();
-                    document.getElementById('mic-icon').classList.add('active');
+                    document.getElementById('mic-btn').classList.add('recording');
                 } catch(e) { alert("Ошибка микрофона"); }
             },
-            stop() { if(state.recorder) { state.recorder.stop(); document.getElementById('mic-icon').classList.remove('active'); } }
+            stop() { if(state.recorder) { state.recorder.stop(); document.getElementById('mic-btn').classList.remove('recording'); } }
         };
 
         // --- UI ---
         const ui = {
-            refresh() {
+            renderFriends() {
                 const list = document.getElementById('contact-list'); list.innerHTML = '';
                 state.friends.forEach(id => {
                     const div = document.createElement('div');
@@ -397,22 +508,21 @@
                 document.getElementById('chat-active').classList.remove('hidden');
                 document.getElementById('active-name').innerText = id;
                 document.getElementById('active-av').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
-                this.renderMsgs(); this.refresh();
+                this.renderMsgs(); this.renderFriends();
+                if(window.innerWidth < 768) this.toggleSidebar();
             },
             renderMsgs() {
-                const box = document.getElementById('msg-box'); box.innerHTML = '';
-                (state.history[state.activeChat] || []).forEach(m => {
+                const box = document.getElementById('messages-box'); box.innerHTML = '';
+                const msgs = state.history[state.activeChat] || [];
+                msgs.forEach(m => {
                     const div = document.createElement('div');
                     div.className = `msg ${m.type}`;
-                    let html = `<div class="msg-bubble">`;
+                    let content = m.content;
+                    if(m.type === 'image') content = `<img src="${m.content}" class="media-content">`;
+                    else if(m.type === 'audio') content = `<audio src="${m.content}" controls></audio>`;
+                    else if(m.type === 'file') content = `<a href="${m.content}" download style="color:white;text-decoration:underline;">Скачать файл</a>`;
                     
-                    if(m.type === 'text') html += m.content;
-                    else if(m.type === 'image') html += `<img src="${m.content}" class="chat-media">`;
-                    else if(m.type === 'audio') html += `<audio src="${m.content}" controls class="chat-audio"></audio>`;
-                    else if(m.type === 'file') html += `<a href="${m.content}" download style="color:white;text-decoration:underline">Файл</a>`;
-                    
-                    html += `</div><div class="msg-time">${m.time}</div>`;
-                    div.innerHTML = html;
+                    div.innerHTML = `<div class="msg-bubble">${content}</div><div class="msg-time">${m.time}</div>`;
                     box.appendChild(div);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -428,7 +538,12 @@
             },
             modal(id) {
                 document.getElementById('modal-overlay').classList.remove('hidden');
-                if(id === 'settings' && state.user.id === ADMIN_ID) document.getElementById('admin-panel').classList.remove('hidden');
+                if(id === 'settings') {
+                    document.getElementById('set-id').innerText = state.user.id;
+                    document.getElementById('set-av').src = state.user.av;
+                    document.getElementById('set-verif').innerText = state.user.verif ? 'Verified ✅' : 'Standard';
+                    if(state.user.id === ADMIN_ID) document.getElementById('admin-tools').classList.remove('hidden');
+                }
             },
             close() { document.getElementById('modal-overlay').classList.add('hidden'); },
             toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -436,18 +551,17 @@
 
         const admin = {
             verify() {
-                const id = document.getElementById('twink-id').value;
+                const id = document.getElementById('target-id').value.trim();
                 const db = JSON.parse(localStorage.getItem('tat_db'));
-                if(db.users[id]) {
+                if(db && db.users[id]) {
                     db.users[id].verif = true;
                     localStorage.setItem('tat_db', JSON.stringify(db));
-                    alert("OK");
+                    alert("Пользователь верифицирован!");
                 }
             }
         };
 
         if(state.user) messenger.init();
-        else document.getElementById('auth-form').classList.remove('hidden');
     </script>
 </body>
 </html>
