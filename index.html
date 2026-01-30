@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tatarsms | Nebula Final</title>
+    <title>tatarsms | Nebula Elite</title>
     
-    <!-- Ресурсы -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -21,7 +20,7 @@
             --accent-grad: linear-gradient(90deg, #00d2ff, #3a7bd5);
             --text: #ffffff;
             --msg-sent: rgba(0, 210, 255, 0.3);
-            --msg-received: rgba(255, 255, 255, 0.1);
+            --msg-received: rgba(255, 255, 255, 0.08);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -44,6 +43,8 @@
         @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
         .hidden { display: none !important; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
         /* --- AUTH --- */
         #auth-overlay {
@@ -63,7 +64,7 @@
             width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);
             padding: 14px; color: white; border-radius: 12px; font-size: 16px; transition: 0.3s;
         }
-        .input-box input:focus { border-color: var(--accent); }
+        .input-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
 
         .btn {
             width: 100%; background: var(--accent-grad); border: none; padding: 14px;
@@ -122,7 +123,7 @@
         
         .msg-time { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 5px; }
         
-        .media-content { max-width: 100%; border-radius: 12px; margin: 5px 0; display: block; border: 1px solid var(--glass-border); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .media-content { max-width: 100%; border-radius: 12px; margin: 5px 0; display: block; border: 1px solid var(--glass-border); }
         audio { height: 35px; width: 220px; margin-top: 5px; }
 
         .input-area { padding: 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(20px); flex-shrink: 0; }
@@ -142,13 +143,13 @@
 </head>
 <body>
 
-    <!-- AUTH -->
+    <!-- AUTH SCREEN -->
     <div id="auth-overlay">
         <div class="auth-card">
             <h1>tatarsms</h1>
             
             <div id="auth-login">
-                <div class="input-box"><input type="text" id="login-id" placeholder="Ваш ID"></div>
+                <div class="input-box"><input type="text" id="login-id" placeholder="ID"></div>
                 <div class="input-box"><input type="password" id="login-pass" placeholder="Пароль"></div>
                 <button class="btn" onclick="security.login()">Войти</button>
                 <p style="margin-top:20px; font-size:13px; color:#888; cursor:pointer;" onclick="security.switch('reg')">Создать аккаунт</p>
@@ -163,9 +164,9 @@
             </div>
 
             <div id="auth-code" class="hidden">
-                <p style="margin-bottom:15px; color: var(--accent);">Код отправлен на почту!</p>
-                <div class="input-box"><input type="text" id="verify-code" placeholder="12345" style="text-align:center; font-size:26px; letter-spacing:8px;"></div>
-                <button class="btn" onclick="security.verify()">Завершить</button>
+                <p style="margin-bottom:15px; color: var(--accent);">Письмо с кодом отправлено!</p>
+                <div class="input-box"><input type="text" id="verify-code" placeholder="Код из письма" style="text-align:center; font-size:26px; letter-spacing:8px;"></div>
+                <button class="btn" onclick="security.verify()">Подтвердить</button>
             </div>
         </div>
     </div>
@@ -178,7 +179,7 @@
                     <img id="my-av" src="">
                     <div><div style="font-weight:700" id="my-id">...</div><div style="font-size:11px; color:var(--accent)">Online</div></div>
                 </div>
-                <i class="fas fa-user-plus icon" style="font-size: 18px;" onclick="ui.modal('add-friend')"></i>
+                <i class="fas fa-plus-circle icon" onclick="ui.modal('add-friend')"></i>
             </div>
             <div class="contact-list" id="contact-list"></div>
         </aside>
@@ -192,14 +193,11 @@
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column; height:100%;">
                 <header class="chat-header">
                     <div style="display:flex; align-items:center;">
-                        <i class="fas fa-arrow-left back-btn hidden" onclick="ui.closeChat()"></i>
                         <img id="target-av" src="" style="width:42px; height:42px; border-radius:50%; margin-right:12px; object-fit:cover; border:2px solid var(--accent);">
                         <div style="font-weight:700; font-size:17px;" id="target-name">User</div>
                     </div>
                 </header>
-
                 <div class="messages" id="msg-box"></div>
-
                 <div class="input-area">
                     <div class="input-wrap">
                         <label for="file-up"><i class="fas fa-paperclip icon"></i></label>
@@ -221,16 +219,14 @@
             <p>ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
             <button class="btn" style="background:#333; margin-top:25px;" onclick="security.logout()">Выйти</button>
         </div>
-
         <div id="modal-add-friend" class="modal hidden">
             <span class="modal-close" onclick="ui.close()">&times;</span>
             <h2>Добавить друга</h2>
-            <input type="text" id="friend-id-input" class="input-box" placeholder="ID друга">
+            <input type="text" id="friend-id-input" class="input-box" placeholder="Введите ID друга">
             <button class="btn" onclick="messenger.sendRequest()">Отправить запрос</button>
         </div>
-
         <div id="modal-req" class="modal hidden">
-            <h3 style="color:var(--accent);">Входящая заявка</h3>
+            <h3 style="color:var(--accent);">Заявка в друзья</h3>
             <p id="req-id-disp"></p>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button class="btn" style="background:#2ecc71;" onclick="messenger.handleReq(true)">Принять</button>
@@ -240,10 +236,10 @@
     </div>
 
     <script>
-        // === ВСТАВЬТЕ СВОИ КЛЮЧИ ТУТ ===
-        const EMAIL_KEY = "QD5eXUp0g9r3WEC"; 
-        const EMAIL_SERV = "service_tatarsms"; // ЗАМЕНИТЕ
-        const EMAIL_TEMP = "template_jlewu48"; // ЗАМЕНИТЕ
+        // === EMAILJS CONFIG ===
+        const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
+        const EMAIL_SERV = "service_tatarsms"; 
+        const EMAIL_TEMP = "template_zxlr5as"; 
 
         const ADMIN_ID = "tatar_506";
         const ADMIN_PW = "spinogrz666";
@@ -261,21 +257,26 @@
                 const pw = document.getElementById('reg-pass').value.trim();
                 if(!id || !email || !pw) return alert("Заполните всё");
 
-                this.code = Math.floor(10000 + Math.random() * 90000);
+                this.code = Math.floor(100000 + Math.random() * 900000); // 6 цифр
                 this.temp = {id, pw, email};
 
                 const btn = document.getElementById('send-code-btn');
                 btn.innerText = "Отправка..."; btn.disabled = true;
 
-                if(EMAIL_KEY && EMAIL_SERV !== "service_id") {
-                    emailjs.init(EMAIL_KEY);
-                    emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: email, code: this.code })
-                    .then(() => { this.switch('code'); btn.innerText = "Отправить код"; btn.disabled = false; }, 
-                    (err) => { alert("Ошибка 400! Проверьте ID сервиса и шаблона."); btn.disabled = false; });
-                } else {
-                    alert("СИМУЛЯЦИЯ. Код: " + this.code);
-                    this.switch('code'); btn.disabled = false;
-                }
+                emailjs.init(EMAIL_KEY);
+                emailjs.send(EMAIL_SERV, EMAIL_TEMP, {
+                    title: "tatarsms code",
+                    name: "tatarsms code",
+                    message: "Приветствую вас в tatarsms хорошего общения код - " + this.code,
+                    to_email: email
+                }).then(() => {
+                    this.switch('code');
+                    btn.innerText = "Отправить код"; btn.disabled = false;
+                }, (err) => {
+                    alert("Ошибка EmailJS! Проверьте Template/Service ID.");
+                    console.error(err);
+                    btn.innerText = "Отправить код"; btn.disabled = false;
+                });
             },
             verify() {
                 if(document.getElementById('verify-code').value != this.code) return alert("Неверно");
@@ -301,7 +302,7 @@
             logout() { localStorage.removeItem('tat_sess'); location.reload(); }
         };
 
-        // --- CORE ---
+        // --- STATE ---
         let state = {
             user: JSON.parse(localStorage.getItem('tat_sess')),
             peer: null, chat: null,
@@ -420,7 +421,10 @@
                 });
                 this.scroll();
             },
-            scroll() { const box = document.getElementById('msg-box'); box.scrollTop = box.scrollHeight + 1000; },
+            scroll() { 
+                const box = document.getElementById('msg-box'); 
+                box.scrollTop = box.scrollHeight + 1000; 
+            },
             modal(id) {
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
