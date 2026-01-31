@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>tatarsms | Nebula Ultimate Elite</title>
+    <title>tatarsms | Nebula v8 Stable</title>
     
-    <!-- Ресурсы для РФ (jsDelivr / cdnjs) -->
+    <!-- Ресурсы (Стабильные для РФ) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -18,8 +18,6 @@
             --glass: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --bg: #050505;
-            --danger: #ff4d4d;
-            --success: #2ecc71;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -37,62 +35,58 @@
 
         .hidden { display: none !important; }
         .glass { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
         @keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes msgIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* --- AUTH SCREEN --- */
         .auth-card { 
-            background: rgba(15, 15, 25, 0.85); border-radius: 30px; padding: 40px; width: 92%; max-width: 420px; 
+            background: rgba(15, 15, 25, 0.85); border-radius: 30px; padding: 40px; width: 92%; max-width: 400px; 
             text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: pop 0.5s ease;
         }
-        .glow-text { background: linear-gradient(90deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 38px; margin-bottom: 20px; }
-        .glass-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; transition: 0.3s; }
+        .glow-text { background: linear-gradient(90deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 36px; margin-bottom: 20px; }
+        .glass-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; color: white; margin-bottom: 12px; font-size: 15px; }
         .btn-primary { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 15px; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
-
-        /* --- APP LAYOUT --- */
+        
+        /* --- MAIN LAYOUT --- */
         #app { display: flex; height: 100vh; width: 100vw; }
         #sidebar { 
             width: 320px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(20px); transition: 0.4s;
         }
-        .side-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .side-head { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
         .me-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .me-info img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .me-info img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
 
-        .tabs { display: flex; background: rgba(0,0,0,0.2); margin: 10px; border-radius: 10px; padding: 4px; border: 1px solid var(--glass-border); }
-        .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; cursor: pointer; border-radius: 8px; color: #888; transition: 0.3s; }
+        .tabs { display: flex; background: rgba(0,0,0,0.2); margin: 10px; border-radius: 10px; padding: 4px; }
+        .tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; cursor: pointer; border-radius: 10px; color: #888; transition: 0.3s; }
         .tab.active { background: var(--accent-dark); color: white; }
 
         .list-area { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-card { display: flex; align-items: center; gap: 12px; padding: 15px; border-radius: 18px; cursor: pointer; margin-bottom: 8px; transition: 0.2s; position: relative; background: rgba(255,255,255,0.02); }
-        .item-card:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
-        .item-card.active { background: linear-gradient(90deg, var(--accent-dark), transparent); border-left: 4px solid var(--accent); }
+        .item-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; }
+        .item-card.active { background: linear-gradient(90deg, var(--accent-dark), transparent); }
         .item-card img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #222; }
 
-        /* --- CHAT AREA --- */
+        /* --- CHAT --- */
         #chat-window { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .chat-header { height: 75px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); backdrop-filter: blur(15px); }
         .target-info { display: flex; align-items: center; gap: 12px; }
-        .target-info img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
-        
+        .target-info img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+
         .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgIn 0.4s ease; }
+        .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgIn 0.3s ease; }
         .msg.sent { align-self: flex-end; align-items: flex-end; }
         .msg-bubble { padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.4; background: var(--glass); border: 1px solid var(--glass-border); position: relative; }
         .sent .msg-bubble { background: var(--accent-dark); border: none; border-bottom-right-radius: 4px; }
         .received .msg-bubble { border-bottom-left-radius: 4px; }
 
-        /* Медиа Фреймы */
-        .media-frame { max-width: 250px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; transition: 0.3s; }
-        .media-frame:hover { transform: scale(1.02); }
+        .media-frame { max-width: 250px; border-radius: 15px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; transition: 0.3s; }
         .media-frame img { width: 100%; display: block; }
         audio { height: 35px; width: 220px; margin-top: 5px; filter: invert(1); }
 
-        /* Input */
         .chat-footer { padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0.4); }
-        .input-bar { background: rgba(255,255,255,0.06); border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--glass-border); }
+        .input-bar { background: rgba(255,255,255,0.06); border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--glass-border); }
         .input-bar input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 16px; }
         .input-bar i { font-size: 22px; color: #888; cursor: pointer; transition: 0.2s; }
         .input-bar i:hover { color: var(--accent); }
@@ -100,66 +94,56 @@
         @keyframes pulse { 50% { opacity: 0.5; } }
 
         /* --- MODALS --- */
-        .modal { background: #0a0a0f; padding: 30px; border-radius: 35px; width: 92%; max-width: 440px; border: 1px solid var(--glass-border); position: relative; animation: pop 0.4s ease; text-align: center; }
+        .modal { background: #0a0a0f; padding: 30px; border-radius: 30px; width: 92%; max-width: 420px; border: 1px solid var(--glass-border); text-align: center; }
         .modal-close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: #555; }
         .large-av { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 15px; object-fit: cover; cursor: pointer; display: block; }
-
-        /* Sticker Panel */
-        .sticker-panel { position: absolute; bottom: 100px; left: 20px; width: 310px; background: rgba(10,10,15,0.95); padding: 15px; border-radius: 24px; border: 1px solid var(--glass-border); z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .st-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; }
+        
+        .sticker-panel { position: absolute; bottom: 100px; left: 20px; width: 300px; background: rgba(10,10,15,0.95); padding: 15px; border-radius: 24px; border: 1px solid var(--glass-border); z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .st-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; }
         .st-grid img { width: 100%; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-        .st-grid img:hover { transform: scale(1.1); }
 
-        /* Mobile Adjustments */
         @media (max-width: 768px) {
-            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; transform: translateX(0); }
+            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; }
             #sidebar.closed { transform: translateX(-100%); }
             .back-btn { display: block !important; }
         }
-        .back-btn { display: none; font-size: 22px; cursor: pointer; margin-right: 10px; }
+        .back-btn { display: none; font-size: 22px; cursor: pointer; margin-right: 15px; }
     </style>
 </head>
 <body>
 
     <div class="nebula-bg"></div>
 
-    <div id="loading-screen" class="overlay">
-        <h1 class="glow-text" style="font-size: 42px;">tatarsms</h1>
+    <div id="loader" class="overlay">
+        <h1 class="glow-text">tatarsms</h1>
+        <p style="color:var(--accent); font-size:10px; letter-spacing:4px">CONNECTING...</p>
     </div>
 
-    <!-- AUTH SCREEN -->
+    <!-- AUTH -->
     <div id="auth-screen" class="overlay hidden">
         <div class="auth-card glass">
             <h1 class="glow-text">tatarsms</h1>
-            
-            <!-- Login -->
             <div id="auth-login">
                 <input type="text" id="login-id" class="glass-input" placeholder="ID (Никнейм)">
                 <input type="password" id="login-pw" class="glass-input" placeholder="Пароль">
                 <button class="btn-primary" onclick="auth.login()">ВОЙТИ</button>
-                <p style="margin-top:20px; font-size:13px; color:#aaa; cursor:pointer;" onclick="auth.switch('reg')">Нет аккаунта? Создать</p>
-                <p onclick="localStorage.clear(); location.reload();" style="margin-top: 15px; font-size: 10px; opacity: 0.3; cursor: pointer;">ОЧИСТИТЬ КЭШ</p>
+                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('reg')">Нет аккаунта? Создать</p>
+                <p onclick="localStorage.clear(); location.reload();" style="margin-top: 15px; font-size: 10px; opacity: 0.3; cursor: pointer;">СБРОСИТЬ</p>
             </div>
-
-            <!-- Register -->
             <div id="auth-reg" class="hidden">
-                <input type="email" id="reg-email" class="glass-input" placeholder="Ваш Gmail">
+                <input type="email" id="reg-email" class="glass-input" placeholder="Gmail">
                 <input type="text" id="reg-id" class="glass-input" placeholder="Придумайте ID">
                 <input type="password" id="reg-pw" class="glass-input" placeholder="Пароль">
-                
                 <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:12px; margin-bottom:12px">
-                    <p id="captcha-text" style="font-size:14px; margin-bottom:5px"></p>
+                    <p id="captcha-text" style="font-size:12px; margin-bottom:5px"></p>
                     <input type="text" id="captcha-input" class="glass-input" placeholder="Ответ" style="margin-bottom:0">
                 </div>
-
                 <button class="btn-primary" id="reg-send-btn" onclick="auth.startReg()">ОТПРАВИТЬ КОД</button>
-                <p style="margin-top:20px; font-size:13px; color:#aaa; cursor:pointer;" onclick="auth.switch('login')">Назад</p>
+                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('login')">Назад</p>
             </div>
-
-            <!-- 2FA Code -->
             <div id="auth-code" class="hidden">
-                <p style="margin-bottom:20px; color:var(--accent);">Введите код подтверждения</p>
-                <input type="text" id="verify-code" class="glass-input" style="text-align:center; font-size:26px; letter-spacing:8px" maxlength="6">
+                <p style="margin-bottom:20px">Код подтверждения отправлен</p>
+                <input type="text" id="verify-code" class="glass-input" placeholder="6 цифр" style="text-align:center; font-size:24px; letter-spacing:8px">
                 <button class="btn-primary" onclick="auth.complete()">ПОДТВЕРДИТЬ</button>
             </div>
         </div>
@@ -168,12 +152,12 @@
     <!-- APP -->
     <div id="app" class="hidden">
         <aside id="sidebar">
-            <div class="side-header">
+            <div class="side-head">
                 <div class="me-info" onclick="ui.modal('profile')">
                     <img id="my-av" src="">
                     <span id="my-name-disp">...</span>
                 </div>
-                <div style="display:flex; gap:18px; font-size:18px; color:#aaa">
+                <div style="display:flex; gap:15px; font-size:18px; color:#aaa">
                     <i class="fas fa-user-plus" style="cursor:pointer" onclick="ui.modal('add')"></i>
                     <i class="fas fa-users" style="cursor:pointer" onclick="ui.modal('group')"></i>
                 </div>
@@ -187,8 +171,8 @@
 
         <main id="chat-window">
             <div id="welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.25">
-                <i class="fas fa-satellite" style="font-size:100px; margin-bottom:20px"></i>
-                <h2>P2P SECURE</h2>
+                <i class="fas fa-satellite-dish" style="font-size:100px; margin-bottom:20px"></i>
+                <h2>P2P ENCRYPTED</h2>
             </div>
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column; height:100%;">
                 <header class="chat-header">
@@ -198,13 +182,11 @@
                         <h4 id="target-name">...</h4>
                     </div>
                     <div style="display:flex; gap:20px; font-size:20px; color:#aaa">
-                        <i class="fas fa-phone" onclick="alert('Звонки (WebRTC) в процессе...')"></i>
-                        <i class="fas fa-video" onclick="alert('Звонки (WebRTC) в процессе...')"></i>
+                        <i class="fas fa-phone" onclick="alert('Звонки скоро...')"></i>
+                        <i class="fas fa-video" onclick="alert('Звонки скоро...')"></i>
                     </div>
                 </header>
-
                 <div class="messages" id="msg-box"></div>
-
                 <div class="chat-footer">
                     <div id="st-panel" class="sticker-panel glass hidden">
                         <div class="st-grid" id="st-grid"></div>
@@ -229,66 +211,66 @@
     <!-- MODALS -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
         <div id="modal-profile" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
-            <h2>Настройки</h2>
             <img id="set-av" class="large-av" onclick="document.getElementById('av-up').click()" title="Сменить фото">
             <input type="file" id="av-up" hidden accept="image/*" onchange="ui.changeAv(this)">
-            <p style="font-size: 18px;">ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
+            <p>ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
             <div id="admin-panel" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:20px">
                 <p style="color:var(--accent); font-weight:800; font-size:12px">АДМИН-ПАНЕЛЬ</p>
-                <input type="text" id="adm-target" class="glass-input" placeholder="ID пользователя" style="margin-top:10px">
+                <input type="text" id="adm-target" class="glass-input" placeholder="ID юзера">
                 <button class="btn-primary" onclick="admin.verify()">ВЫДАТЬ ГАЛОЧКУ</button>
             </div>
-            <button class="btn-primary" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ ИЗ АККАУНТА</button>
+            <button class="btn-primary" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
         </div>
-
         <div id="modal-add" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
             <h3>Добавить друга</h3>
             <input type="text" id="friend-id-input" class="glass-input" placeholder="Введите ID" style="margin-top:15px">
             <button class="btn-primary" onclick="msg.request()">ОТПРАВИТЬ ЗАПРОС</button>
         </div>
-
         <div id="modal-group" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
             <h3>Создать группу</h3>
             <input type="text" id="gr-name" class="glass-input" placeholder="Название" style="margin-top:15px">
             <button class="btn-primary" onclick="groups.create()">СОЗДАТЬ</button>
         </div>
-
         <div id="modal-inreq" class="modal glass" onclick="event.stopPropagation()">
-            <h3 style="color:var(--accent)">Входящая заявка</h3>
+            <h3>Заявка в друзья</h3>
             <p id="req-id-disp" style="margin:20px 0"></p>
             <div style="display:flex; gap:10px">
                 <button class="btn-primary" style="background:#2ecc71" onclick="msg.handleReq(true)">ПРИНЯТЬ</button>
-                <button class="btn-primary" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗАТЬ</button>
+                <button class="btn-primary" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗ</button>
             </div>
         </div>
     </div>
 
-    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')"><img id="fs-img" src="" style="max-width:90%; border-radius:15px"></div>
+    <!-- Viewer -->
+    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')">
+        <img id="fs-img" src="" style="max-width:95%; max-height:95%; border-radius:15px">
+    </div>
 
     <script>
-        // --- CLOUD DB SYSTEM ---
-        const CLOUD_URL = "https://api.jsonbin.io/v3/b/65b1287b266cfc3fde7ef755";
-        const CLOUD_KEY = "$2a$10$W5pXvU6f5vG7p0.fR1qEBeG7VzQvY1VzE7vE7vE7vE7vE7vE7vE7v";
+        // --- SAFE JSON & CLOUD FALLBACK ---
+        // Используем резервный ID облака или локальную базу при ошибке 404
+        const CLOUD_URL = "https://api.npoint.io/858d60f4c80351f0458b"; 
+
+        function safeJSON(key, fallback) {
+            try { const d = localStorage.getItem(key); return (d && d!=="undefined" && d!=="null") ? JSON.parse(d) : fallback; } 
+            catch(e) { return fallback; }
+        }
 
         async function cloudGet() {
             try { 
-                const r = await fetch(CLOUD_URL + "/latest", { headers: { "X-Master-Key": CLOUD_KEY } }); 
+                const r = await fetch(CLOUD_URL); 
+                if (!r.ok) throw new Error("404");
                 const d = await r.json();
-                return d.record && d.record.users ? d.record : {users:{}};
-            } catch(e) { return safeJSON('tat_db', {users:{}}); }
-        }
-        async function cloudSet(db) {
-            try { await fetch(CLOUD_URL, { method: 'PUT', headers: { "Content-Type": "application/json", "X-Master-Key": CLOUD_KEY }, body: JSON.stringify(db) }); } catch(e) {}
-            localStorage.setItem('tat_db', JSON.stringify(db));
+                return d.users ? d : {users:{}};
+            } catch(e) { 
+                console.log("Cloud 404 - Using LocalStorage Mode");
+                return safeJSON('tat_db', {users:{}}); 
+            }
         }
 
-        function safeJSON(key, fallback) {
-            const data = localStorage.getItem(key);
-            if (!data || data === "undefined" || data === "null") return fallback;
-            try { return JSON.parse(data); } catch(e) { return fallback; }
+        async function cloudSet(db) {
+            localStorage.setItem('tat_db', JSON.stringify(db)); // Сначала локально
+            try { await fetch(CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db)}); } catch(e) {}
         }
 
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
@@ -307,42 +289,46 @@
             switch(v) {
                 ['login','reg','code'].forEach(id => document.getElementById(`auth-${id}`).classList.add('hidden'));
                 document.getElementById(`auth-${v}`).classList.remove('hidden');
-                if(v === 'reg') this.genCaptcha();
-            },
-            genCaptcha() {
-                const a = Math.floor(Math.random()*15)+5, b = Math.floor(Math.random()*10);
-                this.captcha = a + b;
-                document.getElementById('captcha-text').innerText = `Защита от ботов: ${a} + ${b} = ?`;
+                if(v === 'reg') {
+                    const a = Math.floor(Math.random()*15)+5, b = Math.floor(Math.random()*10);
+                    this.captcha = a + b;
+                    document.getElementById('captcha-text').innerText = `Защита: ${a} + ${b} = ?`;
+                }
             },
             async startReg() {
                 const id = document.getElementById('reg-id').value.trim();
                 const email = document.getElementById('reg-email').value.trim();
                 const pw = document.getElementById('reg-pw').value.trim();
                 const cap = document.getElementById('captcha-input').value;
-                if(cap != this.captcha) return alert("Капча неверна!");
+                if(cap != this.captcha) return alert("Капча неверна");
                 if(!id || !email || !pw) return alert("Заполните всё");
 
-                const db = await cloudGet();
-                if(db.users[id]) return alert("ID занят");
+                document.getElementById('reg-send-btn').innerText = "ОТПРАВКА...";
+                state.db = await cloudGet();
+                if(state.db.users[id]) return alert("ID занят");
 
                 this.code = Math.floor(100000 + Math.random() * 900000).toString();
                 this.temp = {id, email, pw};
 
-                document.getElementById('reg-send-btn').innerText = "ОТПРАВКА...";
                 emailjs.init(EMAIL_KEY);
                 emailjs.send(EMAIL_SERV, EMAIL_TEMP, { 
-                    to_email: email, 
-                    message: "Приветствую вас в tatarsms хорошего общения код - " + this.code
-                }).then(() => this.switch('code'), () => { alert("СИМУЛЯЦИЯ: " + this.code); this.switch('code'); });
+                    to_email: email,
+                    message: "Ваш код tatarsms: " + this.code,
+                    code: this.code // Дублируем для надежности
+                })
+                .then(() => {
+                    this.switch('code');
+                    alert("Код отправлен на " + email);
+                }, (err) => {
+                    alert("Ошибка почты! Код для входа: " + this.code);
+                    this.switch('code');
+                });
             },
             async complete() {
                 if(document.getElementById('verify-code').value != this.code) return alert("Неверно");
-                const db = await cloudGet();
-                db.users[this.temp.id] = { 
-                    pw: btoa(this.temp.pw), 
-                    av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}` 
-                };
-                await cloudSet(db);
+                state.db = await cloudGet();
+                state.db.users[this.temp.id] = { pw: btoa(this.temp.pw), av: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.temp.id}` };
+                await cloudSet(state.db);
                 alert("Аккаунт создан!"); this.switch('login');
             },
             async login() {
@@ -350,10 +336,10 @@
                 const pw = document.getElementById('login-pw').value.trim();
                 if(id === "tatar_506" && pw === "spinogrz666") return this.startSess(id, "https://api.dicebear.com/7.x/avataaars/svg?seed=adm", true);
                 
-                const db = await cloudGet();
-                const u = db.users[id];
+                state.db = await cloudGet();
+                const u = state.db.users[id];
                 if(u && atob(u.pw) === pw) this.startSess(id, u.av, false);
-                else alert("Ошибка входа!");
+                else alert("Неверный ID или пароль (попробуйте сбросить кэш)");
             },
             startSess(id, av, adm) {
                 localStorage.setItem('tat_sess', JSON.stringify({id, av, adm}));
@@ -368,7 +354,7 @@
                 state.groups = safeJSON(`grps_${state.user.id}`, []);
                 state.peer = new Peer(state.user.id, { config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
                 state.peer.on('open', () => {
-                    document.getElementById('loading-screen').classList.add('hidden');
+                    document.getElementById('loader').classList.add('hidden');
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
                     ui.renderList(); ui.renderStickers();
@@ -380,10 +366,12 @@
             receive(data, from) {
                 if(data.type === 'req') return ui.showReq(from);
                 if(data.type === 'acc') { if(!state.friends.includes(from)) state.friends.push(from); this.saveFr(); return ui.renderList(); }
+                if(data.type === 'verif_up') { state.user.adm = true; localStorage.setItem('tat_sess', JSON.stringify(state.user)); location.reload(); }
                 this.save(from, data, 'received');
             },
             request() {
                 const target = document.getElementById('friend-id-input').value.trim();
+                if(!target || target === state.user.id) return;
                 const conn = state.peer.connect(target);
                 conn.on('open', () => { conn.send({type:'req'}); alert("Запрос отправлен!"); ui.closeModals(); });
             },
@@ -423,37 +411,30 @@
             keys(e) { if(e.key === 'Enter') this.send(); }
         };
 
-        const groups = {
-            create() {
-                const n = document.getElementById('gr-name').value;
-                if(!n) return;
-                state.groups.push({id:'gr_'+Date.now(), name:n, av:`https://api.dicebear.com/7.x/initials/svg?seed=${n}`});
-                localStorage.setItem(`ts_gr_${state.user.id}`, JSON.stringify(state.groups));
-                ui.closeModals(); ui.setTab('gr');
-            }
-        };
-
         const ui = {
             setTab(t) { state.tab = t; document.getElementById('tab-dm').classList.toggle('active', t==='dm'); document.getElementById('tab-gr').classList.toggle('active', t==='gr'); this.renderList(); },
             renderList() {
                 const list = document.getElementById('contact-list'); list.innerHTML = '';
                 const items = state.tab === 'dm' ? state.friends : state.groups;
-                items.forEach(id => {
+                items.forEach(i => {
+                    const id = typeof i === 'string' ? i : i.id;
+                    const name = typeof i === 'string' ? i : i.name;
+                    const av = typeof i === 'string' ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}` : i.av;
                     const div = document.createElement('div');
                     div.className = `item-card ${state.chat === id ? 'active' : ''}`;
-                    div.onclick = () => this.select(id);
-                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${id}"><span>${id}</span>`;
+                    div.onclick = () => this.select(id, name, av);
+                    div.innerHTML = `<img src="${av}"><div><div style="font-weight:700">${name}</div><div style="font-size:12px;opacity:0.4">${state.tab==='dm'?'Friend':'Group'}</div></div>`;
                     list.appendChild(div);
                 });
                 document.getElementById('my-av').src = state.user.av;
                 document.getElementById('my-name-disp').innerText = state.user.id;
             },
-            select(id) {
+            select(id, name, av) {
                 state.chat = id;
-                document.getElementById('chat-welcome').classList.add('hidden');
+                document.getElementById('welcome').classList.add('hidden');
                 document.getElementById('chat-active').classList.remove('hidden');
-                document.getElementById('target-name').innerText = id;
-                document.getElementById('target-av').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+                document.getElementById('target-name').innerText = name;
+                document.getElementById('target-av').src = av;
                 if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('closed');
                 this.renderChat();
             },
@@ -473,18 +454,9 @@
                 box.scrollTop = box.scrollHeight + 5000;
             },
             view(s) { document.getElementById('media-fs').classList.remove('hidden'); document.getElementById('fs-img').src = s; },
-            modal(id) { 
-                document.getElementById('modal-overlay').classList.remove('hidden'); 
-                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); 
-                document.getElementById(`modal-${id}`).classList.remove('hidden'); 
-                if(id === 'profile') { 
-                    document.getElementById('set-id').innerText = state.user.id; 
-                    document.getElementById('set-av').src = state.user.av; 
-                    if(state.user.id === "tatar_506") document.getElementById('admin-panel').classList.remove('hidden');
-                } 
-            },
+            modal(id) { document.getElementById('modal-overlay').classList.remove('hidden'); document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); document.getElementById(`modal-${id}`).classList.remove('hidden'); if(id === 'profile') { document.getElementById('set-id').innerText = state.user.id; document.getElementById('set-av').src = state.user.av; if(state.user.id === ADMIN_ID) document.getElementById('admin-panel').classList.remove('hidden'); } },
             closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
-            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('chat-welcome').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
+            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('welcome').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
             toggleStickers() { document.getElementById('st-panel').classList.toggle('hidden'); },
             renderStickers() {
                 const grid = document.getElementById('st-grid'); grid.innerHTML = '';
@@ -505,12 +477,22 @@
                 };
                 r.readAsDataURL(el.files[0]);
             },
-            showReq(f) { state.pending = f; document.getElementById('req-id-disp').innerText = f; this.modal('inreq'); }
+            showReq(f) { state.pending = f; document.getElementById('req-id-disp').innerText = f + " хочет в друзья"; this.modal('inreq'); }
         };
 
         const voice = {
             start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.rec = new MediaRecorder(s); let ch = []; this.rec.ondataavailable = e => ch.push(e.data); this.rec.onstop = () => { const r = new FileReader(); r.onload = e => msg.send({type:'voice', val: e.target.result}); r.readAsDataURL(new Blob(ch)); }; this.rec.start(); document.getElementById('mic-btn').classList.add('rec-active'); }); },
             stop() { if(this.rec) { this.rec.stop(); document.getElementById('mic-btn').classList.remove('rec-active'); } }
+        };
+
+        const groups = {
+            create() {
+                const n = document.getElementById('gr-name').value;
+                if(!n) return;
+                state.groups.push({id:'gr_'+Date.now(), name:n, av:`https://api.dicebear.com/7.x/initials/svg?seed=${n}`});
+                localStorage.setItem(`grps_${state.user.id}`, JSON.stringify(state.groups));
+                ui.closeModals(); ui.setTab('gr');
+            }
         };
 
         const stickers = {
@@ -521,11 +503,15 @@
         };
 
         const admin = {
-            verify() { const target = document.getElementById('adm-target').value; alert("Верификация выдана для " + target); }
+            verify() {
+                const t = document.getElementById('adm-target').value;
+                const conn = state.peer.connect(t);
+                conn.on('open', () => { conn.send({type:'verif_up'}); alert("Готово!"); });
+            }
         };
 
         if(state.user) msg.init();
-        else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
+        else { document.getElementById('loader').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }
     </script>
 </body>
 </html>
