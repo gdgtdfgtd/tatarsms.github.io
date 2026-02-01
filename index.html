@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VORTEX | Ultimate AI</title>
+    <title>VORTEX | Prime OS</title>
     
     <!-- Ресурсы -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -17,9 +17,8 @@
             --primary-dark: #0062ff;
             --secondary: #ff0055;
             --bg: #050508;
-            --glass: rgba(20, 20, 30, 0.7);
+            --glass: rgba(20, 20, 30, 0.85);
             --border: rgba(255, 255, 255, 0.1);
-            --text-glow: 0 0 10px rgba(0, 242, 255, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -34,63 +33,57 @@
         .particles {
             position: fixed; inset: 0; z-index: -1;
             background-image: radial-gradient(#00f2ff 1px, transparent 1px);
-            background-size: 40px 40px; opacity: 0.2;
-            animation: moveGrid 20s linear infinite;
+            background-size: 50px 50px; opacity: 0.1;
         }
 
         @keyframes pulseBg { 0% { opacity: 0.8; } 100% { opacity: 1; } }
-        @keyframes moveGrid { from { transform: translateY(0); } to { transform: translateY(40px); } }
 
         .hidden { display: none !important; }
         .glass-panel { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
         /* --- INTRO ANIMATION --- */
         #intro { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
         .vortex-logo {
-            width: 100px; height: 100px; border-radius: 50%;
-            border: 3px solid transparent; border-top-color: var(--primary); border-bottom-color: var(--secondary);
-            animation: spin 1.5s linear infinite; margin-bottom: 20px;
-            box-shadow: 0 0 30px var(--primary);
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 4px solid transparent; border-top-color: var(--primary); border-bottom-color: var(--secondary);
+            animation: spin 1.5s linear infinite; margin-bottom: 30px;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.3);
         }
-        .intro-title { font-family: 'Syncopate'; font-size: 40px; letter-spacing: 10px; color: white; text-shadow: var(--text-glow); animation: fadeUp 1s ease; }
-        .intro-sub { color: #888; letter-spacing: 5px; font-size: 10px; margin-top: 10px; }
-
+        .intro-title { font-family: 'Syncopate'; font-size: 42px; letter-spacing: 10px; color: white; opacity: 0; transform: translateY(20px); transition: 1s ease; }
+        .intro-title.show { opacity: 1; transform: translateY(0); }
+        
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- AUTH --- */
-        .auth-box { width: 90%; max-width: 400px; padding: 40px; border-radius: 30px; text-align: center; }
+        /* --- UI COMPONENTS --- */
         .input-cyber {
             width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
-            padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; font-size: 16px;
+            padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; font-size: 16px;
             transition: 0.3s;
         }
         .input-cyber:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+        
         .btn-cyber {
-            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
             background: linear-gradient(90deg, var(--primary), var(--primary-dark));
             color: white; font-weight: 800; cursor: pointer; letter-spacing: 1px;
             transition: 0.3s;
         }
         .btn-cyber:hover { box-shadow: 0 0 20px var(--primary); transform: translateY(-2px); }
 
-        /* --- APP UI --- */
+        /* --- APP STRUCTURE --- */
         #app { display: flex; height: 100vh; width: 100vw; }
         
         #sidebar { 
             width: 320px; border-right: 1px solid var(--border); display: flex; flex-direction: column; 
-            background: rgba(10,10,15,0.6); backdrop-filter: blur(30px); transition: 0.4s; z-index: 100;
+            background: rgba(10,10,15,0.8); backdrop-filter: blur(30px); transition: 0.4s; z-index: 100;
         }
         .side-head { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         
         .me-block { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .me-block img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
-        .me-info h4 { font-size: 16px; font-weight: 700; }
-        .me-info span { font-size: 10px; color: var(--primary); }
-
-        .icon-btn { font-size: 20px; color: #aaa; cursor: pointer; transition: 0.2s; padding: 5px; } /* FIX SIZE */
-        .icon-btn:hover { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+        .me-block img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; background: #000; }
+        .icon-btn { font-size: 20px; color: #aaa; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .icon-btn:hover { color: var(--primary); }
 
         .list { flex: 1; overflow-y: auto; padding: 10px; }
         .user-item { 
@@ -98,34 +91,33 @@
             margin-bottom: 5px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.03);
         }
         .user-item:hover { background: rgba(255,255,255,0.1); }
-        .user-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .user-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
 
         /* --- CHAT --- */
-        #chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(0,0,0,0.2); }
-        .chat-head { height: 70px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
+        #chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(0,0,0,0.3); }
+        .chat-top { height: 70px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); }
         
         .msg-feed { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg-row { display: flex; flex-direction: column; max-width: 70%; animation: fadeUp 0.3s ease; }
+        .msg-row { display: flex; flex-direction: column; max-width: 75%; }
         .msg-row.sent { align-self: flex-end; align-items: flex-end; }
         
         .bubble { 
-            padding: 10px 15px; border-radius: 18px; font-size: 15px; line-height: 1.4; 
-            background: rgba(30,30,40,0.8); border: 1px solid var(--border); 
+            padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; 
+            background: rgba(30, 30, 40, 0.9); border: 1px solid var(--border); 
         }
         .sent .bubble { background: rgba(0, 98, 255, 0.3); border-color: var(--primary-dark); border-bottom-right-radius: 4px; }
         .received .bubble { border-bottom-left-radius: 4px; }
 
-        .media-prev { max-width: 220px; border-radius: 10px; margin: 5px 0; border: 1px solid var(--border); cursor: pointer; }
-        audio { height: 35px; width: 200px; margin-top: 5px; filter: invert(1); }
+        .chat-bottom { padding: 15px; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
+        .input-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 25px; border: 1px solid var(--border); }
+        .input-row input { flex: 1; background: none; border: none; padding: 10px; color: white; font-size: 16px; }
+        .recording { color: var(--secondary) !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
 
-        .chat-input { padding: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
-        .input-bar { background: rgba(255,255,255,0.06); border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
-        .input-bar input { flex: 1; background: none; border: none; padding: 10px; color: white; font-size: 16px; }
-        
-        /* SETTINGS & MODALS */
-        .modal { width: 95%; max-width: 450px; padding: 30px; text-align: center; border-radius: 30px; position: relative; }
-        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #666; }
-        .large-av { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 20px; object-fit: cover; cursor: pointer; }
+        /* --- SETTINGS --- */
+        .modal-box { width: 95%; max-width: 450px; padding: 30px; text-align: center; border-radius: 24px; position: relative; }
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #666; }
+        .large-av { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 20px; object-fit: cover; cursor: pointer; }
         
         .settings-list { text-align: left; margin-top: 20px; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); }
@@ -136,23 +128,16 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* Stickers */
-        .stickers { position: absolute; bottom: 90px; left: 20px; width: 280px; padding: 15px; border-radius: 20px; z-index: 100; box-shadow: 0 20px 50px black; }
-        .st-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: 200px; overflow-y: auto; }
-        .st-grid img { width: 100%; cursor: pointer; transition: 0.2s; }
-        .st-grid img:hover { transform: scale(1.1); }
+        /* --- MEDIA --- */
+        .media-prev { max-width: 200px; border-radius: 10px; margin: 5px 0; border: 1px solid var(--border); cursor: pointer; }
+        audio { height: 35px; width: 220px; margin-top: 5px; filter: invert(1); }
 
-        /* Mobile */
         @media (max-width: 768px) {
             #sidebar { position: fixed; inset: 0; z-index: 500; transform: translateX(0); }
             #sidebar.closed { transform: translateX(-100%); }
-            .back-btn { display: block !important; margin-right: 15px; font-size: 22px; cursor: pointer; }
+            .back-btn { display: block !important; margin-right: 15px; }
         }
         .back-btn { display: none; }
-        
-        #call-ui { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; }
-        .v-main { flex: 1; width: 100%; object-fit: cover; }
-        .v-small { width: 100px; height: 140px; position: absolute; bottom: 100px; right: 20px; border-radius: 10px; border: 2px solid var(--primary); object-fit: cover; z-index: 10; }
     </style>
 </head>
 <body>
@@ -163,35 +148,31 @@
     <!-- 1. INTRO -->
     <div id="intro">
         <div class="vortex-logo"></div>
-        <h1 class="intro-title">VORTEX</h1>
-        <p class="intro-sub">SECURE SYSTEM v18</p>
+        <h1 class="intro-title" id="intro-title">VORTEX</h1>
     </div>
 
     <!-- 2. AUTH -->
     <div id="auth-screen" class="overlay hidden">
         <div class="auth-box glass-panel">
-            <h1 class="logo-text" style="color:var(--primary); font-family:'Syncopate'; font-weight:700">VORTEX</h1>
+            <h1 style="font-family:'Syncopate'; margin-bottom:20px; color:var(--primary)">VORTEX</h1>
             
-            <!-- Login -->
             <div id="ui-login">
-                <input id="l-id" class="input-cyber" placeholder="Ваш ID">
+                <input id="l-id" class="input-cyber" placeholder="ID">
                 <input id="l-pw" type="password" class="input-cyber" placeholder="Пароль">
                 <button class="btn-cyber" onclick="auth.login()">ВХОД</button>
-                <p style="margin-top:20px; font-size:12px; color:#888; cursor:pointer" onclick="auth.view('reg')">Регистрация</p>
+                <p style="margin-top:15px; font-size:12px; color:#666; cursor:pointer" onclick="auth.view('reg')">Нет аккаунта?</p>
             </div>
 
-            <!-- Reg -->
             <div id="ui-reg" class="hidden">
                 <input id="r-mail" class="input-cyber" placeholder="Gmail">
-                <input id="r-id" class="input-cyber" placeholder="Новый ID">
+                <input id="r-id" class="input-cyber" placeholder="ID">
                 <input id="r-pw" type="password" class="input-cyber" placeholder="Пароль">
-                <button class="btn-cyber" onclick="auth.sendCode()">ПОЛУЧИТЬ КОД</button>
-                <p style="margin-top:20px; font-size:12px; color:#888; cursor:pointer" onclick="auth.view('login')">Назад</p>
+                <button class="btn-cyber" onclick="auth.sendCode()">КОД</button>
+                <p style="margin-top:15px; font-size:12px; color:#666; cursor:pointer" onclick="auth.view('login')">Назад</p>
             </div>
 
-            <!-- Code -->
             <div id="ui-code" class="hidden">
-                <p style="margin-bottom:15px">Код отправлен на почту</p>
+                <p style="margin-bottom:15px">Код отправлен</p>
                 <input id="r-code" class="input-cyber" style="text-align:center; font-size:24px; letter-spacing:5px">
                 <button class="btn-cyber" onclick="auth.verify()">ПОДТВЕРДИТЬ</button>
             </div>
@@ -206,10 +187,10 @@
                     <img id="my-av" src="">
                     <div class="me-info">
                         <h4 id="my-id">...</h4>
-                        <span>Online</span>
+                        <span style="font-size:10px; color:var(--primary)">Online</span>
                     </div>
                 </div>
-                <div style="display:flex; gap:15px">
+                <div style="display:flex; gap:10px">
                     <i class="fas fa-plus-circle icon-btn" onclick="ui.modal('add')"></i>
                     <i class="fas fa-users icon-btn" onclick="ui.modal('group')"></i>
                 </div>
@@ -219,24 +200,24 @@
                 <input class="input-cyber" placeholder="Поиск..." onkeypress="msg.search(event)" style="margin:0">
             </div>
 
-            <div class="list" id="contact-list"></div>
+            <div id="contacts" class="list"></div>
         </aside>
 
         <main id="chat-area">
-            <div id="welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3">
-                <i class="fas fa-shield-cat" style="font-size:80px; margin-bottom:20px; color:var(--primary)"></i>
-                <h2>VORTEX P2P</h2>
+            <div id="welcome-msg" style="flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; opacity:0.3">
+                <i class="fas fa-infinity" style="font-size:80px; margin-bottom:20px; color:var(--primary)"></i>
+                <h2>VORTEX SYSTEM</h2>
             </div>
 
             <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column; height:100%">
-                <header class="chat-head">
-                    <div style="display:flex; align-items:center; gap:10px">
-                        <i class="fas fa-arrow-left back-btn" onclick="ui.closeChat()"></i>
-                        <img id="head-av" src="" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid var(--primary)">
-                        <h4 id="head-name" style="font-weight:700">User</h4>
+                <header class="chat-top">
+                    <div style="display:flex; align-items:center">
+                        <i class="fas fa-chevron-left back-btn" onclick="ui.closeChat()"></i>
+                        <img id="head-av" src="" style="width:40px; height:40px; border-radius:50%; margin-right:10px">
+                        <h4 id="head-name">User</h4>
                     </div>
                     <div style="display:flex; gap:15px">
-                        <i class="fas fa-robot icon-btn" id="ai-ico" onclick="ai.toggle()" title="AI"></i>
+                        <i class="fas fa-robot icon-btn" id="ai-ico" onclick="ai.toggle()"></i>
                         <i class="fas fa-phone icon-btn" onclick="calls.init(false)"></i>
                         <i class="fas fa-video icon-btn" onclick="calls.init(true)"></i>
                     </div>
@@ -244,19 +225,12 @@
 
                 <div id="msg-feed" class="msg-feed"></div>
 
-                <div class="chat-footer">
-                    <div id="st-panel" class="stickers glass-panel hidden">
-                        <div id="st-grid" class="st-grid"></div>
-                        <div style="display:flex; gap:5px; margin-top:10px">
-                            <input id="new-st" class="input-cyber" placeholder="URL..." style="margin:0; padding:8px; font-size:12px">
-                            <button class="btn-cyber" style="width:auto; padding:0 15px" onclick="stickers.add()">OK</button>
-                        </div>
-                    </div>
-                    <div class="input-bar">
-                        <i class="far fa-sticky-note icon-btn" onclick="ui.toggleStickers()"></i>
+                <div class="chat-bottom">
+                    <div class="input-row">
                         <label><i class="fas fa-paperclip icon-btn"></i><input type="file" hidden onchange="msg.file(this)"></label>
+                        <i class="far fa-smile icon-btn" onclick="alert('Стикеры в разработке')"></i>
                         <input id="msg-in" placeholder="Сообщение..." onkeypress="msg.key(event)">
-                        <i class="fas fa-microphone icon-btn" id="mic" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
+                        <i id="mic" class="fas fa-microphone icon-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
                         <i class="fas fa-paper-plane icon-btn" style="color:var(--primary)" onclick="msg.send()"></i>
                     </div>
                 </div>
@@ -264,75 +238,73 @@
         </main>
     </div>
 
-    <!-- MODALS -->
+    <!-- 4. SETTINGS MODAL -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
-        <!-- Settings -->
-        <div id="mod-settings" class="glass-panel modal hidden" onclick="event.stopPropagation()">
+        <div id="mod-settings" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
             <span class="close-btn" onclick="ui.closeModals()">&times;</span>
             <h2>Настройки</h2>
-            <img id="set-av" class="large-av" onclick="document.getElementById('av-up').click()">
-            <input type="file" id="av-up" hidden accept="image/*" onchange="ui.changeAv(this)">
-            <p style="margin-bottom:20px; font-size:18px; color:var(--primary)" id="set-id">...</p>
+            <img id="set-av" class="large-av" onclick="document.getElementById('up-av').click()">
+            <input type="file" id="up-av" hidden accept="image/*" onchange="ui.changeAv(this)">
+            <h3 id="set-id" style="color:var(--primary)">...</h3>
             
             <div class="settings-list">
                 <div class="setting-row">
-                    <span>2FA Защита (Email)</span>
+                    <span>2FA при входе</span>
                     <label class="switch"><input type="checkbox" id="tg-2fa" onchange="ui.saveSet()"><span class="slider"></span></label>
                 </div>
                 <div class="setting-row">
-                    <span>AI Озвучка в чате</span>
+                    <span>AI Озвучка</span>
                     <label class="switch"><input type="checkbox" id="tg-ai" onchange="ui.saveSet()"><span class="slider"></span></label>
                 </div>
             </div>
 
             <div id="admin-tools" class="hidden" style="margin-top:20px; padding-top:15px; border-top:1px solid #333">
-                <p style="color:gold; font-weight:800; font-size:12px; margin-bottom:10px">GOD MODE</p>
-                <input id="adm-target" class="input-cyber" placeholder="ID юзера" style="padding:10px; margin-bottom:10px">
-                <button class="btn-cyber" onclick="admin.verify()">ВЫДАТЬ ГАЛОЧКУ</button>
+                <p style="color:gold; font-size:12px; font-weight:700">GOD MODE</p>
+                <input id="adm-target" class="input-cyber" placeholder="ID" style="padding:10px; margin-top:5px">
+                <button class="btn-cyber" style="font-size:12px; padding:10px" onclick="alert('Команда отправлена')">ДЕЙСТВИЕ</button>
             </div>
 
             <button class="btn-cyber" style="background:var(--secondary); margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
         </div>
 
-        <div id="mod-add" class="glass-panel modal hidden" onclick="event.stopPropagation()">
+        <div id="mod-add" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
             <h3>Добавить</h3>
             <input id="add-id" class="input-cyber" placeholder="ID">
-            <button class="btn-cyber" onclick="msg.req()">ЗАПРОС</button>
+            <button class="btn-cyber" onclick="msg.req()">ОТПРАВИТЬ</button>
         </div>
 
-        <div id="mod-group" class="glass-panel modal hidden" onclick="event.stopPropagation()">
-            <h3>Новая группа</h3>
+        <div id="mod-group" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
+            <h3>Группа</h3>
             <input id="gr-name" class="input-cyber" placeholder="Название">
             <button class="btn-cyber" onclick="groups.create()">СОЗДАТЬ</button>
         </div>
-
-        <div id="mod-inreq" class="glass-panel modal hidden" onclick="event.stopPropagation()">
+        
+        <div id="mod-req" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
             <h3 style="color:var(--primary)">Заявка</h3>
             <p id="req-txt" style="margin:20px 0"></p>
             <div style="display:flex; gap:10px">
-                <button class="btn-cyber" style="background:#00ff88" onclick="msg.handleReq(true)">ДА</button>
-                <button class="btn-cyber" style="background:#ff0055" onclick="msg.handleReq(false)">НЕТ</button>
+                <button class="btn-cyber" onclick="msg.handleReq(true)">ДА</button>
+                <button class="btn-cyber" style="background:#444" onclick="msg.handleReq(false)">НЕТ</button>
             </div>
         </div>
     </div>
 
-    <!-- Media Fullscreen -->
-    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')">
-        <img id="fs-img" src="" style="max-width:95%; max-height:95%; border-radius:15px">
-    </div>
-
-    <!-- Call -->
-    <div id="call-ui" class="hidden">
-        <video id="rem-v" class="v-main" autoplay playsinline></video>
-        <video id="loc-v" class="v-small" autoplay muted playsinline></video>
-        <div class="call-btns">
-            <button id="call-ok" style="width:65px; height:65px; border-radius:50%; background:#00ff88; border:none; font-size:24px; cursor:pointer"><i class="fas fa-phone"></i></button>
-            <button onclick="location.reload()" style="width:65px; height:65px; border-radius:50%; background:#ff0055; border:none; font-size:24px; cursor:pointer"><i class="fas fa-phone-slash"></i></button>
+    <!-- CALL UI -->
+    <div id="call-ui" class="hidden" style="position:fixed; inset:0; background:#000; z-index:20000; display:flex; justify-content:center; align-items:center">
+        <video id="rem-vid" style="width:100%; height:100%; object-fit:cover" autoplay playsinline></video>
+        <video id="loc-vid" style="width:100px; height:150px; position:absolute; bottom:100px; right:20px; border:2px solid var(--primary); border-radius:10px" autoplay muted playsinline></video>
+        <div style="position:absolute; bottom:40px; display:flex; gap:30px">
+            <button id="ans-btn" style="width:60px; height:60px; border-radius:50%; background:#00ff88; border:none; font-size:24px"><i class="fas fa-phone"></i></button>
+            <button onclick="location.reload()" style="width:60px; height:60px; border-radius:50%; background:#ff0055; border:none; font-size:24px"><i class="fas fa-phone-slash"></i></button>
         </div>
+    </div>
+    
+    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')">
+        <img id="fs-img" src="" style="max-width:95%; max-height:95%; border-radius:10px">
     </div>
 
     <script>
-        // === CONFIG ===
+        // --- CONFIG ---
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
         const EMAIL_SERV = "service_tatarsms";
         const EMAIL_TEMP = "template_zxlr5as";
@@ -347,13 +319,13 @@
             friends: safeJSON('vx_fr', []),
             groups: safeJSON('vx_gr', []),
             history: safeJSON('vx_hist', {}),
-            stickers: safeJSON('vx_st', []),
             settings: safeJSON('vx_set', { '2fa': false, 'ai': true }),
-            peer: null, chat: null, code: null, temp: null, pending: null
+            peer: null, chat: null, pending: null, code: null, temp: null
         };
 
         // --- INTRO ---
-        function runIntro() {
+        function runVortexIntro() {
+            setTimeout(() => document.querySelector('.intro-title').classList.add('show'), 500);
             setTimeout(() => {
                 document.getElementById('intro').style.opacity = '0';
                 setTimeout(() => {
@@ -365,7 +337,7 @@
         }
 
         // --- AUTH ---
-        const auth = {
+        window.auth = {
             view(v) {
                 ['login','reg','code'].forEach(id => document.getElementById(`ui-${id}`).classList.add('hidden'));
                 document.getElementById(`ui-${v}`).classList.remove('hidden');
@@ -374,7 +346,7 @@
                 const id = document.getElementById('r-id').value.trim();
                 const em = document.getElementById('r-mail').value.trim();
                 const pw = document.getElementById('r-pw').value.trim();
-                if(!id || !em || !pw) return alert("Заполните всё");
+                if(!id || !em || !pw) return alert("Пусто!");
                 
                 this.code = Math.floor(100000 + Math.random() * 900000);
                 this.temp = {id, em, pw};
@@ -392,21 +364,14 @@
                 const pw = document.getElementById('l-pw').value;
                 if(id===ADMIN_ID && pw===ADMIN_PW) return this.start(id, "https://api.dicebear.com/7.x/bottts/svg?seed=adm", true);
                 
-                // Простая эмуляция входа (в облачной версии тут запрос к базе)
-                // Если 2FA включена, требуем код
+                // Простая проверка (для демо на github pages)
                 if(state.settings['2fa']) {
-                    this.temp = {id, pw};
-                    // Запрос email из базы (тут упрощено для static)
-                    const em = prompt("Подтвердите Email для 2FA:");
+                    const em = prompt("Email для 2FA:");
                     if(em) {
                         this.code = Math.floor(100000 + Math.random() * 900000);
                         emailjs.init(EMAIL_KEY);
-                        emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "Код 2FA: " + this.code })
-                        .then(() => { 
-                            const c = prompt("Введите код из письма:");
-                            if(c == this.code) this.start(id, `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, false);
-                            else alert("Неверно");
-                        });
+                        emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "2FA: " + this.code })
+                        .then(() => { if(prompt("Код:") == this.code) this.start(id, `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, false); });
                     }
                 } else {
                     this.start(id, `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, false);
@@ -420,7 +385,7 @@
         };
 
         // --- MSG ---
-        const msg = {
+        window.msg = {
             init() {
                 state.peer = new Peer(state.user.id);
                 state.peer.on('open', () => {
@@ -453,6 +418,13 @@
                 }
                 ui.closeModals();
             },
+            search(e) {
+                if(e.key === 'Enter') {
+                    const q = e.target.value.trim();
+                    const gr = state.groups.find(g => g.name === q);
+                    if(gr) ui.sel(gr.id, gr.name, gr.av);
+                }
+            },
             send(obj=null) {
                 const val = document.getElementById('msg-in').value.trim();
                 const d = obj || {type:'text', val};
@@ -480,13 +452,13 @@
         };
 
         // --- UI ---
-        const ui = {
+        window.ui = {
             list() {
-                const l = document.getElementById('contact-list'); l.innerHTML = '';
+                const l = document.getElementById('contacts'); l.innerHTML = '';
                 const all = [...state.friends.map(f=>({id:f, name:f, av:`https://api.dicebear.com/7.x/bottts/svg?seed=${f}`})), ...state.groups];
                 all.forEach(i => {
                     const d = document.createElement('div'); d.className = `user-item`;
-                    d.innerHTML = `<img src="${i.av}"><div><div style="font-weight:700">${i.name}</div><div style="font-size:10px;color:var(--primary)">Chat</div></div>`;
+                    d.innerHTML = `<img src="${i.av}"><div><div style="font-weight:700">${i.name}</div></div>`;
                     d.onclick = () => this.sel(i.id, i.name, i.av);
                     l.appendChild(d);
                 });
@@ -495,19 +467,19 @@
                 state.chat = id;
                 document.getElementById('welcome-msg').classList.add('hidden');
                 document.getElementById('chat-active').classList.remove('hidden');
-                document.getElementById('target-name').innerText = name;
-                document.getElementById('target-av').src = av;
+                document.getElementById('head-name').innerText = name;
+                document.getElementById('head-av').src = av;
                 if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('closed');
                 this.chat();
             },
             chat() {
-                const b = document.getElementById('msg-box'); b.innerHTML = '';
+                const b = document.getElementById('msg-feed'); b.innerHTML = '';
                 (state.history[state.chat] || []).forEach(m => {
-                    const d = document.createElement('div'); d.className = `msg ${m.dir}`;
+                    const d = document.createElement('div'); d.className = `msg-row ${m.dir}`;
                     let c = m.val;
                     if(m.type === 'img') c = `<img src="${m.val}" class="media-prev" onclick="ui.view(this.src)">`;
                     if(m.type === 'voice') c = `<audio src="${m.val}" controls></audio>`;
-                    d.innerHTML = `<div class="msg-bubble ${m.dir.includes('ai')?'ai-bubble':''}">${c}<div style="font-size:9px;opacity:0.5;margin-top:5px">${m.time}</div></div>`;
+                    d.innerHTML = `<div class="bubble">${c}<div style="font-size:9px;opacity:0.5;margin-top:5px">${m.time}</div></div>`;
                     b.appendChild(d);
                 });
                 b.scrollTop = 99999;
@@ -525,7 +497,7 @@
             },
             closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
             closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('welcome-msg').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
-            toggleStickers() { document.getElementById('st-panel').classList.toggle('hidden'); },
+            toggleStickers() { alert("Стикеры в разработке"); },
             changeAv(el) {
                 const r = new FileReader();
                 r.onload = e => {
@@ -543,34 +515,23 @@
             loadSet() {
                 document.getElementById('tg-2fa').checked = state.settings['2fa'];
                 document.getElementById('tg-ai').checked = state.settings['ai'];
-            }
+            },
+            toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
         };
 
-        const ai = {
+        window.ai = {
             toggle() { state.settings.ai = !state.settings.ai; ui.saveSet(); },
             reply(txt) {
                 setTimeout(() => {
-                    const r = "VORTEX AI: Обработано.";
-                    msg.save(state.chat, {type:'text', val:r}, 'received ai');
+                    const r = "VORTEX AI: Сообщение получено.";
+                    msg.save(state.chat, {type:'text', val:r}, 'received');
                     this.speak(r);
                 }, 1000);
             },
             speak(t) { if(state.settings.ai) { const u = new SpeechSynthesisUtterance(t); u.lang='ru-RU'; window.speechSynthesis.speak(u); } }
         };
 
-        const stickers = {
-            add() { const u = document.getElementById('st-url').value; if(u) { state.stickers.push(u); localStorage.setItem('vx_st', JSON.stringify(state.stickers)); this.render(); } },
-            render() {
-                const g = document.getElementById('st-grid'); g.innerHTML = '';
-                state.stickers.forEach(s => {
-                    const i = document.createElement('img'); i.src = s;
-                    i.onclick = () => { msg.send({type:'img', val:s}); ui.toggleStickers(); };
-                    g.appendChild(i);
-                });
-            }
-        };
-
-        const groups = {
+        window.groups = {
             create() {
                 const n = document.getElementById('gr-name').value;
                 if(!n) return;
@@ -580,12 +541,12 @@
             }
         };
 
-        const voice = {
-            start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.r = new MediaRecorder(s); let c=[]; this.r.ondataavailable=e=>c.push(e.data); this.r.onstop=()=>{const b=new Blob(c); const fr=new FileReader(); fr.onload=e=>msg.send({type:'voice', val:e.target.result}); fr.readAsDataURL(b);}; this.r.start(); document.getElementById('mic').classList.add('recording'); }); },
-            stop() { if(this.r) { this.r.stop(); document.getElementById('mic').classList.remove('recording'); } }
+        window.voice = {
+            start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.r = new MediaRecorder(s); let c=[]; this.r.ondataavailable=e=>c.push(e.data); this.r.onstop=()=>{const b=new Blob(c); const fr=new FileReader(); fr.onload=e=>msg.send({type:'voice', val:e.target.result}); fr.readAsDataURL(b);}; this.r.start(); }); },
+            stop() { if(this.r) this.r.stop(); }
         };
 
-        const calls = {
+        window.calls = {
             init(v) {
                 navigator.mediaDevices.getUserMedia({video:v, audio:true}).then(s => {
                     document.getElementById('call-ui').classList.remove('hidden');
@@ -606,9 +567,27 @@
             }
         };
         
-        const admin = { verify() { alert("Галочка выдана"); } };
+        window.admin = { verify() { alert("ВЕРИФИЦИРОВАН"); } };
 
-        runVortexIntro();
+        // INTRO
+        setTimeout(() => {
+            document.querySelector('.intro-title').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('intro').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('intro').classList.add('hidden');
+                    if(state.user) { document.getElementById('app').classList.remove('hidden'); msg.init(); }
+                    else document.getElementById('auth-screen').classList.remove('hidden');
+                }, 1000);
+            }, 3000);
+        }, 500);
     </script>
+    
+    <!-- Intro HTML -->
+    <div id="intro">
+        <div class="vortex-logo"></div>
+        <h1 class="intro-title">VORTEX</h1>
+        <p class="intro-sub">SECURE SYSTEM v19</p>
+    </div>
 </body>
 </html>
