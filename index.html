@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VORTEX | Ultimate P2P</title>
+    <title>VORTEX | Eternal Prime</title>
     
-    <!-- Стабильные ресурсы для РФ -->
+    <!-- Ресурсы через быстрые зеркала -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Syncopate:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -15,69 +15,67 @@
         :root {
             --accent: #00f2ff;
             --accent-dark: #0062ff;
-            --glass: rgba(255, 255, 255, 0.05);
+            --glass: rgba(15, 15, 25, 0.8);
             --glass-border: rgba(255, 255, 255, 0.1);
             --bg: #050508;
-            --danger: #ff4d4d;
             --vpn: #00ff88;
+            --ai-color: #ff00ff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* Живой фон Nebula */
-        .nebula-bg {
-            position: fixed; inset: 0;
+        /* --- ЖИВОЙ ФОН --- */
+        .nebula {
+            position: fixed; inset: 0; z-index: -2;
             background: radial-gradient(circle at 50% 50%, #0f0c29 0%, #1a1a2e 40%, #050505 100%);
-            background-size: 200% 200%;
-            animation: nebulaMove 15s ease infinite;
-            z-index: -1;
+            background-size: 200% 200%; animation: nebulaMove 15s ease infinite;
         }
         @keyframes nebulaMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .hidden { display: none !important; }
         .glass { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
 
-        /* ПРИВЕТСТВИЕ */
-        #intro { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
+        /* --- ПРИВЕТСТВИЕ / VPN --- */
+        #intro { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .vortex-logo { width: 100px; height: 100px; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
         .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
         .r1 { width: 100%; height: 100%; border-top-color: var(--accent); animation: spin 2s linear infinite; }
-        .r2 { width: 70%; height: 70%; border-bottom-color: var(--vpn); animation: spin 1.5s linear infinite reverse; }
-        .progress-container { width: 220px; height: 4px; background: #111; border-radius: 10px; margin-top: 25px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: var(--vpn); box-shadow: 0 0 15px var(--vpn); transition: width 0.1s linear; }
+        .r2 { width: 70%; height: 70%; border-bottom-color: var(--secondary); animation: spin 1.5s linear infinite reverse; }
+        .progress-container { width: 200px; height: 4px; background: #111; border-radius: 10px; margin-top: 25px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--vpn); box-shadow: 0 0 15px var(--vpn); }
 
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* AUTH SCREEN */
-        .auth-card { background: rgba(15, 15, 25, 0.9); border-radius: 30px; padding: 40px; width: 92%; max-width: 420px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: pop 0.5s ease; }
-        .glow-text { background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 32px; margin-bottom: 25px; }
+        /* --- AUTH --- */
+        .auth-card { width: 90%; max-width: 400px; padding: 40px; border-radius: 30px; text-align: center; border: 1px solid var(--glass-border); animation: pop 0.5s ease; }
+        .glow-text { background: linear-gradient(90deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 32px; margin-bottom: 25px; }
         .glass-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 15px; border-radius: 15px; color: white; margin-bottom: 12px; font-size: 16px; }
         .btn-primary { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 15px; border-radius: 15px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
 
-        /* APP LAYOUT */
+        /* --- APP LAYOUT --- */
         #app { display: flex; height: 100vh; width: 100vw; }
         #sidebar { 
-            width: 350px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(25px); transition: 0.4s;
+            width: 320px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(30px); transition: 0.4s; z-index: 100;
         }
         .side-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
-        .me-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .me-profile img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .me-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .me-info img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; background: #000; }
         
         .list-area { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-card { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 20px; cursor: pointer; margin-bottom: 8px; transition: 0.2s; background: rgba(255,255,255,0.02); }
-        .item-card:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
+        .item-card { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 20px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; background: rgba(255,255,255,0.02); }
+        .item-card:hover { background: rgba(255,255,255,0.08); }
         .item-card.active { background: linear-gradient(90deg, var(--accent-dark), transparent); border-left: 4px solid var(--accent); }
-        .item-card img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+        .item-card img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
 
-        /* CHAT WINDOW */
+        /* --- CHAT AREA --- */
         #chat-window { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .chat-header { height: 75px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); backdrop-filter: blur(15px); }
+        .chat-header { height: 75px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); }
         .target-info { display: flex; align-items: center; gap: 12px; }
-        .target-info img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .target-info img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
         
         .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .msg { max-width: 75%; display: flex; flex-direction: column; animation: pop 0.4s ease; }
@@ -85,84 +83,76 @@
         .msg-bubble { padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.4; background: var(--glass); border: 1px solid var(--glass-border); position: relative; }
         .sent .msg-bubble { background: var(--accent-dark); border: none; border-bottom-right-radius: 4px; }
         .received .msg-bubble { border-bottom-left-radius: 4px; }
-
-        .media-frame { max-width: 250px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; }
+        
+        .media-frame { max-width: 240px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; }
         .media-frame img { width: 100%; display: block; }
-        audio { height: 35px; width: 220px; margin-top: 5px; filter: invert(1); }
 
-        .chat-footer { padding: 20px; background: rgba(0,0,0,0.5); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+        /* Icons Fix */
+        .icon { font-size: 24px; color: #888; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .icon:hover { color: var(--accent); }
+
+        .chat-footer { padding: 20px; background: rgba(0,0,0,0.5); }
         .input-bar { background: rgba(255,255,255,0.06); border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--glass-border); }
         .input-bar input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 16px; }
-        .input-bar i { font-size: 22px; color: #888; cursor: pointer; transition: 0.2s; }
-        .input-bar i:hover { color: var(--accent); }
 
         /* MODALS */
         .modal { background: #0a0a0f; padding: 30px; border-radius: 30px; width: 92%; max-width: 420px; border: 1px solid var(--glass-border); text-align: center; position: relative; animation: pop 0.4s ease; }
         .modal-close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: #555; }
-        .large-av { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 15px; object-fit: cover; cursor: pointer; display: block; }
+        .large-av { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 15px; object-fit: cover; display: block; }
 
         @media (max-width: 768px) {
-            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; transform: translateX(0); }
+            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; transform: translateX(0); transition: 0.3s; }
             #sidebar.closed { transform: translateX(-100%); }
-            .back-btn { display: block !important; }
+            .back-btn { display: block !important; margin-right: 10px; font-size: 24px; cursor: pointer; }
         }
-        .back-btn { display: none; font-size: 22px; cursor: pointer; margin-right: 15px; }
-
-        #call-ui { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; }
-        .v-main { flex: 1; position: relative; }
-        .v-main video { width: 100%; height: 100%; object-fit: cover; }
-        .v-small { width: 120px; height: 160px; position: absolute; bottom: 30px; right: 20px; border-radius: 15px; border: 2px solid var(--accent); overflow: hidden; z-index: 10; }
-        .call-btns { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; }
-        .btn-call { width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 28px; color: white; cursor: pointer; }
+        .back-btn { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="nebula-bg"></div>
+    <div class="nebula"></div>
 
-    <!-- 1. INTRO -->
+    <!-- 1. INTRO / VPN -->
     <div id="intro">
         <div class="vortex-logo">
-            <div class="ring r1"></div>
-            <div class="ring r2"></div>
-            <h2 style="font-family:'Outfit'; color:white; z-index:10">V</h2>
+            <div class="ring r1"></div><div class="ring r2"></div>
+            <h2 style="font-family:'Syncopate'; color:white; z-index:10">V</h2>
         </div>
         <h1 id="intro-title" style="font-family:'Syncopate'; opacity:0; transition: 1.5s;">VORTEX</h1>
         <div class="progress-container"><div id="vpn-bar" class="progress-bar"></div></div>
         <p id="vpn-log" style="color:var(--vpn); font-size:10px; letter-spacing:3px">DE-FRA SECURE ROUTING...</p>
     </div>
 
-    <!-- 2. AUTH -->
+    <!-- 2. AUTH SCREEN -->
     <div id="auth-screen" class="overlay hidden">
         <div class="auth-card glass">
             <h1 class="glow-text">VORTEX</h1>
             <div id="auth-login">
-                <input type="text" id="l-id" class="glass-input" placeholder="Никнейм">
-                <input type="password" id="l-pw" class="glass-input" placeholder="Пароль">
-                <button class="btn-primary" onclick="auth.login()">ВХОД</button>
-                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('reg')">Регистрация</p>
-                <p onclick="localStorage.clear(); location.reload();" style="margin-top: 15px; font-size: 10px; opacity: 0.3; cursor: pointer;">СБРОСИТЬ</p>
+                <input type="text" id="login-id" class="glass-input" placeholder="ID (Никнейм)" autocomplete="username">
+                <input type="password" id="login-pw" class="glass-input" placeholder="Пароль" autocomplete="current-password">
+                <button class="btn-primary" onclick="auth.login()">ВОЙТИ</button>
+                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('reg')">Нет аккаунта? Регистрация</p>
             </div>
             <div id="auth-reg" class="hidden">
-                <input type="email" id="r-email" class="glass-input" placeholder="Ваш Gmail">
-                <input type="text" id="r-id" class="glass-input" placeholder="ID">
-                <input type="password" id="r-pw" class="glass-input" placeholder="Пароль">
+                <input type="email" id="reg-email" class="glass-input" placeholder="Ваш Gmail">
+                <input type="text" id="reg-id" class="glass-input" placeholder="Новый ID">
+                <input type="password" id="reg-pw" class="glass-input" placeholder="Пароль">
                 <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; margin-bottom:15px">
                     <p id="captcha-text" style="font-size:13px; margin-bottom:5px"></p>
                     <input type="text" id="captcha-input" class="glass-input" placeholder="Ответ" style="margin-bottom:0">
                 </div>
-                <button class="btn-primary" id="reg-send-btn" onclick="auth.startReg()">ОТПРАВИТЬ КОД</button>
+                <button class="btn-primary" onclick="auth.startReg()">ОТПРАВИТЬ КОД</button>
                 <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('login')">Назад</p>
             </div>
             <div id="auth-code" class="hidden">
-                <p style="margin-bottom:20px; color:var(--accent);">Код подтверждения отправлен!</p>
-                <input type="text" id="verify-code" class="glass-input" placeholder="6 цифр" style="text-align:center; font-size:24px; letter-spacing:8px" maxlength="6">
+                <p style="margin-bottom:20px">Введите код из письма</p>
+                <input type="text" id="verify-code" class="glass-input" placeholder="6 цифр" style="text-align:center; font-size:24px; letter-spacing:5px">
                 <button class="btn-primary" onclick="auth.complete()">ПОДТВЕРДИТЬ</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. APP -->
+    <!-- 3. APP INTERFACE -->
     <div id="app" class="hidden">
         <aside id="sidebar">
             <div class="side-header">
@@ -170,21 +160,19 @@
                     <img id="my-av" src="">
                     <div style="display:flex; flex-direction:column">
                         <span id="my-id-disp" style="font-weight:700">...</span>
-                        <span style="font-size:11px; color:var(--vpn)">Secure Connection</span>
+                        <span style="font-size:11px; color:var(--vpn)">Online P2P</span>
                     </div>
                 </div>
-                <i class="fas fa-user-plus" style="font-size: 20px; color: #888; cursor:pointer" onclick="ui.modal('add')"></i>
+                <i class="fas fa-user-plus icon" onclick="ui.modal('add')"></i>
             </div>
-            
             <div style="padding:15px">
                 <input type="text" id="global-search" class="glass-input" placeholder="Поиск ID..." onkeypress="msg.search(event)" style="margin:0;">
             </div>
-
             <div class="list-area" id="contact-list"></div>
         </aside>
 
         <main id="chat-window">
-            <div id="welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.25">
+            <div id="chat-welcome" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.25">
                 <i class="fas fa-satellite-dish" style="font-size:100px; margin-bottom:20px"></i>
                 <h2>P2P ENCRYPTED</h2>
             </div>
@@ -195,20 +183,15 @@
                         <img id="target-av" src="">
                         <h4 id="target-name">...</h4>
                     </div>
-                    <div style="display:flex; gap:20px; font-size:20px; color:#aaa">
-                        <i class="fas fa-robot" id="ai-btn" onclick="ai.toggle()" title="AI Assistant"></i>
-                        <i class="fas fa-phone" onclick="calls.init(false)"></i>
-                        <i class="fas fa-video" onclick="calls.init(true)"></i>
-                    </div>
                 </header>
                 <div class="messages" id="msg-box"></div>
                 <div class="chat-footer">
                     <div class="input-bar">
-                        <label for="file-up"><i class="fas fa-paperclip"></i></label>
+                        <label for="file-up"><i class="fas fa-paperclip icon"></i></label>
                         <input type="file" id="file-up" hidden onchange="msg.file(this)">
                         <input type="text" id="main-input" placeholder="Сообщение..." onkeypress="msg.keys(event)">
-                        <i class="fas fa-microphone" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
-                        <i class="fas fa-paper-plane" style="color:var(--accent)" onclick="msg.send()"></i>
+                        <i class="fas fa-microphone icon" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
+                        <i class="fas fa-paper-plane icon" style="color:var(--accent)" onclick="msg.send()"></i>
                     </div>
                 </div>
             </div>
@@ -217,68 +200,37 @@
 
     <!-- MODALS -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
-        <div id="modal-profile" class="modal glass" onclick="event.stopPropagation()">
+        <div id="modal-profile" class="modal glass hidden" onclick="event.stopPropagation()">
             <span class="modal-close" onclick="ui.closeModals()">&times;</span>
             <h2>Настройки</h2>
             <img id="set-av" class="large-av" onclick="document.getElementById('av-up').click()">
             <input type="file" id="av-up" hidden accept="image/*" onchange="ui.changeAv(this)">
             <p>ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
-            <div class="settings-list" style="text-align:left; margin-top:20px">
-                 <p style="font-size:12px; color:#888">2FA PROTECTION: ON</p>
-                 <p style="font-size:12px; color:#888">AI HELPER: ACTIVE</p>
-            </div>
             <button class="btn-primary" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
         </div>
-        <div id="modal-add" class="modal glass" onclick="event.stopPropagation()">
+        <div id="modal-add" class="modal glass hidden" onclick="event.stopPropagation()">
             <h3>Добавить друга</h3>
-            <input type="text" id="friend-id-input" class="glass-input" placeholder="Введите ID" style="margin-top:15px">
-            <button class="btn-primary" onclick="msg.request()">ОТПРАВИТЬ ЗАПРОС</button>
+            <input type="text" id="friend-id-input" class="glass-input" placeholder="ID друга" style="margin-top:15px">
+            <button class="btn-primary" onclick="msg.request()">ЗАПРОС</button>
         </div>
         <div id="modal-inreq" class="modal glass hidden" onclick="event.stopPropagation()">
             <h3>Входящая заявка</h3>
             <p id="req-id-disp" style="margin:20px 0"></p>
             <div style="display:flex; gap:10px">
                 <button class="btn-primary" style="background:#2ecc71" onclick="msg.handleReq(true)">ПРИНЯТЬ</button>
-                <button class="btn-primary" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗАТЬ</button>
+                <button class="btn-primary" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗ</button>
             </div>
         </div>
     </div>
 
-    <!-- CALL UI -->
-    <div id="call-ui" class="overlay hidden" style="background:#000;">
-        <video id="remote-video" style="width:100%; height:100%; object-fit:cover" autoplay playsinline></video>
-        <video id="local-video" style="width:100px; height:140px; position:absolute; bottom:100px; right:20px; border-radius:12px; border:2px solid var(--accent); object-fit:cover" autoplay muted playsinline></video>
-        <div class="call-btns">
-            <button class="btn-call" id="call-accept" style="background:#2ecc71;"><i class="fas fa-phone"></i></button>
-            <button class="btn-call" style="background:#ff4d4d;" onclick="location.reload()"><i class="fas fa-phone-slash"></i></button>
-        </div>
-    </div>
-
     <script>
-        // --- SAFE DATA ---
+        // --- CORE FUNCTIONS ---
         function safeJSON(key, fallback) {
-            try { 
-                const data = localStorage.getItem(key);
-                if (!data || data === "undefined" || data === "null") return fallback;
-                return JSON.parse(data);
-            } catch(e) { return fallback; }
+            try { const data = localStorage.getItem(key); return (data && data !== "undefined" && data !== "null") ? JSON.parse(data) : fallback; } 
+            catch(e) { return fallback; }
         }
 
-        // --- CLOUD CONFIG ---
         const CLOUD_URL = "https://api.npoint.io/4077d60f4c80351f0458"; 
-
-        async function cloudGet() {
-            try { 
-                const r = await fetch(CLOUD_URL); 
-                if (!r.ok) throw 1;
-                const d = await r.json(); return d.users ? d : {users:{}};
-            } catch(e) { return safeJSON('tat_db', {users:{}}); }
-        }
-        async function cloudSet(db) {
-            localStorage.setItem('tat_db', JSON.stringify(db));
-            try { await fetch(CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db)}); } catch(e) {}
-        }
-
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
         const EMAIL_SERV = "service_tatarsms";
         const EMAIL_TEMP = "template_zxlr5as";
@@ -286,15 +238,15 @@
         let state = {
             user: safeJSON('tat_sess', null),
             db: {users:{}}, friends: [], history: safeJSON('tat_hist', {}),
-            peer: null, chat: null, pending: null, code: null, temp: null, captcha: null
+            peer: null, chat: null, pending: null, code: null, captcha: null
         };
 
-        // --- INTRO ---
-        function runIntro() {
-            setTimeout(() => { if(document.getElementById('intro-title')) document.getElementById('intro-title').style.opacity = '1'; }, 500);
+        // --- INTRO / VPN ---
+        function runVortexIntro() {
+            setTimeout(() => { document.getElementById('intro-title').style.opacity = '1'; }, 500);
             let p = 0; const bar = document.getElementById('vpn-bar');
             const i = setInterval(() => {
-                p += 5; if(bar) bar.style.width = p + "%";
+                p += 5; bar.style.width = p + "%";
                 if(p >= 100) {
                     clearInterval(i);
                     setTimeout(() => {
@@ -306,17 +258,17 @@
                         }, 500);
                     }, 500);
                 }
-            }, 100);
+            }, 80);
         }
 
         // --- AUTH ---
-        const auth = {
+        window.auth = {
             switch(v) {
                 ['login','reg','code'].forEach(id => document.getElementById(`auth-${id}`).classList.add('hidden'));
                 document.getElementById(`auth-${v}`).classList.remove('hidden');
                 if(v==='reg') {
                     const a = Math.floor(Math.random()*15)+5, b = Math.floor(Math.random()*10);
-                    this.captcha = a + b;
+                    state.captcha = a + b;
                     document.getElementById('captcha-text').innerText = `Защита: ${a} + ${b} = ?`;
                 }
             },
@@ -324,41 +276,40 @@
                 const id = document.getElementById('reg-id').value.trim();
                 const email = document.getElementById('reg-email').value.trim();
                 const pw = document.getElementById('reg-pw').value.trim();
-                if(document.getElementById('captcha-input').value != this.captcha) return alert("Капча неверна");
+                if(document.getElementById('captcha-input').value != state.captcha) return alert("Капча неверна");
                 if(!id || !email || !pw) return alert("Заполните всё");
-                state.db = await cloudGet();
-                if(state.db.users[id]) return alert("ID занят");
                 this.code = Math.floor(100000 + Math.random() * 900000).toString();
                 this.temp = {id, email, pw};
                 emailjs.init(EMAIL_KEY);
-                emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: email, message: "Ваш код: " + this.code }).then(() => this.switch('code'), () => { alert("Код (РФ): " + this.code); this.switch('code'); });
+                emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: email, message: "Код: " + this.code })
+                .then(() => this.switch('code'), () => { alert("Код (РФ): " + this.code); this.switch('code'); });
             },
             async complete() {
                 if(document.getElementById('verify-code').value != this.code) return alert("Неверно");
-                state.db = await cloudGet();
-                state.db.users[this.temp.id] = { pw: btoa(this.temp.pw), av: `https://api.dicebear.com/7.x/bottts/svg?seed=${this.temp.id}` };
-                await cloudSet(state.db);
-                alert("Ок!"); this.switch('login');
+                const db = safeJSON('tat_db', {users:{}});
+                db.users[this.temp.id] = { pw: btoa(this.temp.pw), av: `https://api.dicebear.com/7.x/bottts/svg?seed=${this.temp.id}` };
+                localStorage.setItem('tat_db', JSON.stringify(db));
+                alert("Аккаунт создан!"); this.switch('login');
             },
-            async login() {
+            login() {
                 const id = document.getElementById('login-id').value.trim();
                 const pw = document.getElementById('login-pw').value.trim();
-                if(id === "tatar_506" && pw === "spinogrz666") return this.startSess(id, true);
-                state.db = await cloudGet();
-                const u = state.db.users[id];
-                if(u && atob(u.pw) === pw) this.startSess(id, false);
-                else alert("Ошибка!");
+                if(id === "tatar_506" && pw === "spinogrz666") return this.startSess(id, "https://api.dicebear.com/7.x/bottts/svg?seed=adm", true);
+                const db = safeJSON('tat_db', {users:{}});
+                const u = db.users[id];
+                if(u && atob(u.pw) === pw) this.startSess(id, u.av, false);
+                else alert("Ошибка входа!");
             },
-            startSess(id, adm) {
-                const u = state.db.users[id];
-                localStorage.setItem('tat_sess', JSON.stringify({id, av: u?.av || '', admin: adm}));
+            startSess(id, av, adm) {
+                localStorage.setItem('tat_sess', JSON.stringify({id, av, adm}));
                 location.reload();
             },
             logout() { localStorage.removeItem('tat_sess'); location.reload(); }
         };
 
-        const msg = {
-            async init() {
+        // --- MESSENGER ---
+        window.msg = {
+            init() {
                 state.friends = safeJSON(`fr_${state.user.id}`, []);
                 state.peer = new Peer(state.user.id);
                 state.peer.on('open', () => {
@@ -369,14 +320,21 @@
                 state.peer.on('connection', conn => {
                     conn.on('data', data => this.receive(data, conn.peer));
                 });
-                state.peer.on('call', call => calls.incoming(call));
             },
             search(e) {
                 if(e.key !== 'Enter') return;
-                const query = e.target.value.trim();
-                if(!query || query === state.user.id) return;
-                const conn = state.peer.connect(query);
-                conn.on('open', () => { conn.send({type:'req'}); alert("Запрос отправлен!"); e.target.value=''; });
+                const id = e.target.value.trim();
+                if(!id || id === state.user.id) return;
+                const conn = state.peer.connect(id);
+                conn.on('open', () => {
+                    conn.send({type:'req', from: state.user.id});
+                    alert("Запрос отправлен!");
+                    e.target.value = '';
+                });
+            },
+            request() {
+                const id = document.getElementById('friend-id-input').value.trim();
+                this.search({key:'Enter', target: {value: id}});
             },
             receive(data, from) {
                 if(data.type === 'req') { state.pending = from; document.getElementById('req-id-disp').innerText = from; ui.modal('inreq'); }
@@ -415,27 +373,35 @@
                 if(state.chat === peer) ui.renderChat();
             },
             saveFr() { localStorage.setItem(`fr_${state.user.id}`, JSON.stringify(state.friends)); },
-            keys(e) { if(e.key === 'Enter') this.send(); },
-            request() { this.search({key:'Enter', target: document.getElementById('friend-id-input')}); }
+            keys(e) { if(e.key === 'Enter') this.send(); }
         };
 
-        const ui = {
+        // --- UI ---
+        window.ui = {
+            modal(id) { 
+                document.getElementById('modal-overlay').classList.remove('hidden'); 
+                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); 
+                const mod = document.getElementById(`modal-${id}`);
+                if(mod) mod.classList.remove('hidden');
+                if(id === 'profile') { document.getElementById('set-id').innerText = state.user.id; document.getElementById('set-av').src = state.user.av; }
+            },
+            closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
             renderList() {
                 const list = document.getElementById('contact-list'); list.innerHTML = '';
                 state.friends.forEach(id => {
                     const div = document.createElement('div');
                     div.className = `item-card ${state.chat === id ? 'active' : ''}`;
                     div.onclick = () => this.select(id);
-                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${id}"><span>${id}</span>`;
+                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${id}"><span>${id}</span>`;
                     list.appendChild(div);
                 });
             },
             select(id) {
                 state.chat = id;
-                document.getElementById('welcome-chat').classList.add('hidden');
+                document.getElementById('chat-welcome').classList.add('hidden');
                 document.getElementById('chat-active').classList.remove('hidden');
                 document.getElementById('target-name').innerText = id;
-                document.getElementById('target-av').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+                document.getElementById('target-av').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`;
                 if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('closed');
                 this.renderChat();
             },
@@ -454,51 +420,21 @@
                 });
                 box.scrollTop = box.scrollHeight + 1000;
             },
-            modal(id) { 
-                document.getElementById('modal-overlay').classList.remove('hidden'); 
-                document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); 
-                const mod = document.getElementById(`modal-${id}`);
-                if(mod) mod.classList.remove('hidden');
-                if(id === 'profile') { document.getElementById('set-id').innerText = state.user.id; document.getElementById('set-av').src = state.user.av; }
-            },
-            closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
-            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('welcome-chat').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
+            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('chat-welcome').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
             async changeAv(el) {
                 const r = new FileReader();
-                r.onload = async e => {
-                    state.user.av = e.target.result;
-                    localStorage.setItem('tat_sess', JSON.stringify(state.user));
-                    location.reload();
-                };
+                r.onload = e => { state.user.av = e.target.result; localStorage.setItem('tat_sess', JSON.stringify(state.user)); location.reload(); };
                 r.readAsDataURL(el.files[0]);
             }
         };
 
-        const calls = {
-            async init(video) {
-                const s = await navigator.mediaDevices.getUserMedia({video, audio:true});
-                document.getElementById('local-video').srcObject = s;
-                document.getElementById('call-ui').classList.remove('hidden');
-                const call = state.peer.call(state.chat, s);
-                call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-            },
-            incoming(call) {
-                document.getElementById('call-ui').classList.remove('hidden');
-                document.getElementById('call-accept').onclick = async () => {
-                    const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                    document.getElementById('local-video').srcObject = s;
-                    call.answer(s);
-                    call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                };
-            }
-        };
-
-        const voice = {
-            start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.rec = new MediaRecorder(s); let ch = []; this.rec.ondataavailable = e => ch.push(e.data); this.rec.onstop = () => { const r = new FileReader(); r.onload = e => msg.send({type:'voice', val: e.target.result}); r.readAsDataURL(new Blob(ch)); }; this.rec.start(); document.getElementById('mic-btn').style.color = '#ff4d4d'; }); },
+        // --- VOICE ---
+        window.voice = {
+            start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.rec = new MediaRecorder(s); let ch = []; this.rec.ondataavailable = e => ch.push(e.data); this.rec.onstop = () => { const r = new FileReader(); r.onload = e => messenger.send({type:'voice', val: e.target.result}); r.readAsDataURL(new Blob(ch)); }; this.rec.start(); document.getElementById('mic-btn').style.color = '#ff4d4d'; }); },
             stop() { if(this.rec) { this.rec.stop(); document.getElementById('mic-btn').style.color = ''; } }
         };
 
-        runIntro();
+        runVortexIntro();
     </script>
 </body>
 </html>
