@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VORTEX | Ultimate Prime v23</title>
+    <title>VORTEX | Final Fix</title>
     
     <!-- Ресурсы -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -13,144 +13,211 @@
 
     <style>
         :root {
-            --accent: #00f2ff;
-            --accent-dark: #0062ff;
-            --glass: rgba(15, 15, 25, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #00f2ff;
+            --primary-dark: #0062ff;
+            --secondary: #ff0055;
             --bg: #050508;
-            --danger: #ff4d4d;
-            --success: #2ecc71;
-            --admin: #ffd700;
+            --glass: rgba(15, 15, 25, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --vpn: #00ff88;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* Nebula Background */
-        .nebula-bg {
-            position: fixed; inset: 0; z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #0f0c29 0%, #1a1a2e 40%, #050505 100%);
-            background-size: 200% 200%; animation: nebulaMove 15s ease infinite;
+        /* --- BACKGROUND --- */
+        .nebula {
+            position: fixed; inset: 0; z-index: -2;
+            background: radial-gradient(circle at 50% 50%, #0f0c29 0%, #1a1a2e 40%, #000 100%);
+            animation: pulseBg 10s infinite alternate;
         }
-        @keyframes nebulaMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .particles {
+            position: fixed; inset: 0; z-index: -1;
+            background-image: radial-gradient(#00f2ff 1px, transparent 1px);
+            background-size: 50px 50px; opacity: 0.15;
+            animation: moveGrid 30s linear infinite;
+        }
+
+        @keyframes pulseBg { 0% { opacity: 0.8; } 100% { opacity: 1; } }
+        @keyframes moveGrid { from { transform: translateY(0); } to { transform: translateY(40px); } }
 
         .hidden { display: none !important; }
-        .glass { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: 0.5s; }
+        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
-        /* Intro */
-        #vortex-intro { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .v-logo { width: 100px; height: 100px; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        .v-ring { position: absolute; border: 2px solid transparent; border-top-color: var(--accent); border-radius: 50%; animation: v-spin 2s linear infinite; }
-        .v-ring.r1 { width: 100%; height: 100%; }
-        .v-ring.r2 { width: 70%; height: 70%; border-top-color: var(--danger); animation-duration: 1.5s; animation-direction: reverse; }
-        
-        .v-title { font-family: 'Syncopate', sans-serif; font-size: 32px; letter-spacing: 12px; opacity: 0; transform: translateY(20px); transition: 1.2s ease; }
-        .v-title.active { opacity: 1; transform: translateY(0); }
-        @keyframes v-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* Auth */
-        .auth-card { background: rgba(15, 15, 25, 0.9); border-radius: 30px; padding: 40px; width: 92%; max-width: 420px; text-align: center; border: 1px solid var(--glass-border); animation: pop 0.5s ease; }
-        .glow-text { background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 36px; margin-bottom: 25px; }
-        .glass-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; font-size: 16px; }
-        .btn-primary { width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-dark)); border: none; padding: 15px; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
-
-        /* Layout */
-        #app { display: flex; height: 100vh; width: 100vw; }
-        #sidebar { 
-            width: 340px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(25px); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- INTRO ANIMATION --- */
+        #intro { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
+        .vortex-logo {
+            width: 120px; height: 120px; position: relative; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 30px;
         }
-        .side-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
-        .me-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .me-info img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; background: #000; }
+        .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
+        .r1 { width: 100%; height: 100%; border-top-color: var(--primary); animation: spin 2s linear infinite; }
+        .r2 { width: 70%; height: 70%; border-bottom-color: var(--secondary); animation: spin 1.5s linear infinite reverse; }
+        .r3 { width: 40%; height: 40%; border-left-color: #fff; animation: spin 1s linear infinite; }
+
+        .intro-title { font-family: 'Syncopate'; font-size: 40px; letter-spacing: 10px; color: white; text-shadow: 0 0 20px var(--primary); opacity: 0; transform: translateY(20px); transition: 1s ease; }
+        .intro-title.show { opacity: 1; transform: translateY(0); }
         
-        .list-area { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-card { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 18px; cursor: pointer; margin-bottom: 8px; transition: 0.2s; background: rgba(255,255,255,0.02); }
-        .item-card:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
-        .item-card.active { background: linear-gradient(90deg, var(--accent-dark), transparent); border-left: 4px solid var(--accent); }
-        .item-card img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #222; }
+        .loader-bar { width: 200px; height: 4px; background: #222; margin-top: 20px; border-radius: 2px; overflow: hidden; }
+        .loader-fill { height: 100%; width: 0%; background: var(--vpn); box-shadow: 0 0 10px var(--vpn); transition: width 0.1s linear; }
+        .vpn-log { margin-top: 10px; font-family: monospace; font-size: 10px; color: var(--vpn); }
 
-        /* Chat */
-        #chat-window { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .chat-header { height: 75px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); }
-        .target-info { display: flex; align-items: center; gap: 12px; }
-        .target-info img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- UI COMPONENTS --- */
+        .input-cyber {
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);
+            padding: 15px; border-radius: 12px; color: white; margin-bottom: 12px; font-size: 16px;
+            transition: 0.3s;
+        }
+        .input-cyber:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+        .btn-cyber {
+            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: white; font-weight: 800; cursor: pointer; letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .btn-cyber:hover { box-shadow: 0 0 20px var(--primary); transform: translateY(-2px); }
+
+        /* --- APP STRUCTURE --- */
+        #app { display: flex; height: 100vh; width: 100vw; }
         
-        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        .msg { max-width: 75%; display: flex; flex-direction: column; animation: msgIn 0.4s ease; }
-        .msg.sent { align-self: flex-end; align-items: flex-end; }
-        .msg-bubble { padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.4; background: var(--glass); border: 1px solid var(--glass-border); position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .sent .msg-bubble { background: var(--accent-dark); border: none; border-bottom-right-radius: 4px; }
-        .received .msg-bubble { border-bottom-left-radius: 4px; }
+        #sidebar { 
+            width: 320px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
+            background: rgba(10,10,15,0.8); backdrop-filter: blur(30px); transition: 0.4s; z-index: 100;
+        }
+        .side-head { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        
+        .me-block { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .me-block img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; background: #000; }
+        .me-info h4 { font-size: 16px; font-weight: 700; margin: 0; }
+        .me-info span { font-size: 10px; color: var(--primary); }
 
-        .media-frame { max-width: 240px; border-radius: 12px; overflow: hidden; border: 2px solid var(--glass-border); margin: 5px 0; cursor: pointer; }
-        .media-frame img { width: 100%; display: block; }
-        audio { height: 35px; width: 200px; margin-top: 5px; filter: invert(1); }
+        .icon-btn { font-size: 20px; color: #aaa; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .icon-btn:hover { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
 
-        .chat-footer { padding: 20px; background: rgba(0,0,0,0.5); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-        .input-bar { background: rgba(255,255,255,0.06); border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--glass-border); }
-        .input-bar input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 16px; }
-        .input-bar i { font-size: 22px; color: #888; cursor: pointer; transition: 0.2s; }
+        .nav-tabs { display: flex; background: rgba(255,255,255,0.05); margin: 15px; padding: 5px; border-radius: 12px; }
+        .nav-tab { flex: 1; text-align: center; padding: 8px; font-size: 12px; color: #888; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .nav-tab.active { background: var(--primary-dark); color: white; }
 
-        /* Modals */
-        .modal { background: #0a0a0f; padding: 30px; border-radius: 30px; width: 95%; max-width: 420px; border: 1px solid var(--glass-border); text-align: center; position: relative; animation: pop 0.4s ease; }
-        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: #555; }
-        .large-av { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 15px; object-fit: cover; cursor: pointer; display: block; }
+        .list { flex: 1; overflow-y: auto; padding: 10px; }
+        .user-item { 
+            display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 15px; 
+            margin-bottom: 5px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.03);
+        }
+        .user-item:hover { background: rgba(255,255,255,0.1); }
+        .user-item.active { background: linear-gradient(90deg, rgba(0, 98, 255, 0.2), transparent); border-left: 3px solid var(--primary); }
+        .user-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+
+        /* --- CHAT --- */
+        #chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(0,0,0,0.2); }
+        .chat-top { height: 70px; padding: 0 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); }
+        
+        .msg-feed { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+        .msg-row { display: flex; flex-direction: column; max-width: 75%; animation: fadeUp 0.3s ease; }
+        .msg-row.sent { align-self: flex-end; align-items: flex-end; }
+        
+        .bubble { 
+            padding: 10px 15px; border-radius: 18px; font-size: 15px; line-height: 1.4; 
+            background: rgba(30, 30, 40, 0.9); border: 1px solid var(--glass-border); 
+        }
+        .sent .bubble { background: rgba(0, 98, 255, 0.3); border-color: var(--primary-dark); border-bottom-right-radius: 4px; }
+        .received .bubble { border-bottom-left-radius: 4px; }
+        .ai-bubble { border-color: #ff00ff !important; background: rgba(255, 0, 255, 0.1) !important; }
+
+        .media-prev { max-width: 220px; border-radius: 10px; margin: 5px 0; border: 1px solid var(--glass-border); cursor: pointer; }
+        audio { height: 35px; width: 220px; margin-top: 5px; filter: invert(1) hue-rotate(180deg); }
+
+        .chat-bottom { padding: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+        .input-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 25px; border: 1px solid var(--glass-border); }
+        .input-row input { flex: 1; background: none; border: none; padding: 12px; color: white; font-size: 16px; }
+        .tool { font-size: 20px; color: #aaa; cursor: pointer; padding: 8px; transition: 0.2s; }
+        .tool:hover { color: var(--primary); }
+        .tool.rec { color: var(--secondary) !important; animation: pulse 1s infinite; }
+
+        /* --- MODALS --- */
+        .modal-box { width: 95%; max-width: 450px; padding: 30px; text-align: center; border-radius: 24px; position: relative; }
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #666; }
+        .large-av { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 20px; object-fit: cover; cursor: pointer; }
+        
+        .settings-list { text-align: left; margin-top: 20px; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--glass-border); }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Stickers */
+        .sticker-pnl { position: absolute; bottom: 90px; left: 20px; width: 280px; padding: 15px; border-radius: 20px; z-index: 100; box-shadow: 0 20px 50px black; }
+        .st-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: 200px; overflow-y: auto; }
+        .st-grid img { width: 100%; cursor: pointer; transition: 0.2s; }
+        
+        /* Video Call */
+        #call-ui { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; }
+        .v-main { flex: 1; width: 100%; object-fit: cover; }
+        .v-small { width: 100px; height: 140px; position: absolute; bottom: 100px; right: 20px; border-radius: 10px; border: 2px solid var(--primary); object-fit: cover; z-index: 10; }
+        .call-btns { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: center; gap: 30px; }
+        .btn-round { width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 24px; color: white; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
 
         @media (max-width: 768px) {
-            #sidebar { position: fixed; inset: 0; width: 100%; z-index: 500; transform: translateX(0); }
+            #sidebar { position: fixed; inset: 0; z-index: 500; transform: translateX(0); }
             #sidebar.closed { transform: translateX(-100%); }
-            .back-btn { display: block !important; }
+            .back-btn { display: block !important; margin-right: 15px; font-size: 22px; cursor: pointer; }
         }
-        .back-btn { display: none; font-size: 22px; cursor: pointer; margin-right: 10px; }
-        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .back-btn { display: none; }
+        @keyframes popUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 50% { opacity: 0.5; } }
+        @keyframes fadeUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="nebula-bg"></div>
+    <div class="nebula"></div>
+    <div class="particles"></div>
 
-    <!-- 1. INTRO / VPN -->
-    <div id="vortex-intro">
-        <div class="v-logo">
-            <div class="v-ring r1"></div>
-            <div class="v-ring r2"></div>
-            <i class="fas fa-atom" style="font-size:30px; color:white"></i>
+    <!-- 1. INTRO -->
+    <div id="intro">
+        <div class="vortex-logo">
+            <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
         </div>
-        <h1 class="v-title" id="intro-h1">VORTEX</h1>
-        <div class="progress-container" style="width:200px; height:4px; background:#111; margin-top:20px; border-radius:10px; overflow:hidden">
-            <div id="vpn-bar" style="width:0%; height:100%; background:var(--vpn); transition: 0.1s linear"></div>
-        </div>
-        <p id="vpn-log" style="color:var(--vpn); font-size:10px; letter-spacing:3px; margin-top:10px">ROUTING DE-FRA...</p>
+        <h1 class="intro-title" id="intro-title">VORTEX</h1>
+        <div class="loader-bar"><div id="vpn-fill" class="loader-fill"></div></div>
+        <p id="vpn-log" class="vpn-log">INITIALIZING...</p>
     </div>
 
     <!-- 2. AUTH -->
     <div id="auth-screen" class="overlay hidden">
-        <div class="auth-card glass">
+        <div class="auth-card glass-panel">
             <h1 class="glow-text">VORTEX</h1>
-            <div id="auth-login">
-                <input type="text" id="l-id" class="glass-input" placeholder="ID (Никнейм)">
-                <input type="password" id="l-pw" class="glass-input" placeholder="Пароль">
-                <button class="btn-primary" onclick="auth.login()">ВХОД</button>
-                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('reg')">Регистрация</p>
+            
+            <div id="ui-login">
+                <input id="l-id" class="input-cyber" placeholder="ID">
+                <input id="l-pw" type="password" class="input-cyber" placeholder="Пароль">
+                <button class="btn-cyber" onclick="auth.login()">ВХОД</button>
+                <p style="margin-top:20px; font-size:12px; color:#888; cursor:pointer" onclick="auth.view('reg')">Регистрация</p>
             </div>
-            <div id="auth-reg" class="hidden">
-                <input type="email" id="r-email" class="glass-input" placeholder="Gmail">
-                <input type="text" id="r-id" class="glass-input" placeholder="Никнейм">
-                <input type="password" id="r-pw" class="glass-input" placeholder="Пароль">
-                <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; margin-bottom:15px">
-                    <p id="captcha-text" style="font-size:13px; margin-bottom:5px"></p>
-                    <input type="text" id="captcha-input" class="glass-input" placeholder="Ответ" style="margin-bottom:0">
-                </div>
-                <button class="btn-primary" id="reg-send-btn" onclick="auth.startReg()">ОТПРАВИТЬ КОД</button>
-                <p style="margin-top:20px; color:#888; font-size:13px; cursor:pointer;" onclick="auth.switch('login')">Назад</p>
+
+            <div id="ui-reg" class="hidden">
+                <input id="r-mail" class="input-cyber" placeholder="Gmail">
+                <input id="r-id" class="input-cyber" placeholder="Новый ID">
+                <input id="r-pw" type="password" class="input-cyber" placeholder="Пароль">
+                <button class="btn-cyber" id="btn-code" onclick="auth.sendCode()">ОТПРАВИТЬ КОД</button>
+                <p style="margin-top:20px; font-size:12px; color:#888; cursor:pointer" onclick="auth.view('login')">Назад</p>
             </div>
-            <div id="auth-code" class="hidden">
-                <p style="margin-bottom:20px">Введите код из письма</p>
-                <input type="text" id="verify-code" class="glass-input" placeholder="6 цифр" style="text-align:center; font-size:24px; letter-spacing:8px" maxlength="6">
-                <button class="btn-primary" onclick="auth.complete()">ПОДТВЕРДИТЬ</button>
+
+            <div id="ui-code" class="hidden">
+                <p style="margin-bottom:20px; color:var(--primary)">Код из письма</p>
+                <input id="r-code" class="input-cyber" style="text-align:center; font-size:24px; letter-spacing:5px" maxlength="6">
+                <button class="btn-cyber" onclick="auth.verify()">ПОДТВЕРДИТЬ</button>
+            </div>
+            
+            <div id="ui-2fa" class="hidden">
+                <p style="margin-bottom:20px; color:var(--primary)">2FA ЗАЩИТА</p>
+                <input id="code-2fa" class="input-cyber" style="text-align:center; font-size:24px; letter-spacing:5px">
+                <button class="btn-cyber" onclick="auth.check2FA()">ВОЙТИ</button>
             </div>
         </div>
     </div>
@@ -158,331 +225,448 @@
     <!-- 3. APP -->
     <div id="app" class="hidden">
         <aside id="sidebar">
-            <div class="side-header">
-                <div class="me-info" onclick="ui.modal('profile')">
+            <div class="side-head">
+                <div class="me-block" onclick="ui.modal('settings')">
                     <img id="my-av" src="">
-                    <div style="display:flex; flex-direction:column">
-                        <span id="my-id-disp" style="font-weight:700">...</span>
-                        <span style="font-size:11px; color:var(--vpn)">Online</span>
+                    <div class="me-info">
+                        <h4 id="my-id">...</h4>
+                        <span style="font-size:10px; color:var(--primary)">Online</span>
                     </div>
                 </div>
-                <i class="fas fa-cog" style="cursor:pointer" onclick="ui.modal('profile')"></i>
+                <div style="display:flex; gap:10px">
+                    <i class="fas fa-plus icon-btn" onclick="ui.modal('add')"></i>
+                    <i class="fas fa-users icon-btn" onclick="ui.modal('group')"></i>
+                </div>
             </div>
+            
             <div style="padding:15px">
-                <input type="text" id="global-search" class="glass-input" placeholder="Поиск ID или Группы..." onkeypress="msg.search(event)" style="margin:0;">
+                <input class="input-cyber" placeholder="Поиск..." onkeypress="msg.search(event)" style="margin:0">
             </div>
-            <div class="list-area" id="contact-list"></div>
+
+            <div class="nav-tabs">
+                <div class="nav-tab active" id="tab-dm" onclick="ui.tab('dm')">ЛИЧНЫЕ</div>
+                <div class="nav-tab" id="tab-gr" onclick="ui.tab('gr')">ГРУППЫ</div>
+            </div>
+
+            <div id="contacts" class="list"></div>
         </aside>
 
-        <main id="chat-window">
-            <div id="chat-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.25">
-                <i class="fas fa-satellite-dish" style="font-size:100px; margin-bottom:20px"></i>
-                <h2>P2P ENCRYPTED</h2>
+        <main id="chat-area">
+            <div id="welcome-msg" style="flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; opacity:0.3">
+                <i class="fas fa-fingerprint" style="font-size:100px; margin-bottom:20px; color:var(--primary)"></i>
+                <h2>VORTEX SECURE</h2>
             </div>
-            <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column; height:100%;">
-                <header class="chat-header glass">
-                    <div class="target-info">
-                        <i class="fas fa-arrow-left back-btn" onclick="ui.closeChat()"></i>
-                        <img id="target-av" src="">
-                        <h4 id="target-name">...</h4>
+
+            <div id="chat-active" class="hidden" style="flex:1; display:flex; flex-direction:column; height:100%">
+                <header class="chat-top">
+                    <div style="display:flex; align-items:center">
+                        <i class="fas fa-chevron-left back-btn" onclick="ui.closeChat()"></i>
+                        <img id="head-av" src="" style="width:40px; height:40px; border-radius:50%; margin-right:12px; border:1px solid var(--primary)">
+                        <h4 id="head-name" style="font-weight:700">User</h4>
                     </div>
-                    <div style="display:flex; gap:22px; font-size:20px; color:#aaa">
-                        <i class="fas fa-robot" id="ai-btn" onclick="ai.toggle()"></i>
-                        <i class="fas fa-phone" onclick="calls.start(false)"></i>
-                        <i class="fas fa-video" onclick="calls.start(true)"></i>
+                    <div style="display:flex; gap:15px">
+                        <i class="fas fa-robot icon-btn" id="ai-ico" onclick="ai.toggle()" title="AI Helper"></i>
+                        <i class="fas fa-phone icon-btn" onclick="calls.init(false)"></i>
+                        <i class="fas fa-video icon-btn" onclick="calls.init(true)"></i>
                     </div>
                 </header>
-                <div class="messages" id="msg-box"></div>
-                <div class="chat-footer">
-                    <div class="input-bar">
-                        <label for="file-up"><i class="fas fa-paperclip"></i></label>
-                        <input type="file" id="file-up" hidden onchange="msg.file(this)">
-                        <input type="text" id="main-input" placeholder="Сообщение..." onkeypress="msg.keys(event)">
-                        <i class="fas fa-microphone" id="mic-btn" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
-                        <i class="fas fa-paper-plane" style="color:var(--accent)" onclick="msg.send()"></i>
+
+                <div id="msg-feed" class="msg-feed"></div>
+
+                <div class="chat-bottom">
+                    <div class="input-row">
+                        <label><i class="fas fa-paperclip tool"></i><input type="file" hidden onchange="msg.file(this)"></label>
+                        <i class="far fa-smile tool" onclick="ui.toggleStickers()"></i>
+                        <input id="msg-in" placeholder="Сообщение..." onkeypress="msg.key(event)">
+                        <i id="mic" class="fas fa-microphone tool" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
+                        <i class="fas fa-paper-plane tool" style="color:var(--primary)" onclick="msg.send()"></i>
+                    </div>
+                    
+                    <div id="st-panel" class="sticker-pnl glass-panel hidden">
+                        <div id="st-grid" class="st-grid"></div>
+                        <div style="display:flex; gap:5px; margin-top:10px">
+                            <input id="new-st" class="input-cyber" placeholder="URL..." style="margin:0; padding:8px; font-size:12px">
+                            <button class="btn-cyber" style="width:auto; padding:0 15px; margin:0" onclick="stickers.add()">OK</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- MODALS -->
+    <!-- 4. MODALS -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
-        <div id="modal-profile" class="modal glass" onclick="event.stopPropagation()">
-            <span class="modal-close" onclick="ui.closeModals()">&times;</span>
+        <!-- Settings -->
+        <div id="mod-settings" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="ui.closeModals()">&times;</span>
             <h2>Настройки</h2>
-            <img id="set-av" class="large-av" onclick="document.getElementById('av-up').click()" title="Сменить фото">
-            <input type="file" id="av-up" hidden accept="image/*" onchange="ui.changeAv(this)">
-            <p>ID: <strong id="set-id" style="color:var(--accent)"></strong></p>
-            <div id="admin-panel" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:20px">
-                <p style="color:var(--admin); font-weight:800; font-size:12px">👑 GOD MODE PANEL</p>
-                <input type="text" id="adm-target" class="glass-input" placeholder="ID юзера">
-                <button class="btn-primary" onclick="admin.verify()">ВЫДАТЬ ЧЕК</button>
+            <img id="set-av" class="large-av" onclick="document.getElementById('up-av').click()">
+            <input type="file" id="up-av" hidden accept="image/*" onchange="ui.changeAv(this)">
+            <h3 id="set-id" style="color:var(--primary)">...</h3>
+            
+            <div class="settings-list">
+                <div class="setting-row">
+                    <span>2FA Защита (Email)</span>
+                    <label class="switch"><input type="checkbox" id="tg-2fa" onchange="ui.saveSet()"><span class="slider"></span></label>
+                </div>
+                <div class="setting-row">
+                    <span>AI Озвучка</span>
+                    <label class="switch"><input type="checkbox" id="tg-ai" onchange="ui.saveSet()"><span class="slider"></span></label>
+                </div>
             </div>
-            <button class="btn-primary" style="background:#222; margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
+
+            <div id="admin-tools" class="hidden" style="margin-top:20px; padding-top:15px; border-top:1px solid #333">
+                <p style="color:gold; font-size:12px; font-weight:700">GOD MODE</p>
+                <input id="adm-target" class="input-cyber" placeholder="Target ID" style="padding:10px; margin-top:5px">
+                <div class="admin-grid">
+                    <button class="btn-admin" onclick="admin.cmd('verif')">VERIFY</button>
+                    <button class="btn-admin" onclick="admin.cmd('kick')">KICK</button>
+                    <button class="btn-admin" onclick="admin.cmd('ban')">BAN</button>
+                    <button class="btn-admin" onclick="admin.cmd('wipe')">WIPE</button>
+                </div>
+            </div>
+
+            <button class="btn-cyber" style="background:var(--secondary); margin-top:20px" onclick="auth.logout()">ВЫЙТИ</button>
         </div>
-        
-        <div id="modal-inreq" class="modal glass hidden" onclick="event.stopPropagation()">
-            <h3 style="color:var(--accent)">Входящая заявка</h3>
-            <p id="req-id-disp" style="margin:20px 0"></p>
+
+        <div id="mod-add" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
+            <h3>Добавить</h3>
+            <input id="add-id" class="input-cyber" placeholder="ID">
+            <button class="btn-cyber" onclick="msg.req()">ОТПРАВИТЬ</button>
+        </div>
+
+        <div id="mod-group" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
+            <h3>Группа</h3>
+            <input id="gr-name" class="input-cyber" placeholder="Название">
+            <button class="btn-cyber" onclick="groups.create()">СОЗДАТЬ</button>
+        </div>
+
+        <div id="mod-inreq" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
+            <h3 style="color:var(--primary)">Заявка</h3>
+            <p id="req-txt" style="margin:20px 0"></p>
             <div style="display:flex; gap:10px">
-                <button class="btn-primary" style="background:#2ecc71" onclick="msg.handleReq(true)">ПРИНЯТЬ</button>
-                <button class="btn-primary" style="background:#e74c3c" onclick="msg.handleReq(false)">ОТКАЗАТЬ</button>
+                <button class="btn-cyber" style="background:#00ff88" onclick="msg.handleReq(true)">ДА</button>
+                <button class="btn-cyber" style="background:#ff3355" onclick="msg.handleReq(false)">НЕТ</button>
             </div>
         </div>
     </div>
 
-    <!-- CALL UI -->
-    <div id="call-ui" class="overlay hidden" style="background:#000; z-index:20001">
-        <video id="remote-video" style="width:100%; height:100%; object-fit:cover" autoplay playsinline></video>
-        <video id="local-video" style="width:110px; height:150px; position:absolute; bottom:110px; right:20px; border-radius:12px; border:2px solid var(--accent); object-fit:cover" autoplay muted playsinline></video>
-        <div style="position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; gap:30px">
-            <button id="call-acc" class="btn-primary" style="width:65px; height:65px; border-radius:50%; background:#2ecc71; font-size:25px"><i class="fas fa-phone"></i></button>
-            <button class="btn-primary" style="width:65px; height:65px; border-radius:50%; background:#ff4d4d; font-size:25px" onclick="location.reload()"><i class="fas fa-phone-slash"></i></button>
-        </div>
+    <!-- Media Fullscreen -->
+    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')">
+        <img id="fs-img" src="" style="max-width:95%; max-height:95%; border-radius:10px">
     </div>
 
-    <!-- Viewer -->
-    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')"><img id="fs-img" src="" style="max-width:90%; border-radius:15px"></div>
+    <!-- Call -->
+    <div id="call-ui" class="hidden" style="position:fixed; inset:0; background:#000; z-index:20000; display:flex; justify-content:center; align-items:center">
+        <video id="rem-vid" style="width:100%; height:100%; object-fit:cover" autoplay playsinline></video>
+        <video id="loc-vid" style="width:100px; height:140px; position:absolute; bottom:100px; right:20px; border-radius:10px; border:2px solid var(--primary); object-fit:cover; z-index:10"></video>
+        <div style="position:absolute; bottom:40px; width:100%; display:flex; justify-content:center; gap:30px">
+            <button id="ans-btn" style="width:65px; height:65px; border-radius:50%; background:#00ff88; border:none; font-size:24px; cursor:pointer"><i class="fas fa-phone"></i></button>
+            <button onclick="location.reload()" style="width:65px; height:65px; border-radius:50%; background:#ff0055; border:none; font-size:24px; cursor:pointer"><i class="fas fa-phone-slash"></i></button>
+        </div>
+    </div>
 
     <script>
-        // --- CORE LOGIC ---
-        function safeJSON(key, fallback) {
-            try { const data = localStorage.getItem(key); return (data && data !== "undefined" && data !== "null") ? JSON.parse(data) : fallback; } 
-            catch(e) { return fallback; }
-        }
-
+        // --- CONFIG ---
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
         const EMAIL_SERV = "service_tatarsms";
         const EMAIL_TEMP = "template_zxlr5as";
+        const ADMIN_ID = "tatar_506";
+        const ADMIN_PW = "spinogrz666";
 
+        function safeJSON(k, fb) { try{ const d=localStorage.getItem(k); return (d&&d!=="null")?JSON.parse(d):fb; } catch(e){return fb;} }
+
+        // --- STATE ---
         let state = {
-            user: safeJSON('tat_sess', null),
-            db: safeJSON('tat_db', {users:{}}),
-            friends: safeJSON('tat_friends', []),
-            history: safeJSON('tat_hist', {}),
-            peer: null, chat: null, pending: null, code: null, captcha: null, ai: false
+            user: safeJSON('vx_sess', null),
+            friends: safeJSON('vx_fr', []), groups: safeJSON('vx_gr', []),
+            history: safeJSON('vx_hist', {}), stickers: safeJSON('vx_st', []),
+            settings: safeJSON('vx_set', { '2fa': false, 'ai': true }),
+            peer: null, chat: null, tab: 'dm', pending: null, code: null, temp: null, ai: false
         };
 
-        const auth = {
-            switch(v) {
-                ['login','reg','code'].forEach(id => document.getElementById(`auth-${id}`).classList.add('hidden'));
-                document.getElementById(`auth-${v}`).classList.remove('hidden');
-                if(v==='reg') this.genCaptcha();
-            },
-            genCaptcha() {
-                const a = Math.floor(Math.random()*15)+5, b = Math.floor(Math.random()*10);
-                this.captcha = a + b;
-                const capEl = document.getElementById('captcha-text');
-                if(capEl) capEl.innerText = `Защита: ${a} + ${b} = ?`;
-            },
-            async startReg() {
-                const id = document.getElementById('r-id').value.trim();
-                const email = document.getElementById('reg-email').value.trim();
-                const pw = document.getElementById('r-pw').value.trim();
-                if(document.getElementById('captcha-input').value != this.captcha) return alert("Капча неверна");
-                if(!id || !email || !pw) return alert("Заполните всё");
-                if(state.db.users[id]) return alert("ID занят");
-
-                this.code = Math.floor(100000 + Math.random() * 900000).toString();
-                this.temp = {id, email, pw};
-                emailjs.init(EMAIL_KEY);
-                emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: email, message: "Код: " + this.code })
-                .then(() => this.switch('code'), () => { alert("Код (Эмуль): " + this.code); this.switch('code'); });
-            },
-            async complete() {
-                if(document.getElementById('verify-code').value != this.code) return alert("Неверно");
-                state.db.users[this.temp.id] = { pw: btoa(this.temp.pw), av: `https://api.dicebear.com/7.x/bottts/svg?seed=${this.temp.id}` };
-                localStorage.setItem('tat_db', JSON.stringify(state.db));
-                alert("Готово!"); this.switch('login');
-            },
-            async login() {
-                const id = document.getElementById('l-id').value.trim();
-                const pw = document.getElementById('l-pw').value.trim();
-                if(id === "tatar_506" && pw === "spinogrz666") return this.startSess(id, true);
-                const u = state.db.users[id];
-                if(u && atob(u.pw) === pw) this.startSess(id, false);
-                else alert("Ошибка входа!");
-            },
-            startSess(id, adm) {
-                const u = state.db.users[id];
-                localStorage.setItem('tat_sess', JSON.stringify({id, av: u?.av || `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, admin: adm}));
-                location.reload();
-            },
-            logout() { localStorage.removeItem('tat_sess'); location.reload(); }
-        };
-
-        const msg = {
-            async init() {
-                state.peer = new Peer(state.user.id);
-                state.peer.on('open', () => {
-                    document.getElementById('my-id-disp').innerText = state.user.id;
-                    document.getElementById('my-av').src = state.user.av;
-                    ui.renderList();
-                });
-                state.peer.on('connection', conn => {
-                    conn.on('data', data => this.receive(data, conn.peer));
-                });
-                state.peer.on('call', call => calls.incoming(call));
-            },
-            search(e) {
-                if(e.key !== 'Enter') return;
-                const id = e.target.value.trim();
-                if(!id || id === state.user.id) return;
-                const conn = state.peer.connect(id);
-                conn.on('open', () => {
-                    conn.send({type:'req', from: state.user.id});
-                    alert("Запрос отправлен!"); e.target.value = '';
-                });
-            },
-            receive(data, from) {
-                if(data.type === 'req') { state.pending = from; document.getElementById('req-id-disp').innerText = from; ui.modal('inreq'); }
-                else if(data.type === 'acc') { if(!state.friends.includes(from)) state.friends.push(from); this.saveFr(); ui.renderList(); }
-                else this.save(from, data, 'received');
-            },
-            handleReq(acc) {
-                if(acc && state.pending) {
-                    if(!state.friends.includes(state.pending)) state.friends.push(state.pending);
-                    this.saveFr(); ui.renderList();
-                    const conn = state.peer.connect(state.pending);
-                    conn.on('open', () => conn.send({type:'acc'}));
-                }
-                ui.closeModals();
-            },
-            send(dataObj = null) {
-                const val = document.getElementById('main-input').value.trim();
-                const content = dataObj || {type:'text', val};
-                if(!content.val || !state.chat) return;
-                const conn = state.peer.connect(state.chat);
-                conn.on('open', () => {
-                    conn.send(content);
-                    this.save(state.chat, content, 'sent');
-                    document.getElementById('main-input').value = '';
-                });
-            },
-            file(el) {
-                const f = el.files[0];
-                const r = new FileReader();
-                r.onload = e => this.send({type: f.type.startsWith('image')?'img':'file', val: e.target.result});
-                r.readAsDataURL(f);
-            },
-            save(peer, data, dir) {
-                if(!state.history[peer]) state.history[peer] = [];
-                state.history[peer].push({...data, dir, time: new Date().toLocaleTimeString().slice(0,5)});
-                localStorage.setItem('tat_hist', JSON.stringify(state.history));
-                if(state.chat === peer) ui.renderChat();
-            },
-            saveFr() { localStorage.setItem('tat_friends', JSON.stringify(state.friends)); },
-            keys(e) { if(e.key === 'Enter') this.send(); },
-            request() { this.search({key:'Enter', target: document.getElementById('friend-id-input')}); }
-        };
-
-        const ui = {
-            modal(id) { 
-                const overlay = document.getElementById('modal-overlay');
-                const m = document.getElementById(`modal-${id}`);
-                if(overlay && m) {
-                    overlay.classList.remove('hidden');
-                    document.querySelectorAll('.modal').forEach(el => el.classList.add('hidden'));
-                    m.classList.remove('hidden');
-                    if(id === 'profile') {
-                        document.getElementById('set-id').innerText = state.user.id;
-                        document.getElementById('set-av').src = state.user.av;
-                        if(state.user.admin) document.getElementById('admin-panel').classList.remove('hidden');
-                    }
-                }
-            },
-            closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
-            renderList() {
-                const list = document.getElementById('contact-list'); list.innerHTML = '';
-                state.friends.forEach(id => {
-                    const div = document.createElement('div');
-                    div.className = `item-card ${state.chat === id ? 'active' : ''}`;
-                    div.onclick = () => this.select(id);
-                    div.innerHTML = `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${id}"><span>${id}</span>`;
-                    list.appendChild(div);
-                });
-            },
-            select(id) {
-                state.chat = id;
-                const welcome = document.getElementById('chat-empty');
-                const active = document.getElementById('chat-active');
-                if(welcome) welcome.classList.add('hidden');
-                if(active) active.classList.remove('hidden');
-                document.getElementById('target-name').innerText = id;
-                document.getElementById('target-av').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`;
-                if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('closed');
-                this.renderChat();
-            },
-            renderChat() {
-                const box = document.getElementById('msg-box'); box.innerHTML = '';
-                (state.history[state.chat] || []).forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = `msg ${m.dir}`;
-                    let html = `<div class="msg-bubble">`;
-                    if(m.type === 'text') html += m.val;
-                    else if(m.type === 'img') html += `<div class="media-frame"><img src="${m.val}" onclick="window.open(this.src)"></div>`;
-                    else html += `<a href="${m.val}" download style="color:var(--accent)">Файл</a>`;
-                    html += `<div style="font-size:10px;opacity:0.4;margin-top:5px">${m.time}</div></div>`;
-                    div.innerHTML = html; box.appendChild(div);
-                });
-                box.scrollTop = box.scrollHeight + 1000;
-            },
-            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
-            async changeAv(el) {
-                const r = new FileReader();
-                r.onload = e => { state.user.av = e.target.result; localStorage.setItem('tat_sess', JSON.stringify(state.user)); location.reload(); };
-                r.readAsDataURL(el.files[0]);
-            },
-            showReq(f) { state.pending = f; document.getElementById('req-id-disp').innerText = f; this.modal('inreq'); }
-        };
-
-        const calls = {
-            async start(video) {
-                const s = await navigator.mediaDevices.getUserMedia({video, audio:true});
-                document.getElementById('local-video').srcObject = s;
-                document.getElementById('call-ui').classList.remove('hidden');
-                const call = state.peer.call(state.chat, s);
-                call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-            },
-            incoming(call) {
-                document.getElementById('call-ui').classList.remove('hidden');
-                document.getElementById('call-acc').onclick = async () => {
-                    const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                    document.getElementById('local-video').srcObject = s;
-                    call.answer(s);
-                    call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                };
-            }
-        };
-
-        const voice = {
-            start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.rec = new MediaRecorder(s); let ch = []; this.rec.ondataavailable = e => ch.push(e.data); this.rec.onstop = () => { const r = new FileReader(); r.onload = e => msg.send({type:'voice', val: e.target.result}); r.readAsDataURL(new Blob(ch)); }; this.rec.start(); document.getElementById('mic-btn').classList.add('rec-active'); }); },
-            stop() { if(this.rec) { this.rec.stop(); document.getElementById('mic-btn').classList.remove('rec-active'); } }
-        };
-
-        // --- START ---
-        function runIntro() {
-            setTimeout(() => { 
-                const h1 = document.getElementById('intro-h1');
-                if(h1) h1.style.opacity = '1';
-            }, 500);
-            let p = 0;
-            const bar = document.getElementById('vpn-bar');
+        // --- INTRO & VPN ---
+        function runVortexIntro() {
+            setTimeout(() => { document.querySelector('.intro-title').classList.add('show'); }, 500);
+            let p=0; const bar=document.getElementById('vpn-fill'); const log=document.getElementById('vpn-log');
             const i = setInterval(() => {
-                p += 5; if(bar) bar.style.width = p + "%";
-                if(p >= 100) {
+                p+=5; if(bar) bar.style.width=p+"%";
+                if(p<30) log.innerText="ROUTING DE-FRA...";
+                else if(p<80) log.innerText="ENCRYPTING...";
+                else log.innerText="SECURE CONNECTED";
+                if(p>=100) {
                     clearInterval(i);
                     setTimeout(() => {
                         document.getElementById('intro').classList.add('hidden');
                         if(state.user) { document.getElementById('app').classList.remove('hidden'); msg.init(); }
                         else document.getElementById('auth-screen').classList.remove('hidden');
-                    }, 500);
+                    }, 800);
                 }
-            }, 100);
+            }, 80);
         }
 
-        runIntro();
+        // --- AUTH ---
+        window.auth = {
+            view(v) {
+                ['login','reg','code','2fa'].forEach(id => document.getElementById(`ui-${id}`).classList.add('hidden'));
+                document.getElementById(`ui-${v}`).classList.remove('hidden');
+            },
+            sendCode() {
+                const id = document.getElementById('r-id').value.trim();
+                const em = document.getElementById('r-mail').value.trim();
+                const pw = document.getElementById('r-pw').value.trim();
+                if(!id || !em || !pw) return alert("Пусто!");
+                
+                this.code = Math.floor(100000 + Math.random() * 900000);
+                this.temp = {id, em, pw};
+                
+                document.getElementById('btn-code').innerText = "ОТПРАВКА...";
+                emailjs.init(EMAIL_KEY);
+                emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "Код VORTEX: " + this.code })
+                .then(() => {
+                    this.view('code');
+                    document.getElementById('btn-code').innerText = "КОД";
+                }, () => { 
+                    alert("Код (Эмуль): " + this.code); 
+                    this.view('code');
+                    document.getElementById('btn-code').innerText = "КОД";
+                });
+            },
+            verify() {
+                if(document.getElementById('r-code').value != this.code) return alert("Неверно");
+                this.start(this.temp.id, `https://api.dicebear.com/7.x/bottts/svg?seed=${this.temp.id}`, false);
+            },
+            login() {
+                const id = document.getElementById('l-id').value;
+                const pw = document.getElementById('l-pw').value;
+                if(id===ADMIN_ID && pw===ADMIN_PW) return this.start(id, "https://api.dicebear.com/7.x/bottts/svg?seed=adm", true);
+                
+                // Простая эмуляция входа (в облачной версии тут запрос к базе)
+                if(state.settings['2fa']) {
+                    const em = prompt("Email для 2FA:");
+                    if(em) {
+                        this.code = Math.floor(100000 + Math.random() * 900000);
+                        emailjs.init(EMAIL_KEY);
+                        emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "2FA: " + this.code })
+                        .then(() => { 
+                            this.view('2fa'); 
+                        }, () => { 
+                            alert("Код (Эмуль): "+this.code); this.view('2fa'); 
+                        });
+                    }
+                } else {
+                    this.start(id, `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, false);
+                }
+            },
+            check2FA() {
+                if(document.getElementById('code-2fa').value == this.code) this.start(this.temp ? this.temp.id : document.getElementById('l-id').value, '...', false);
+                else alert("Неверно");
+            },
+            start(id, av, adm) {
+                localStorage.setItem('vx_sess', JSON.stringify({id, av, adm}));
+                location.reload();
+            },
+            logout() { localStorage.clear(); location.reload(); }
+        };
+
+        // --- MSG ---
+        window.msg = {
+            init() {
+                state.peer = new Peer(state.user.id);
+                state.peer.on('open', () => {
+                    document.getElementById('my-av').src = state.user.av;
+                    document.getElementById('my-id').innerText = state.user.id;
+                    ui.list();
+                    ui.loadSet();
+                });
+                state.peer.on('connection', conn => {
+                    conn.on('data', data => this.rx(data, conn.peer));
+                });
+                state.peer.on('call', call => calls.in(call));
+            },
+            rx(d, f) {
+                if(d.type === 'req') { state.pending=f; document.getElementById('req-txt').innerText=f+" стучится"; ui.modal('inreq'); }
+                else if(d.type === 'acc') { state.friends.push(f); this.saveFr(); ui.list(); }
+                else {
+                    this.save(f, d, 'received');
+                    if(state.settings.ai && d.type === 'text') ai.speak(d.val);
+                }
+            },
+            req() {
+                const id = document.getElementById('add-id').value;
+                state.peer.connect(id).on('open', function(){ this.send({type:'req'}); alert("Отправлено"); ui.closeModals(); });
+            },
+            handleReq(ok) {
+                if(ok) {
+                    state.friends.push(state.pending); this.saveFr(); ui.list();
+                    state.peer.connect(state.pending).on('open', function(){ this.send({type:'acc'}); });
+                }
+                ui.closeModals();
+            },
+            search(e) {
+                if(e.key === 'Enter') {
+                    const q = e.target.value.trim();
+                    const gr = state.groups.find(g => g.name === q);
+                    if(gr) ui.sel(gr.id, gr.name, gr.av);
+                }
+            },
+            send(obj=null) {
+                const val = document.getElementById('msg-in').value.trim();
+                const d = obj || {type:'text', val};
+                if(!d.val || !state.chat) return;
+                const c = state.peer.connect(state.chat);
+                c.on('open', () => { c.send(d); this.save(state.chat, d, 'sent'); });
+                if(!obj) {
+                    document.getElementById('msg-in').value = '';
+                    if(val.startsWith('@ai')) ai.reply(val);
+                }
+            },
+            save(id, d, dir) {
+                if(!state.history[id]) state.history[id] = [];
+                state.history[id].push({...d, dir, time: new Date().toLocaleTimeString().slice(0,5)});
+                localStorage.setItem('vx_hist', JSON.stringify(state.history));
+                if(state.chat === id) ui.chat();
+            },
+            file(el) {
+                const f = el.files[0]; const r = new FileReader();
+                r.onload = e => this.send({type: f.type.startsWith('image')?'img':'file', val:e.target.result});
+                r.readAsDataURL(f);
+            },
+            saveFr() { localStorage.setItem('vx_fr', JSON.stringify(state.friends)); },
+            key(e) { if(e.key==='Enter') this.send(); }
+        };
+
+        // --- UI ---
+        window.ui = {
+            list() {
+                const l = document.getElementById('contact-list'); l.innerHTML = '';
+                const all = [...state.friends.map(f=>({id:f, name:f, av:`https://api.dicebear.com/7.x/bottts/svg?seed=${f}`})), ...state.groups];
+                all.forEach(i => {
+                    const d = document.createElement('div'); d.className = `user-item`;
+                    d.innerHTML = `<img src="${i.av}"><div><div style="font-weight:700">${i.name}</div><div style="font-size:10px;color:var(--primary)">Chat</div></div>`;
+                    d.onclick = () => this.sel(i.id, i.name, i.av);
+                    l.appendChild(d);
+                });
+            },
+            sel(id, name, av) {
+                state.chat = id;
+                document.getElementById('welcome-msg').classList.add('hidden');
+                document.getElementById('chat-active').classList.remove('hidden');
+                document.getElementById('target-name').innerText = name;
+                document.getElementById('target-av').src = av;
+                if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('closed');
+                this.chat();
+            },
+            chat() {
+                const b = document.getElementById('msg-feed'); b.innerHTML = '';
+                (state.history[state.chat] || []).forEach(m => {
+                    const d = document.createElement('div'); d.className = `msg-row ${m.dir}`;
+                    let c = m.val;
+                    if(m.type === 'img') c = `<img src="${m.val}" class="media-prev" onclick="ui.view(this.src)">`;
+                    if(m.type === 'voice') c = `<audio src="${m.val}" controls></audio>`;
+                    d.innerHTML = `<div class="bubble ${m.dir.includes('ai')?'ai-bubble':''}">${c}<div class="msg-time">${m.time}</div></div>`;
+                    b.appendChild(d);
+                });
+                b.scrollTop = 99999;
+            },
+            view(s) { document.getElementById('media-fs').classList.remove('hidden'); document.getElementById('fs-img').src = s; },
+            modal(id) {
+                document.getElementById('modal-overlay').classList.remove('hidden');
+                document.querySelectorAll('.modal-box').forEach(e => e.classList.add('hidden'));
+                document.getElementById(`mod-${id}`).classList.remove('hidden');
+                if(id === 'settings') {
+                    document.getElementById('set-id').innerText = state.user.id;
+                    document.getElementById('set-av').src = state.user.av;
+                    if(state.user.admin) document.getElementById('admin-tools').classList.remove('hidden');
+                }
+            },
+            closeModals() { document.getElementById('modal-overlay').classList.add('hidden'); },
+            closeChat() { document.getElementById('chat-active').classList.add('hidden'); document.getElementById('welcome-msg').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('closed'); },
+            toggleStickers() { document.getElementById('st-panel').classList.toggle('hidden'); },
+            changeAv(el) {
+                const r = new FileReader();
+                r.onload = e => {
+                    state.user.av = e.target.result;
+                    localStorage.setItem('vx_sess', JSON.stringify(state.user));
+                    location.reload();
+                };
+                r.readAsDataURL(el.files[0]);
+            },
+            saveSet() {
+                state.settings['2fa'] = document.getElementById('tg-2fa').checked;
+                state.settings['ai'] = document.getElementById('tg-ai').checked;
+                localStorage.setItem('vx_set', JSON.stringify(state.settings));
+            },
+            loadSet() {
+                document.getElementById('tg-2fa').checked = state.settings['2fa'];
+                document.getElementById('tg-ai').checked = state.settings['ai'];
+            },
+            toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+        };
+
+        const ai = {
+            toggle() { state.settings.ai = !state.settings.ai; ui.saveSet(); },
+            reply(txt) {
+                setTimeout(() => {
+                    const r = "VORTEX AI: Обработано.";
+                    msg.save(state.chat, {type:'text', val:r}, 'received ai');
+                    this.speak(r);
+                }, 1000);
+            },
+            speak(t) { if(state.settings.ai) { const u = new SpeechSynthesisUtterance(t); u.lang='ru-RU'; window.speechSynthesis.speak(u); } }
+        };
+
+        const stickers = {
+            add() { const u = document.getElementById('st-url').value; if(u) { state.stickers.push(u); localStorage.setItem('vx_st', JSON.stringify(state.stickers)); this.render(); } },
+            render() {
+                const g = document.getElementById('st-grid'); g.innerHTML = '';
+                state.stickers.forEach(s => {
+                    const i = document.createElement('img'); i.src = s;
+                    i.onclick = () => { msg.send({type:'img', val:s}); ui.toggleStickers(); };
+                    g.appendChild(i);
+                });
+            }
+        };
+
+        const groups = {
+            create() {
+                const n = document.getElementById('gr-name').value;
+                if(!n) return;
+                state.groups.push({id:'gr_'+Date.now(), name:n, av:`https://api.dicebear.com/7.x/initials/svg?seed=${n}`});
+                localStorage.setItem('vx_gr', JSON.stringify(state.groups));
+                ui.closeModals(); ui.list();
+            }
+        };
+
+        const voice = {
+            start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.r = new MediaRecorder(s); let c=[]; this.r.ondataavailable=e=>c.push(e.data); this.r.onstop=()=>{const b=new Blob(c); const fr=new FileReader(); fr.onload=e=>msg.send({type:'voice', val:e.target.result}); fr.readAsDataURL(b);}; this.r.start(); document.getElementById('mic').classList.add('recording'); }); },
+            stop() { if(this.r) { this.r.stop(); document.getElementById('mic').classList.remove('recording'); } }
+        };
+
+        const calls = {
+            init(v) {
+                navigator.mediaDevices.getUserMedia({video:v, audio:true}).then(s => {
+                    document.getElementById('call-ui').classList.remove('hidden');
+                    document.getElementById('loc-vid').srcObject = s;
+                    const c = state.peer.call(state.chat, s);
+                    c.on('stream', rs => document.getElementById('rem-vid').srcObject = rs);
+                });
+            },
+            in(c) {
+                document.getElementById('call-ui').classList.remove('hidden');
+                document.getElementById('ans-btn').onclick = () => {
+                    navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(s => {
+                        c.answer(s);
+                        document.getElementById('loc-vid').srcObject = s;
+                        c.on('stream', rs => document.getElementById('rem-vid').srcObject = rs);
+                    });
+                };
+            }
+        };
+        
+        window.admin = { verify() { alert("Галочка выдана"); }, cmd(t) { alert("Admin: "+t); } };
+
+        runVortexIntro();
     </script>
 </body>
 </html>
