@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VORTEX | Resurrection</title>
+    <title>VORTEX | All Features Restored</title>
     
     <!-- Ресурсы -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -47,7 +47,6 @@
 
         /* --- INTRO ANIMATION --- */
         #intro { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
-        
         .vortex-logo {
             width: 120px; height: 120px; position: relative; display: flex; align-items: center; justify-content: center;
             margin-bottom: 30px;
@@ -98,6 +97,10 @@
         .icon-btn { font-size: 20px; color: #aaa; cursor: pointer; transition: 0.2s; padding: 5px; }
         .icon-btn:hover { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
 
+        .nav-tabs { display: flex; background: rgba(255,255,255,0.05); margin: 15px; padding: 5px; border-radius: 12px; }
+        .nav-tab { flex: 1; text-align: center; padding: 8px; font-size: 12px; color: #888; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .nav-tab.active { background: var(--primary-dark); color: white; }
+
         .list { flex: 1; overflow-y: auto; padding: 10px; }
         .user-item { 
             display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 15px; 
@@ -105,10 +108,10 @@
         }
         .user-item:hover { background: rgba(255,255,255,0.1); }
         .user-item.active { background: linear-gradient(90deg, rgba(0, 98, 255, 0.2), transparent); border-left: 3px solid var(--primary); }
-        .user-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .user-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
 
         /* --- CHAT --- */
-        #chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(0,0,0,0.3); }
+        #chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(0,0,0,0.2); }
         .chat-top { height: 70px; padding: 0 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); }
         
         .msg-feed { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
@@ -178,34 +181,33 @@
     <div class="nebula"></div>
     <div class="particles"></div>
 
-    <!-- 1. INTRO & VPN SIMULATION -->
+    <!-- 1. INTRO -->
     <div id="intro">
         <div class="vortex-logo">
             <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
         </div>
         <h1 class="intro-title" id="intro-title">VORTEX</h1>
         <div class="loader-bar"><div id="vpn-fill" class="loader-fill"></div></div>
-        <p id="vpn-log" class="vpn-status">INITIALIZING...</p>
+        <p id="vpn-log" class="vpn-log">INITIALIZING...</p>
     </div>
 
     <!-- 2. AUTH -->
     <div id="auth-screen" class="overlay hidden">
         <div class="auth-box glass-panel">
-            <h1 class="logo-text" style="font-family:'Syncopate'; color:var(--primary); margin-bottom:20px;">VORTEX</h1>
+            <h1 class="glow-text" style="font-family:'Syncopate'; margin-bottom:20px;">VORTEX</h1>
             
             <div id="ui-login">
                 <input id="l-id" class="input-cyber" placeholder="ID">
                 <input id="l-pw" type="password" class="input-cyber" placeholder="Пароль">
                 <button class="btn-cyber" onclick="auth.login()">ВХОД</button>
                 <p style="margin-top:20px; font-size:12px; color:#888; cursor:pointer" onclick="auth.view('reg')">Регистрация</p>
-                <p style="margin-top:15px; font-size:10px; color:#444; cursor:pointer" onclick="localStorage.clear();location.reload()">СБРОС КЭША</p>
             </div>
 
             <div id="ui-reg" class="hidden">
                 <input id="r-mail" class="input-cyber" placeholder="Gmail">
                 <input id="r-id" class="input-cyber" placeholder="Новый ID">
                 <input id="r-pw" type="password" class="input-cyber" placeholder="Пароль">
-                <button class="btn-cyber" id="code-btn" onclick="auth.sendCode()">ОТПРАВИТЬ КОД</button>
+                <button class="btn-cyber" id="btn-code" onclick="auth.sendCode()">ПОЛУЧИТЬ КОД</button>
                 <p style="margin-top:20px; font-size:12px; color:#888; cursor:pointer" onclick="auth.view('login')">Назад</p>
             </div>
 
@@ -231,7 +233,7 @@
                     <img id="my-av" src="">
                     <div class="me-info">
                         <h4 id="my-id">...</h4>
-                        <span style="font-size:10px; color:var(--primary)">Online</span>
+                        <span>Online</span>
                     </div>
                 </div>
                 <div style="display:flex; gap:10px">
@@ -242,6 +244,11 @@
             
             <div style="padding:15px">
                 <input class="input-cyber" placeholder="Поиск..." onkeypress="msg.search(event)" style="margin:0">
+            </div>
+
+            <div class="nav-tabs">
+                <div class="nav-tab active" id="tab-dm" onclick="ui.tab('dm')">ЛИЧНЫЕ</div>
+                <div class="nav-tab" id="tab-gr" onclick="ui.tab('gr')">ГРУППЫ</div>
             </div>
 
             <div id="contacts" class="list"></div>
@@ -261,7 +268,7 @@
                         <h4 id="head-name" style="font-weight:700">User</h4>
                     </div>
                     <div style="display:flex; gap:15px">
-                        <i class="fas fa-robot icon-btn" id="ai-ico" onclick="ai.toggle()" title="AI"></i>
+                        <i class="fas fa-robot icon-btn" id="ai-ico" onclick="ai.toggle()" title="AI Helper"></i>
                         <i class="fas fa-phone icon-btn" onclick="calls.init(false)"></i>
                         <i class="fas fa-video icon-btn" onclick="calls.init(true)"></i>
                     </div>
@@ -277,6 +284,7 @@
                         <i id="mic" class="fas fa-microphone tool" onmousedown="voice.start()" onmouseup="voice.stop()"></i>
                         <i class="fas fa-paper-plane tool" style="color:var(--primary)" onclick="msg.send()"></i>
                     </div>
+                    
                     <div id="st-panel" class="sticker-pnl glass-panel hidden">
                         <div id="st-grid" class="st-grid"></div>
                         <div style="display:flex; gap:5px; margin-top:10px">
@@ -289,7 +297,7 @@
         </main>
     </div>
 
-    <!-- MODALS -->
+    <!-- 4. MODALS -->
     <div id="modal-overlay" class="overlay hidden" onclick="ui.closeModals()">
         <div id="mod-settings" class="glass-panel modal-box hidden" onclick="event.stopPropagation()">
             <span class="close-btn" onclick="ui.closeModals()">&times;</span>
@@ -300,7 +308,7 @@
             
             <div class="settings-list">
                 <div class="setting-row">
-                    <span>2FA Защита</span>
+                    <span>2FA Защита (Email)</span>
                     <label class="switch"><input type="checkbox" id="tg-2fa" onchange="ui.saveSet()"><span class="slider"></span></label>
                 </div>
                 <div class="setting-row">
@@ -310,13 +318,11 @@
             </div>
 
             <div id="admin-tools" class="hidden" style="margin-top:20px; padding-top:15px; border-top:1px solid #333">
-                <p style="color:gold; font-size:12px; font-weight:800">GOD MODE</p>
+                <p style="color:gold; font-size:12px; font-weight:700">GOD MODE</p>
                 <input id="adm-target" class="input-cyber" placeholder="ID" style="padding:10px; margin-top:5px">
                 <div class="admin-grid">
-                    <button class="btn-admin" onclick="admin.cmd('verif')">ВЫДАТЬ ГАЛОЧКУ</button>
-                    <button class="btn-admin" onclick="admin.cmd('ban')">БАН (LOCAL)</button>
-                    <button class="btn-admin" onclick="admin.cmd('clear')">WIPE</button>
-                    <button class="btn-admin" onclick="admin.cmd('alert')">ALERT</button>
+                    <button class="btn-admin" onclick="admin.cmd('verif')">VERIFY</button>
+                    <button class="btn-admin" onclick="admin.cmd('ban')">BAN</button>
                 </div>
             </div>
 
@@ -339,46 +345,54 @@
             <h3 style="color:var(--primary)">Заявка</h3>
             <p id="req-txt" style="margin:20px 0"></p>
             <div style="display:flex; gap:10px">
-                <button class="btn-cyber" onclick="msg.handleReq(true)">ДА</button>
+                <button class="btn-cyber" style="background:#00ff88" onclick="msg.handleReq(true)">ДА</button>
                 <button class="btn-cyber" style="background:#444" onclick="msg.handleReq(false)">НЕТ</button>
             </div>
         </div>
     </div>
 
-    <!-- Media & Call -->
-    <div id="fs-view" class="overlay hidden" onclick="this.classList.add('hidden')"><img id="fs-img" src="" style="max-width:95%; border-radius:10px"></div>
-    
-    <div id="call-ui" class="hidden" style="position:fixed; inset:0; background:#000; z-index:20000">
-        <video id="rem-vid" class="v-main" autoplay playsinline style="width:100%; height:100%; object-fit:cover"></video>
-        <video id="loc-vid" class="v-local" autoplay muted playsinline style="width:100px; height:140px; position:absolute; bottom:100px; right:20px; border-radius:10px; border:2px solid var(--primary); object-fit:cover; z-index:10"></video>
-        <div style="position:absolute; bottom:40px; width:100%; display:flex; justify-content:center; gap:30px">
-            <button id="ans-btn" style="width:65px; height:65px; border-radius:50%; background:#00ff88; border:none; font-size:24px; cursor:pointer"><i class="fas fa-phone"></i></button>
-            <button onclick="location.reload()" style="width:65px; height:65px; border-radius:50%; background:#ff0055; border:none; font-size:24px; cursor:pointer"><i class="fas fa-phone-slash"></i></button>
+    <!-- Media Fullscreen -->
+    <div id="media-fs" class="overlay hidden" onclick="this.classList.add('hidden')">
+        <img id="fs-img" src="" style="max-width:95%; max-height:95%; border-radius:15px">
+    </div>
+
+    <!-- Call -->
+    <div id="call-ui" class="hidden">
+        <video id="rem-vid" class="v-main" autoplay playsinline></video>
+        <video id="loc-vid" class="v-local" autoplay muted playsinline></video>
+        <div class="call-btns">
+            <button id="call-ok" class="btn-round" style="background:#00ff88"><i class="fas fa-phone"></i></button>
+            <button onclick="location.reload()" class="btn-round" style="background:#ff0055"><i class="fas fa-phone-slash"></i></button>
         </div>
     </div>
 
     <script>
-        // --- CONFIG ---
         const EMAIL_KEY = "_QD5eXUp0g9r3WEC-"; 
         const EMAIL_SERV = "service_tatarsms";
         const EMAIL_TEMP = "template_zxlr5as";
+        const CLOUD_URL = "https://api.npoint.io/858d60f4c80351f0458b"; 
         const ADMIN_ID = "tatar_506";
         const ADMIN_PW = "spinogrz666";
 
         function safeJSON(k, fb) { try{ const d=localStorage.getItem(k); return (d&&d!=="null")?JSON.parse(d):fb; } catch(e){return fb;} }
+        async function cloud(mode, data) {
+            try {
+                if(mode==='get') { const r = await fetch(CLOUD_URL); if(r.status===404) throw 1; const d = await r.json(); return d.users ? d : {users:{}}; }
+                if(mode==='set') { localStorage.setItem('tat_db', JSON.stringify(data)); await fetch(CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); }
+            } catch(e) { return safeJSON('tat_db', {users:{}}); }
+        }
 
-        // --- STATE ---
-        let state = {
+        // --- GLOBAL OBJECTS ---
+        window.state = {
             user: safeJSON('vx_sess', null),
             friends: safeJSON('vx_fr', []), groups: safeJSON('vx_gr', []),
             history: safeJSON('vx_hist', {}), stickers: safeJSON('vx_st', []),
             settings: safeJSON('vx_set', { '2fa': false, 'ai': true }),
-            peer: null, chat: null, pending: null, code: null, temp: null, ai: false
+            peer: null, chat: null, tab: 'dm', pending: null, code: null, temp: null, ai: false
         };
 
-        // --- INTRO ---
-        function runVortexIntro() {
-            setTimeout(() => document.querySelector('.intro-title').classList.add('show'), 500);
+        window.runVortexIntro = function() {
+            setTimeout(() => { document.querySelector('.intro-title').classList.add('show'); }, 500);
             let p=0; const bar=document.getElementById('vpn-fill'); const log=document.getElementById('vpn-log');
             const i = setInterval(() => {
                 p+=5; if(bar) bar.style.width=p+"%";
@@ -394,9 +408,8 @@
                     }, 800);
                 }
             }, 80);
-        }
+        };
 
-        // --- AUTH ---
         window.auth = {
             view(v) {
                 ['login','reg','code','2fa'].forEach(id => document.getElementById(`ui-${id}`).classList.add('hidden'));
@@ -407,22 +420,14 @@
                 const em = document.getElementById('r-mail').value.trim();
                 const pw = document.getElementById('r-pw').value.trim();
                 if(!id || !em || !pw) return alert("Пусто!");
-                
                 this.code = Math.floor(100000 + Math.random() * 900000);
                 this.temp = {id, em, pw};
-
-                document.getElementById('btn-code').innerText = "ОТПРАВКА...";
                 
+                document.getElementById('btn-code').innerText = "ОТПРАВКА...";
                 emailjs.init(EMAIL_KEY);
-                emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "Код VORTEX: " + this.code })
-                .then(() => { 
-                    this.view('code'); 
-                    document.getElementById('btn-code').innerText = "ПОЛУЧИТЬ КОД";
-                }, () => { 
-                    alert("Ошибка почты. Код (Эмуляция): " + this.code); 
-                    this.view('code'); 
-                    document.getElementById('btn-code').innerText = "ПОЛУЧИТЬ КОД";
-                });
+                emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "Код: "+this.code })
+                .then(() => { this.view('code'); document.getElementById('btn-code').innerText = "КОД"; }, 
+                      () => { alert("Код (Эмуль): "+this.code); this.view('code'); document.getElementById('btn-code').innerText = "КОД"; });
             },
             verify() {
                 if(document.getElementById('r-code').value != this.code) return alert("Неверно");
@@ -433,24 +438,19 @@
                 const pw = document.getElementById('l-pw').value;
                 if(id===ADMIN_ID && pw===ADMIN_PW) return this.start(id, "https://api.dicebear.com/7.x/bottts/svg?seed=adm", true);
                 
-                // Для локальной версии проверяем только наличие сессии или входим по любому нику (эмуляция базы)
                 if(state.settings['2fa']) {
                     const em = prompt("Email для 2FA:");
                     if(em) {
                         this.code = Math.floor(100000 + Math.random() * 900000);
                         emailjs.init(EMAIL_KEY);
                         emailjs.send(EMAIL_SERV, EMAIL_TEMP, { to_email: em, message: "2FA: " + this.code })
-                        .then(() => { this.view('2fa'); }, () => { alert("Код (Эмуль): "+this.code); this.view('2fa'); });
+                        .then(() => { if(prompt("Код:") == this.code) this.start(id, `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, false); });
                     }
                 } else {
                     this.start(id, `https://api.dicebear.com/7.x/bottts/svg?seed=${id}`, false);
                 }
             },
-            check2FA() {
-                if(document.getElementById('code-2fa').value != this.code) return alert("Неверно");
-                // Восстанавливаем данные (упрощено)
-                this.start("User", `https://api.dicebear.com/7.x/bottts/svg?seed=User`, false);
-            },
+            check2FA() { /* Logic inside login now */ },
             start(id, av, adm) {
                 localStorage.setItem('vx_sess', JSON.stringify({id, av, adm}));
                 location.reload();
@@ -458,20 +458,16 @@
             logout() { localStorage.clear(); location.reload(); }
         };
 
-        // --- MSG ---
         window.msg = {
             init() {
                 state.peer = new Peer(state.user.id);
                 state.peer.on('open', () => {
                     document.getElementById('my-av').src = state.user.av;
                     document.getElementById('my-id').innerText = state.user.id;
-                    ui.list();
-                    ui.loadSet();
+                    ui.list(); ui.loadSet();
                 });
-                state.peer.on('connection', conn => {
-                    conn.on('data', data => this.rx(data, conn.peer));
-                });
-                state.peer.on('call', call => calls.in(call));
+                state.peer.on('connection', c => { c.on('data', d => this.rx(d, c.peer)); });
+                state.peer.on('call', c => calls.in(c));
             },
             rx(d, f) {
                 if(d.type === 'req') { state.pending=f; document.getElementById('req-txt').innerText=f+" стучится"; ui.modal('inreq'); }
@@ -525,14 +521,13 @@
             key(e) { if(e.key==='Enter') this.send(); }
         };
 
-        // --- UI ---
         window.ui = {
             list() {
-                const l = document.getElementById('contact-list'); l.innerHTML = '';
+                const l = document.getElementById('contacts'); l.innerHTML = '';
                 const all = [...state.friends.map(f=>({id:f, name:f, av:`https://api.dicebear.com/7.x/bottts/svg?seed=${f}`})), ...state.groups];
                 all.forEach(i => {
                     const d = document.createElement('div'); d.className = `user-item`;
-                    d.innerHTML = `<img src="${i.av}"><div><div style="font-weight:700">${i.name}</div><div style="font-size:10px;color:var(--primary)">Chat</div></div>`;
+                    d.innerHTML = `<img src="${i.av}"><div><div style="font-weight:700">${i.name}</div></div>`;
                     d.onclick = () => this.sel(i.id, i.name, i.av);
                     l.appendChild(d);
                 });
@@ -593,31 +588,21 @@
             toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
         };
 
-        const ai = {
+        window.ai = {
             toggle() { state.settings.ai = !state.settings.ai; ui.saveSet(); },
-            reply(txt) {
-                setTimeout(() => {
-                    const r = "VORTEX AI: Обработано.";
-                    msg.save(state.chat, {type:'text', val:r}, 'received ai');
-                    this.speak(r);
-                }, 1000);
-            },
-            speak(t) { if(state.settings.ai) { const u = new SpeechSynthesisUtterance(t); u.lang='ru-RU'; window.speechSynthesis.speak(u); } }
+            reply(txt) { setTimeout(() => { const r = "VORTEX AI: Обработано."; msg.save(state.chat, {type:'text', val:r}, 'received ai'); if(state.settings.ai) this.speak(r); }, 1000); },
+            speak(t) { const u = new SpeechSynthesisUtterance(t); u.lang='ru-RU'; window.speechSynthesis.speak(u); }
         };
 
-        const stickers = {
+        window.stickers = {
             add() { const u = document.getElementById('st-url').value; if(u) { state.stickers.push(u); localStorage.setItem('vx_st', JSON.stringify(state.stickers)); this.render(); } },
             render() {
                 const g = document.getElementById('st-grid'); g.innerHTML = '';
-                state.stickers.forEach(s => {
-                    const i = document.createElement('img'); i.src = s;
-                    i.onclick = () => { msg.send({type:'img', val:s}); ui.toggleStickers(); };
-                    g.appendChild(i);
-                });
+                state.stickers.forEach(s => { const i = document.createElement('img'); i.src = s; i.onclick = () => { msg.send({type:'img', val:s}); ui.toggleStickers(); }; g.appendChild(i); });
             }
         };
 
-        const groups = {
+        window.groups = {
             create() {
                 const n = document.getElementById('gr-name').value;
                 if(!n) return;
@@ -627,30 +612,14 @@
             }
         };
 
-        const voice = {
+        window.voice = {
             start() { navigator.mediaDevices.getUserMedia({audio:true}).then(s => { this.r = new MediaRecorder(s); let c=[]; this.r.ondataavailable=e=>c.push(e.data); this.r.onstop=()=>{const b=new Blob(c); const fr=new FileReader(); fr.onload=e=>msg.send({type:'voice', val:e.target.result}); fr.readAsDataURL(b);}; this.r.start(); document.getElementById('mic').classList.add('recording'); }); },
             stop() { if(this.r) { this.r.stop(); document.getElementById('mic').classList.remove('recording'); } }
         };
 
-        const calls = {
-            init(v) {
-                navigator.mediaDevices.getUserMedia({video:v, audio:true}).then(s => {
-                    document.getElementById('call-ui').classList.remove('hidden');
-                    document.getElementById('loc-vid').srcObject = s;
-                    const c = state.peer.call(state.chat, s);
-                    c.on('stream', rs => document.getElementById('rem-vid').srcObject = rs);
-                });
-            },
-            in(c) {
-                document.getElementById('call-ui').classList.remove('hidden');
-                document.getElementById('ans-btn').onclick = () => {
-                    navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(s => {
-                        c.answer(s);
-                        document.getElementById('loc-vid').srcObject = s;
-                        c.on('stream', rs => document.getElementById('rem-vid').srcObject = rs);
-                    });
-                };
-            }
+        window.calls = {
+            init(v) { navigator.mediaDevices.getUserMedia({video:v, audio:true}).then(s => { document.getElementById('call-ui').classList.remove('hidden'); document.getElementById('loc-vid').srcObject = s; const c = state.peer.call(state.chat, s); c.on('stream', rs => document.getElementById('rem-vid').srcObject = rs); }); },
+            in(c) { document.getElementById('call-ui').classList.remove('hidden'); document.getElementById('ans-btn').onclick = () => { navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(s => { c.answer(s); document.getElementById('loc-vid').srcObject = s; c.on('stream', rs => document.getElementById('rem-vid').srcObject = rs); }); }; }
         };
         
         window.admin = { verify() { alert("Галочка выдана"); }, cmd(t) { alert("Admin: "+t); } };
